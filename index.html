@@ -956,6 +956,40 @@
     flex-direction: column;
   }
 }
+
+        .auto-convert-section {
+  display: flex;
+  align-items: center;
+  margin: 0 16px;
+}
+
+.convert-btn {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.convert-btn:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+.equation-display {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.placeholder {
+  color: var(--text-secondary);
+  font-style: italic;
+}
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -1118,31 +1152,30 @@
       <div class="reaction-canvas" id="reactionCanvas"></div>
     </div>
     
-    <div class="equation-builder">
-      <div class="equation-section">
-        <div class="reactants-section">
-          <span class="section-label">Reactants:</span>
-          <div class="equation-items" id="reactantsContainer">
-            <button class="add-item-btn" data-type="reactant">+</button>
-          </div>
-        </div>
-        
-        <div class="arrow-section">→</div>
-        
-        <div class="products-section">
-          <span class="section-label">Products:</span>
-          <div class="equation-items" id="productsContainer">
-            <button class="add-item-btn" data-type="product">+</button>
-          </div>
-        </div>
-      </div>
-      
-      <div class="equation-controls">
-        <button id="balanceEquation" class="control-btn">Balance Equation</button>
-        <button id="runReaction" class="control-btn primary">Run Reaction</button>
-        <button id="clearEquation" class="control-btn">Clear All</button>
+<div class="equation-builder">
+  <div class="equation-section">
+    <div class="reactants-section">
+      <span class="section-label">Add Reactants:</span>
+      <div class="equation-items" id="reactantsContainer">
+        <button class="add-item-btn" data-type="reactant">+</button>
       </div>
     </div>
+    
+    <div class="auto-convert-section">
+      <button id="autoBalance" class="convert-btn">⚡ Auto Balance</button>
+    </div>
+    
+    <div class="products-section">
+      <span class="section-label">Products:</span>
+      <div class="equation-display" id="productsDisplay">
+        <span class="placeholder">Products will appear here...</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="equation-controls">
+    <button id="runReaction" class="control-btn primary">Run Reaction</button>
+    <button id="clearEquation" class="control-btn">Clear All</button>
   </div>
 </div>
 
@@ -3478,6 +3511,7 @@ function clearEquation() {
 function visualizeReaction() {
   if (!reactionGroup) return;
   
+  // Clear previous
   while (reactionGroup.children.length > 0) {
     const child = reactionGroup.children[0];
     reactionGroup.remove(child);
@@ -3485,31 +3519,86 @@ function visualizeReaction() {
     if (child.material) child.material.dispose();
   }
   
-  const reactantGroup = new THREE.Group();
-  const productGroup = new THREE.Group();
-  
+  // Create proper molecular representations
   currentEquation.reactants.forEach((reactant, index) => {
-    const geometry = new THREE.SphereGeometry(0.5, 16, 16);
-    const material = new THREE.MeshPhongMaterial({ color: 0x4CAF50 });
-    const sphere = new THREE.Mesh(geometry, material);
-    sphere.position.set(-4, index * 2 - currentEquation.reactants.length, 0);
-    reactantGroup.add(sphere);
+    const moleculeGroup = createMolecularStructure(reactant, -6, index * 3);
+    reactionGroup.add(moleculeGroup);
   });
   
   currentEquation.products.forEach((product, index) => {
-    const geometry = new THREE.SphereGeometry(0.5, 16, 16);
-    const material = new THREE.MeshPhongMaterial({ color: 0x2196F3 });
-    const sphere = new THREE.Mesh(geometry, material);
-    sphere.position.set(4, index * 2 - currentEquation.products.length, 0);
-    productGroup.add(sphere);
+    const moleculeGroup = createMolecularStructure(product, 6, index * 3);
+    reactionGroup.add(moleculeGroup);
   });
   
-  reactionGroup.add(reactantGroup);
-  reactionGroup.add(productGroup);
-  
-  animateReaction(reactantGroup, productGroup);
+  // Start collision animation
+  animateCollision();
 }
 
+function createMolecularStructure(item, xPos, yPos) {
+  const group = new THREE.Group();
+  
+  // Find molecule data
+  const molData = moleculesData.find(m => m.id === item.id) || 
+                  elementsData.find(e => e.symbol.toLowerCase() === item.id);
+  
+  if (molData && molData.atoms) {
+    // Create atoms
+    molData.atoms.forEach(atom => {
+      const geometry = new THREE.SphereGeometry(0.3, 16, 16);
+      const color = getAtomColor(atom.el);
+      const material = new THREE.MeshPhongMaterial({ color });
+      const sphere = new THREE.Mesh(geometry, material);
+      sphere.position.set((atom.x || 0) * 0.5, (atom.y || 0) * 0.5, (atom.z || 0) * 0.5);
+      group.add(sphere);
+    });
+    
+    // Create bonds
+    if (molData.bonds) {
+      molData.bonds.forEach(bond => {
+        const atom1 = molData.atoms[bond[0]];
+        const atom2 = molData.atoms[bond[1]];
+        if (atom1 && atom2) {
+          const bondMesh = createBond(atom1, atom2);
+          group.add(bondMesh);
+        }
+      });
+    }
+  } else {
+    // Simple sphere for elements
+    const geometry = new THREE.SphereGeometry(0.5, 16, 16);
+    const material = new THREE.MeshPhongMaterial({ color: 0x4CAF50 });
+    const sphere = new THREE.Mesh(geometry, material);
+    group.add(sphere);
+  }
+  
+  group.position.set(xPos, yPos, 0);
+  return group;
+}
+
+function getAtomColor(element) {
+  const colors = {
+    'H': 0xffffff, 'C': 0x222222, 'O': 0xff4444, 'N': 0x3050f8,
+    'Na': 0xAB5CF2, 'Cl': 0x1FF01F, 'S': 0xFFFF66, 'P': 0xFF8C00
+  };
+  return colors[element] || 0x888888;
+}
+
+function createBond(atom1, atom2) {
+  const start = new THREE.Vector3((atom1.x || 0) * 0.5, (atom1.y || 0) * 0.5, (atom1.z || 0) * 0.5);
+  const end = new THREE.Vector3((atom2.x || 0) * 0.5, (atom2.y || 0) * 0.5, (atom2.z || 0) * 0.5);
+  const distance = start.distanceTo(end);
+  
+  const geometry = new THREE.CylinderGeometry(0.05, 0.05, distance, 8);
+  const material = new THREE.MeshPhongMaterial({ color: 0x999999 });
+  const cylinder = new THREE.Mesh(geometry, material);
+  
+  const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+  cylinder.position.copy(midPoint);
+  cylinder.lookAt(end);
+  cylinder.rotateX(Math.PI / 2);
+  
+  return cylinder;
+}
 function animateReaction(reactantGroup, productGroup) {
   let animationStep = 0;
   const maxSteps = 120;
@@ -3537,4 +3626,5 @@ window.addEventListener('resize', () => {
     </script>
 </body>
 </html>
+
 
