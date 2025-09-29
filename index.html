@@ -701,7 +701,189 @@
   .molecules-list { grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); }
 }
 
+/* Updated Toggle */
+.toggle-container {
+  display: flex;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  border: 1px solid var(--border-primary);
+  padding: 4px;
+  gap: 4px;
+}
 
+.toggle-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.toggle-btn.active {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: white;
+}
+
+/* Reactions Page */
+.reactions-page {
+  padding: 20px;
+}
+
+.reaction-viewer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.reaction-screen {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  height: 450px;
+  position: relative;
+  overflow: hidden;
+}
+
+.reaction-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.equation-builder {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
+
+.equation-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.section-label {
+  font-weight: 600;
+  color: var(--accent-blue);
+  min-width: 90px;
+}
+
+.equation-items {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-height: 40px;
+}
+
+.add-item-btn {
+  width: 40px;
+  height: 40px;
+  border: 2px dashed var(--border-primary);
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.2s ease;
+}
+
+.add-item-btn:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.equation-item {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.equation-item .remove-btn {
+  background: none;
+  border: none;
+  color: var(--accent-red);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.arrow-section {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--accent-blue);
+  margin: 0 12px;
+}
+
+.auto-text {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.equation-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.control-btn {
+  padding: 10px 20px;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+}
+
+.control-btn.primary {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: white;
+  border: none;
+}
+
+.item-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.item-card .formula {
+  font-weight: 700;
+  color: var(--accent-blue);
+  margin-bottom: 4px;
+}
+
+.item-card .name {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -710,13 +892,10 @@
         <div class="header">
           <!-- Page toggle (উপরে header-এর নিচে বসাও) -->
 <div class="page-toggle">
-  <label class="switch">
-    <input id="pageSwitch" type="checkbox">
-    <span class="slider"></span>
-  </label>
-  <div class="toggle-labels">
-    <span id="labelPeriodic">Periodic Table</span>
-    <span id="labelMolecules">Molecules</span>
+  <div class="toggle-container">
+    <button class="toggle-btn active" data-page="periodic">Periodic Table</button>
+    <button class="toggle-btn" data-page="molecules">Molecules</button>
+    <button class="toggle-btn" data-page="reactions">Reactions</button>
   </div>
 </div>
             <h1>Interactive Periodic Table</h1>
@@ -852,6 +1031,61 @@
           <div id="matter2D" style="height:200px;"></div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Reactions Page -->
+<div id="reactionsPage" class="reactions-page" style="display:none;" aria-hidden="true">
+  <div class="reaction-viewer-container">
+    <!-- Theatre Screen -->
+    <div class="reaction-screen" id="reactionScreen">
+      <div class="reaction-canvas" id="reactionCanvas"></div>
+    </div>
+    
+    <!-- Equation Builder -->
+    <div class="equation-builder">
+      <div class="equation-section">
+        <!-- Reactants Section -->
+        <div class="reactants-section">
+          <span class="section-label">Reactants:</span>
+          <div class="equation-items" id="reactantsContainer">
+            <button class="add-item-btn" data-type="reactant">+</button>
+          </div>
+        </div>
+        
+        <!-- Arrow -->
+        <div class="arrow-section">→</div>
+        
+        <!-- Products Section (Auto-filled) -->
+        <div class="products-section">
+          <span class="section-label">Products:</span>
+          <div class="equation-items" id="productsContainer">
+            <span class="auto-text">Auto-generated</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Control Buttons -->
+      <div class="equation-controls">
+        <button id="predictProducts" class="control-btn">Predict Products</button>
+        <button id="runReaction" class="control-btn primary">Run Reaction</button>
+        <button id="clearEquation" class="control-btn">Clear All</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Selection Modal -->
+<div class="modal" id="itemSelectionModal" aria-hidden="true">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Select Reactant</div>
+      <button class="close-btn" id="closeItemModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input id="itemSearch" type="search" placeholder="Search..." style="width:100%;padding:12px;margin-bottom:16px;background:var(--bg-tertiary);border:1px solid var(--border-primary);border-radius:8px;color:var(--text-primary);" />
+      <div class="items-grid" id="itemsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;max-height:400px;overflow-y:auto;"></div>
     </div>
   </div>
 </div>
@@ -2885,7 +3119,275 @@ function loadMatterWiki(wikiTitle){
 document.addEventListener('DOMContentLoaded', ()=>{
   renderMoleculesList();
 });
+// ===== REACTIONS PAGE =====
+let reactionScene, reactionCamera, reactionRenderer;
+let currentReactants = [];
+let currentProducts = [];
 
+// Toggle System
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleBtns = document.querySelectorAll('.toggle-btn');
+  const periodicPage = document.querySelector('.container');
+  const moleculesPage = document.getElementById('moleculesPage');
+  const reactionsPage = document.getElementById('reactionsPage');
+  
+  toggleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetPage = btn.dataset.page;
+      toggleBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      if(targetPage === 'periodic') {
+        periodicPage.style.display = '';
+        moleculesPage.style.display = 'none';
+        reactionsPage.style.display = 'none';
+      } else if(targetPage === 'molecules') {
+        periodicPage.style.display = 'none';
+        moleculesPage.style.display = 'block';
+        reactionsPage.style.display = 'none';
+      } else if(targetPage === 'reactions') {
+        periodicPage.style.display = 'none';
+        moleculesPage.style.display = 'none';
+        reactionsPage.style.display = 'block';
+        initReactionViewer();
+      }
+    });
+  });
+});
+
+// Init 3D Viewer
+function initReactionViewer() {
+  const container = document.getElementById('reactionCanvas');
+  if (!container || reactionRenderer) return;
+  
+  reactionScene = new THREE.Scene();
+  reactionScene.background = new THREE.Color(0x0d1117);
+  
+  reactionCamera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+  reactionCamera.position.set(0, 0, 20);
+  
+  reactionRenderer = new THREE.WebGLRenderer({ antialias: true });
+  reactionRenderer.setSize(container.clientWidth, container.clientHeight);
+  container.appendChild(reactionRenderer.domElement);
+  
+  const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
+  reactionScene.add(ambientLight);
+  
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+  directionalLight.position.set(10, 10, 5);
+  reactionScene.add(directionalLight);
+  
+  animate3D();
+}
+
+function animate3D() {
+  if (!reactionRenderer) return;
+  requestAnimationFrame(animate3D);
+  reactionRenderer.render(reactionScene, reactionCamera);
+}
+
+// Add Reactant
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('add-item-btn')) {
+    openItemSelectionModal();
+  }
+});
+
+function openItemSelectionModal() {
+  const modal = document.getElementById('itemSelectionModal');
+  modal.classList.add('active');
+  populateItemsGrid();
+}
+
+function populateItemsGrid() {
+  const grid = document.getElementById('itemsGrid');
+  grid.innerHTML = '';
+  
+  // Elements
+  elementsData.forEach(element => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `<div class="formula">${element.symbol}</div><div class="name">${element.name}</div>`;
+    card.addEventListener('click', () => {
+      selectReactant({ id: element.symbol.toLowerCase(), formula: element.symbol, name: element.name });
+      closeItemSelectionModal();
+    });
+    grid.appendChild(card);
+  });
+  
+  // Molecules
+  moleculesData.forEach(molecule => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `<div class="formula">${molecule.formula}</div><div class="name">${molecule.name}</div>`;
+    card.addEventListener('click', () => {
+      selectReactant(molecule);
+      closeItemSelectionModal();
+    });
+    grid.appendChild(card);
+  });
+}
+
+function selectReactant(item) {
+  currentReactants.push(item);
+  updateReactantsDisplay();
+}
+
+function updateReactantsDisplay() {
+  const container = document.getElementById('reactantsContainer');
+  container.innerHTML = '';
+  
+  currentReactants.forEach((item, index) => {
+    const div = document.createElement('div');
+    div.className = 'equation-item';
+    div.innerHTML = `<span>${item.formula}</span><button class="remove-btn" data-index="${index}">×</button>`;
+    container.appendChild(div);
+    
+    if (index < currentReactants.length - 1) {
+      const plus = document.createElement('div');
+      plus.textContent = '+';
+      plus.style.color = 'var(--text-secondary)';
+      container.appendChild(plus);
+    }
+  });
+  
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-item-btn';
+  addBtn.textContent = '+';
+  container.appendChild(addBtn);
+}
+
+// Remove reactant
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('remove-btn')) {
+    const index = parseInt(e.target.dataset.index);
+    currentReactants.splice(index, 1);
+    updateReactantsDisplay();
+  }
+});
+
+// Predict Products (Simple Logic)
+document.getElementById('predictProducts').addEventListener('click', () => {
+  if (currentReactants.length === 0) {
+    alert('Add reactants first!');
+    return;
+  }
+  
+  // Simple prediction logic
+  const formulas = currentReactants.map(r => r.formula).join(' + ');
+  
+  if (formulas.includes('H₂') && formulas.includes('O₂')) {
+    currentProducts = [{ formula: 'H₂O', name: 'Water' }];
+  } else if (formulas.includes('Fe') && formulas.includes('CuSO₄')) {
+    currentProducts = [{ formula: 'FeSO₄', name: 'Iron sulfate' }, { formula: 'Cu', name: 'Copper' }];
+  } else {
+    currentProducts = [{ formula: '?', name: 'Unknown product' }];
+  }
+  
+  updateProductsDisplay();
+});
+
+function updateProductsDisplay() {
+  const container = document.getElementById('productsContainer');
+  container.innerHTML = '';
+  
+  currentProducts.forEach((item, index) => {
+    const div = document.createElement('div');
+    div.className = 'equation-item';
+    div.innerHTML = `<span>${item.formula}</span>`;
+    container.appendChild(div);
+    
+    if (index < currentProducts.length - 1) {
+      const plus = document.createElement('div');
+      plus.textContent = '+';
+      plus.style.color = 'var(--text-secondary)';
+      container.appendChild(plus);
+    }
+  });
+}
+
+// Run Reaction Animation
+document.getElementById('runReaction').addEventListener('click', () => {
+  if (currentReactants.length === 0 || currentProducts.length === 0) {
+    alert('Predict products first!');
+    return;
+  }
+  visualizeReaction();
+});
+
+function visualizeReaction() {
+  // Clear scene
+  while (reactionScene.children.length > 2) {
+    reactionScene.remove(reactionScene.children[2]);
+  }
+  
+  // Create reactant molecules (left side)
+  const reactantGroup = new THREE.Group();
+  currentReactants.forEach((reactant, i) => {
+    const geo = new THREE.SphereGeometry(0.8, 16, 16);
+    const mat = new THREE.MeshPhongMaterial({ color: 0x4CAF50 });
+    const sphere = new THREE.Mesh(geo, mat);
+    sphere.position.set(-8, i * 3 - 1.5, 0);
+    reactantGroup.add(sphere);
+  });
+  
+  // Create product molecules (right side)
+  const productGroup = new THREE.Group();
+  currentProducts.forEach((product, i) => {
+    const geo = new THREE.SphereGeometry(0.8, 16, 16);
+    const mat = new THREE.MeshPhongMaterial({ color: 0x2196F3 });
+    const sphere = new THREE.Mesh(geo, mat);
+    sphere.position.set(8, i * 3 - 1.5, 0);
+    productGroup.add(sphere);
+  });
+  
+  reactionScene.add(reactantGroup);
+  reactionScene.add(productGroup);
+  
+  // Animate collision
+  let step = 0;
+  function animateCollision() {
+    if (step < 100) {
+      const progress = step / 100;
+      reactantGroup.position.x = -8 + progress * 6;
+      productGroup.position.x = 8 - progress * 6;
+      step++;
+      requestAnimationFrame(animateCollision);
+    }
+  }
+  animateCollision();
+}
+
+// Clear
+document.getElementById('clearEquation').addEventListener('click', () => {
+  currentReactants = [];
+  currentProducts = [];
+  updateReactantsDisplay();
+  document.getElementById('productsContainer').innerHTML = '<span class="auto-text">Auto-generated</span>';
+  while (reactionScene.children.length > 2) {
+    reactionScene.remove(reactionScene.children[2]);
+  }
+});
+
+// Modal close
+document.getElementById('closeItemModal').addEventListener('click', closeItemSelectionModal);
+document.getElementById('itemSelectionModal').addEventListener('click', (e) => {
+  if (e.target.id === 'itemSelectionModal') closeItemSelectionModal();
+});
+
+function closeItemSelectionModal() {
+  document.getElementById('itemSelectionModal').classList.remove('active');
+}
+
+// Search
+document.getElementById('itemSearch').addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase();
+  document.querySelectorAll('.item-card').forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = text.includes(query) ? '' : 'none';
+  });
+});
     </script>
 </body>
 </html>
+
