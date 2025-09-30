@@ -4,21 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Periodic Table</title>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    
-    <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css">
-    
-    <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <!-- Page toggle -->
             <div class="page-toggle">
                 <label class="switch">
                     <input id="pageSwitch" type="checkbox">
@@ -29,24 +20,31 @@
                     <span id="labelMolecules">Molecules</span>
                 </div>
             </div>
-            
             <h1>Interactive Periodic Table</h1>
             <p>Explore the building blocks of matter with 3D atomic visualization</p>
         </div>
         
-        <!-- Legend -->
-        <div class="legend" id="legend"></div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-color nonmetal"></div><span>Non metals</span></div>
+            <div class="legend-item"><div class="legend-color noblegas"></div><span>Noble Gases</span></div>
+            <div class="legend-item"><div class="legend-color alkalimetal"></div><span>Alkali Metals</span></div>
+            <div class="legend-item"><div class="legend-color alkearthmetal"></div><span>Alkaline Earth Metals</span></div>
+            <div class="legend-item"><div class="legend-color transitionmetal"></div><span>Transition Metals</span></div>
+            <div class="legend-item"><div class="legend-color metalloid"></div><span>Metalloids</span></div>
+            <div class="legend-item"><div class="legend-color halogen"></div><span>Halogens</span></div>
+            <div class="legend-item"><div class="legend-color post-transitionmetal"></div><span>Post transition Metals</span></div>
+            <div class="legend-item"><div class="legend-color lanthanide"></div><span>Lanthanoids</span></div>
+            <div class="legend-item"><div class="legend-color actinide"></div><span>Actinoids</span></div>
+            <div class="legend-item"><div class="legend-color unknown"></div><span>Unknown</span></div>
+        </div>
         
-        <!-- Periodic Table -->
         <div class="periodic-table" id="periodicTable"></div>
         
-        <!-- Lanthanide Series -->
         <div class="lanthanide-series">
             <div class="series-title">Lanthanide Series</div>
             <div class="series-elements" id="lanthanideElements"></div>
         </div>
         
-        <!-- Actinide Series -->
         <div class="actinide-series">
             <div class="series-title">Actinide Series</div>
             <div class="series-elements" id="actinideElements"></div>
@@ -58,7 +56,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title" id="modalTitle">Element Details</div>
-                <button class="close-btn" id="closeElementModal">&times;</button>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="atom-viewer" id="atomViewer"></div>
@@ -120,31 +118,20 @@
         </div>
     </div>
 
-    <!-- JavaScript Modules -->
-    <!-- Data -->
-    <script src="js/data/elementsData.js"></script>
-    <script src="js/data/elementPositions.js"></script>
-    <script src="js/data/moleculesData.js"></script>
-    
-    <!-- Utils -->
-    <script src="js/utils/helpers.js"></script>
-    <script src="js/utils/searchScoring.js"></script>
-    <script src="js/utils/wikiLoader.js"></script>
-    
-    <!-- Periodic Table -->
-    <script src="js/periodic-table/tableRenderer.js"></script>
-    <script src="js/periodic-table/atom3D.js"></script>
-    <script src="js/periodic-table/elementModal.js"></script>
-    
-    <!-- Molecules -->
-    <script src="js/molecules/moleculesRenderer.js"></script>
-    <script src="js/molecules/moleculeSearch.js"></script>
-    <script src="js/molecules/molecule3D.js"></script>
-    <script src="js/molecules/molecule2D.js"></script>
-    <script src="js/molecules/moleculeModal.js"></script>
-    
-    <!-- Core -->
-    <script src="js/core/pageToggle.js"></script>
-    <script src="js/core/app.js"></script>
+    <!-- Load JavaScript Modules -->
+    <script src="js/data/elements-data.js"></script>
+    <script src="js/data/molecules-data.js"></script>
+    <script src="js/utils/search-utils.js"></script>
+    <script src="js/utils/wiki-loader.js"></script>
+    <script src="js/periodic-table/table-renderer.js"></script>
+    <script src="js/periodic-table/atom-visualization.js"></script>
+    <script src="js/periodic-table/element-modal.js"></script>
+    <script src="js/molecules/molecules-search.js"></script>
+    <script src="js/molecules/molecules-list.js"></script>
+    <script src="js/molecules/molecule-3d.js"></script>
+    <script src="js/molecules/molecule-2d.js"></script>
+    <script src="js/molecules/molecule-modal.js"></script>
+    <script src="js/core/page-toggle.js"></script>
+    <script src="js/core/app-init.js"></script>
 </body>
 </html>
