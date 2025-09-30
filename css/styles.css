@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
 * {
     margin: 0;
     padding: 0;
@@ -159,7 +162,6 @@ body {
     box-shadow: 0 0 32px rgba(88, 166, 255, 0.4);
     border-color: var(--accent-blue);
     z-index: 20;
-    animation: pulse 2s infinite;
 }
 
 .element-header {
@@ -186,7 +188,7 @@ body {
     z-index: 1;
 }
 
-/* Element Categories */
+/* Element category colors */
 .nonmetal { 
     background: linear-gradient(135deg, #1a365d, #2a4a6b);
     border-color: #3182ce;
@@ -424,7 +426,7 @@ body {
     overflow-y: auto;
 }
 
-/* Toggle Switch */
+/* Toggle switch */
 .page-toggle {
     display: flex;
     align-items: center;
@@ -495,7 +497,7 @@ body {
     transition: .2s; 
 }
 
-/* Molecules Page */
+/* Molecules page layout */
 .molecules-page { 
     padding: 12px 20px; 
 }
@@ -532,11 +534,6 @@ body {
     background: transparent;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.sort-controls button:hover {
-    background: var(--bg-tertiary);
 }
 
 .sort-controls button.active {
@@ -579,7 +576,6 @@ body {
     background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
     color: #041124; 
     font-weight: 700;
-    font-size: 0.75rem;
 }
 
 .molecule-meta { 
@@ -610,7 +606,7 @@ body {
     display: block; 
 }
 
-/* Loading Animation */
+/* Loading animation */
 .loading {
     display: inline-block;
     width: 20px;
@@ -631,7 +627,11 @@ body {
     100% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0); }
 }
 
-/* Scrollbar */
+.element.active {
+    animation: pulse 2s infinite;
+}
+
+/* Scrollbar styling */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -650,7 +650,7 @@ body {
     background: var(--text-secondary);
 }
 
-/* Responsive */
+/* Mobile Responsive */
 @media (max-width: 1200px) {
     .periodic-table {
         padding: 16px;
