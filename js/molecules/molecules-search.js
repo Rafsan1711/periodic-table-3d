@@ -1,4 +1,4 @@
-/**
+ /**
  * Molecules Search Module
  * Handles search functionality for molecules
  */
