@@ -1,33 +1,85 @@
 /**
- * Page Toggle Module
- * Handles switching between Periodic Table and Molecules pages
+ * Page Toggle Module (UPDATED)
+ * Handles switching between Periodic Table, Molecules, and Chemical Reactions pages
  */
 
 /**
  * Initializes the page toggle functionality
  */
 function initPageToggle() {
-    const pageSwitch = document.getElementById('pageSwitch');
+    const togglePeriodic = document.getElementById('togglePeriodic');
+    const toggleMolecules = document.getElementById('toggleMolecules');
+    const toggleReactions = document.getElementById('toggleReactions');
+    
     const periodicPageEl = document.querySelector('.container');
     const moleculesPageEl = document.getElementById('moleculesPage');
-
-    pageSwitch.addEventListener('change', (e) => {
-        const on = e.target.checked;
-        
-        if (on) {
-            // Show molecules page, hide periodic table
-            if (periodicPageEl) periodicPageEl.style.display = 'none';
-            moleculesPageEl.style.display = 'block';
-            moleculesPageEl.setAttribute('aria-hidden', 'false');
-            document.getElementById('labelPeriodic').style.opacity = 0.5;
-            document.getElementById('labelMolecules').style.opacity = 1;
-        } else {
-            // Show periodic table, hide molecules page
+    const reactionsPageEl = document.getElementById('reactionsPage');
+    
+    // Show Periodic Table
+    if (togglePeriodic) {
+        togglePeriodic.addEventListener('click', () => {
+            // Update active states
+            togglePeriodic.classList.add('active');
+            toggleMolecules.classList.remove('active');
+            toggleReactions.classList.remove('active');
+            
+            // Show/hide pages
             if (periodicPageEl) periodicPageEl.style.display = '';
-            moleculesPageEl.style.display = 'none';
-            moleculesPageEl.setAttribute('aria-hidden', 'true');
-            document.getElementById('labelPeriodic').style.opacity = 1;
-            document.getElementById('labelMolecules').style.opacity = 0.5;
-        }
-    });
-}
+            if (moleculesPageEl) {
+                moleculesPageEl.style.display = 'none';
+                moleculesPageEl.setAttribute('aria-hidden', 'true');
+            }
+            if (reactionsPageEl) {
+                reactionsPageEl.style.display = 'none';
+                reactionsPageEl.setAttribute('aria-hidden', 'true');
+            }
+        });
+    }
+    
+    // Show Molecules
+    if (toggleMolecules) {
+        toggleMolecules.addEventListener('click', () => {
+            // Update active states
+            togglePeriodic.classList.remove('active');
+            toggleMolecules.classList.add('active');
+            toggleReactions.classList.remove('active');
+            
+            // Show/hide pages
+            if (periodicPageEl) periodicPageEl.style.display = 'none';
+            if (moleculesPageEl) {
+                moleculesPageEl.style.display = 'block';
+                moleculesPageEl.setAttribute('aria-hidden', 'false');
+            }
+            if (reactionsPageEl) {
+                reactionsPageEl.style.display = 'none';
+                reactionsPageEl.setAttribute('aria-hidden', 'true');
+            }
+        });
+    }
+    
+    // Show Chemical Reactions
+    if (toggleReactions) {
+        toggleReactions.addEventListener('click', () => {
+            // Update active states
+            togglePeriodic.classList.remove('active');
+            toggleMolecules.classList.remove('active');
+            toggleReactions.classList.add('active');
+            
+            // Show/hide pages
+            if (periodicPageEl) periodicPageEl.style.display = 'none';
+            if (moleculesPageEl) {
+                moleculesPageEl.style.display = 'none';
+                moleculesPageEl.setAttribute('aria-hidden', 'true');
+            }
+            if (reactionsPageEl) {
+                reactionsPageEl.style.display = 'block';
+                reactionsPageEl.setAttribute('aria-hidden', 'false');
+                
+                // Initialize theatre if not already initialized
+                if (!theatreRenderer) {
+                    initTheatre();
+                }
+            }
+        });
+    }
+                                         }
