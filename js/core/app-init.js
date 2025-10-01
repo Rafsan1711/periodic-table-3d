@@ -1,5 +1,5 @@
 /**
- * App Initialization Module
+ * App Initialization Module (UPDATED)
  * Main entry point - initializes all features on page load
  */
 
@@ -11,8 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMoleculesList();
     initMoleculesSearch();
     
+    // Initialize Chemical Reactions features
+    initReactionsBuilder();
+    initReactantSelector();
+    
     // Initialize Page Toggle
     initPageToggle();
     
-    console.log('✅ Interactive Periodic Table & Molecules App Initialized');
+    console.log('✅ Interactive Periodic Table, Molecules & Chemical Reactions App Initialized');
 });
