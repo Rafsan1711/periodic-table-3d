@@ -71,6 +71,52 @@ function renderTheatre() {
 }
 
 /**
+ * Get starting positions based on number of reactants
+ * @param {number} count - Number of reactants
+ * @returns {Array} Array of {x, y, z} positions
+ */
+function getStartPositions(count) {
+    switch(count) {
+        case 1:
+            return [{x: -18, y: 0, z: 0}];
+        case 2:
+            // ডান ও বাম দিক থেকে
+            return [
+                {x: 18, y: 0, z: 0},   // ডান দিক
+                {x: -18, y: 0, z: 0}   // বাম দিক
+            ];
+        case 3:
+            // ডান, বাম ও নিচ দিক থেকে
+            return [
+                {x: 18, y: 3, z: 0},   // ডান দিক
+                {x: -18, y: 3, z: 0},  // বাম দিক
+                {x: 0, y: -18, z: 0}   // নিচ দিক
+            ];
+        case 4:
+            // ডান, বাম, নিচ ও উপর দিক থেকে
+            return [
+                {x: 18, y: 0, z: 0},   // ডান দিক
+                {x: -18, y: 0, z: 0},  // বাম দিক
+                {x: 0, y: -18, z: 0},  // নিচ দিক
+                {x: 0, y: 18, z: 0}    // উপর দিক
+            ];
+        default:
+            // 4+ reactants এর জন্য circle pattern
+            const positions = [];
+            const radius = 20;
+            for (let i = 0; i < count; i++) {
+                const angle = (i / count) * Math.PI * 2;
+                positions.push({
+                    x: Math.cos(angle) * radius,
+                    y: Math.sin(angle) * radius,
+                    z: 0
+                });
+            }
+            return positions;
+    }
+}
+
+/**
  * Start reaction animation
  * @param {Object} reaction - Reaction data
  */
@@ -84,24 +130,35 @@ function startReactionAnimation(reaction) {
     
     // Create reactant molecules/atoms
     const reactantGroups = [];
-    const startPositions = [-15, -8]; // Left positions for 2 reactants
+    const totalReactants = reaction.reactants.length;
+    const startPositions = getStartPositions(totalReactants);
     
+    let posIndex = 0;
     reaction.reactants.forEach((reactant, index) => {
         const coeff = reaction.coefficients[index];
         
         for (let i = 0; i < coeff; i++) {
             const group = createMoleculeGroup(reactant);
             if (group) {
-                const xPos = startPositions[index] || -15;
-                const yOffset = (i - (coeff - 1) / 2) * 3;
-                group.position.set(xPos, yOffset, 0);
+                const startPos = startPositions[posIndex % startPositions.length];
+                
+                // Multiple coefficient এর ক্ষেত্রে একটু offset দিয়ে দিচ্ছি
+                const offset = (i - (coeff - 1) / 2) * 2;
+                group.position.set(
+                    startPos.x + (startPos.y !== 0 ? offset : 0),
+                    startPos.y + (startPos.x !== 0 ? offset : 0),
+                    startPos.z
+                );
+                
                 theatreScene.add(group);
                 reactantGroups.push({
                     group: group,
                     targetX: 0,
-                    targetY: yOffset,
-                    speed: 0.15
+                    targetY: 0,
+                    speed: 0.08  // আগের চেয়ে ধীর (0.15 থেকে 0.08)
                 });
+                
+                posIndex++;
             }
         }
     });
@@ -121,13 +178,16 @@ function animateCollision(reactantGroups, reaction) {
     
     const animate = () => {
         if (animationStep === 0) {
-            // Move reactants towards center
+            // Move reactants towards center (ধীরগতিতে)
             let allReached = true;
             reactantGroups.forEach(item => {
                 const dx = item.targetX - item.group.position.x;
-                if (Math.abs(dx) > 0.5) {
+                const dy = item.targetY - item.group.position.y;
+                
+                if (Math.abs(dx) > 0.3 || Math.abs(dy) > 0.3) {
                     item.group.position.x += dx * item.speed;
-                    item.group.rotation.y += 0.05;
+                    item.group.position.y += dy * item.speed;
+                    item.group.rotation.y += 0.03; // ধীর rotation
                     allReached = false;
                 }
             });
@@ -137,16 +197,16 @@ function animateCollision(reactantGroups, reaction) {
                 collisionTimer = 0;
             }
         } else if (animationStep === 1) {
-            // Collision effect
+            // Collision effect (আরো লম্বা সময়)
             collisionTimer++;
             
             reactantGroups.forEach(item => {
-                item.group.rotation.y += 0.2;
-                const scale = 1 + Math.sin(collisionTimer * 0.3) * 0.1;
+                item.group.rotation.y += 0.15;
+                const scale = 1 + Math.sin(collisionTimer * 0.2) * 0.15;
                 item.group.scale.set(scale, scale, scale);
             });
             
-            if (collisionTimer > 20) {
+            if (collisionTimer > 40) { // আগের চেয়ে বেশি সময় (20 থেকে 40)
                 // Remove reactants
                 reactantGroups.forEach(item => {
                     theatreScene.remove(item.group);
@@ -157,16 +217,19 @@ function animateCollision(reactantGroups, reaction) {
                 animationStep = 2;
             }
         } else if (animationStep === 2) {
-            // Products moving apart
+            // Products moving apart (ধীরগতিতে)
             const products = theatreScene.children.filter(c => c.userData.isProduct);
             let allDone = true;
             
             products.forEach(product => {
                 if (product.userData.targetX !== undefined) {
                     const dx = product.userData.targetX - product.position.x;
-                    if (Math.abs(dx) > 0.1) {
-                        product.position.x += dx * 0.1;
-                        product.rotation.y += 0.03;
+                    const dy = product.userData.targetY - product.position.y;
+                    
+                    if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
+                        product.position.x += dx * 0.06; // ধীর (0.1 থেকে 0.06)
+                        product.position.y += dy * 0.06;
+                        product.rotation.y += 0.02; // ধীর rotation
                         allDone = false;
                     }
                 }
@@ -190,23 +253,64 @@ function animateCollision(reactantGroups, reaction) {
  * @param {Object} reaction - Reaction data
  */
 function createProducts(reaction) {
-    const productPositions = [8, 15]; // Right positions for products
+    const totalProducts = reaction.products.length;
+    const productPositions = getProductPositions(totalProducts);
     
+    let posIndex = 0;
     reaction.products.forEach((product, index) => {
         const coeff = reaction.productCoefficients[index];
         
         for (let i = 0; i < coeff; i++) {
             const group = createMoleculeGroup(product);
             if (group) {
-                const xPos = productPositions[index] || 8;
-                const yOffset = (i - (coeff - 1) / 2) * 3;
-                group.position.set(0, yOffset, 0);
+                const targetPos = productPositions[posIndex % productPositions.length];
+                
+                // Multiple coefficient এর ক্ষেত্রে একটু offset
+                const offset = (i - (coeff - 1) / 2) * 2;
+                
+                group.position.set(0, 0, 0); // Center থেকে শুরু
                 group.userData.isProduct = true;
-                group.userData.targetX = xPos;
+                group.userData.targetX = targetPos.x + (targetPos.y !== 0 ? offset : 0);
+                group.userData.targetY = targetPos.y + (targetPos.x !== 0 ? offset : 0);
+                
                 theatreScene.add(group);
+                posIndex++;
             }
         }
     });
+}
+
+/**
+ * Get product positions based on number of products
+ * @param {number} count - Number of products
+ * @returns {Array} Array of {x, y} positions
+ */
+function getProductPositions(count) {
+    switch(count) {
+        case 1:
+            return [{x: 12, y: 0}];
+        case 2:
+            return [
+                {x: 12, y: 3},
+                {x: 12, y: -3}
+            ];
+        case 3:
+            return [
+                {x: 12, y: 4},
+                {x: 12, y: 0},
+                {x: 12, y: -4}
+            ];
+        default:
+            const positions = [];
+            const spacing = 3;
+            for (let i = 0; i < count; i++) {
+                positions.push({
+                    x: 12,
+                    y: (i - (count - 1) / 2) * spacing
+                });
+            }
+            return positions;
+    }
 }
 
 /**
@@ -220,25 +324,67 @@ function createMoleculeGroup(formula) {
     // Try to find in molecules data
     const molecule = moleculesData.find(m => m.formula === formula);
     if (molecule && molecule.atoms && molecule.bonds) {
-        // Create molecule structure
-        const scale = 0.8;
+        // Create molecule structure (বড় সাইজ - molecules page এর মতো)
+        const scale = 1.8; // আগে 0.8 ছিল, এখন 1.8
+        
+        // Center calculation
+        let centerX = 0, centerY = 0, centerZ = 0;
+        molecule.atoms.forEach(a => {
+            centerX += (a.x || 0);
+            centerY += (a.y || 0);
+            centerZ += (a.z || 0);
+        });
+        centerX /= molecule.atoms.length;
+        centerY /= molecule.atoms.length;
+        centerZ /= molecule.atoms.length;
         
         // Add atoms
         molecule.atoms.forEach(atom => {
             const color = getAtomColor(atom.el);
             const radius = getAtomRadius(atom.el) * scale;
             
-            const geometry = new THREE.SphereGeometry(radius, 16, 16);
-            const material = new THREE.MeshPhongMaterial({ color: color, shininess: 60 });
+            const geometry = new THREE.SphereGeometry(radius, 24, 24);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: color, 
+                shininess: 80,
+                emissive: color,
+                emissiveIntensity: 0.2
+            });
             const sphere = new THREE.Mesh(geometry, material);
             
             sphere.position.set(
-                (atom.x || 0) * scale, 
-                (atom.y || 0) * scale, 
-                (atom.z || 0) * scale
+                ((atom.x || 0) - centerX) * scale, 
+                ((atom.y || 0) - centerY) * scale, 
+                ((atom.z || 0) - centerZ) * scale
             );
             
             group.add(sphere);
+            
+            // Add element label
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(255,255,255,0.95)';
+            ctx.font = 'bold 64px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(atom.el, 64, 64);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ 
+                map: texture, 
+                transparent: true, 
+                opacity: 0.9 
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(1.2, 1.2, 1.2);
+            sprite.position.set(
+                ((atom.x || 0) - centerX) * scale, 
+                ((atom.y || 0) - centerY) * scale, 
+                ((atom.z || 0) - centerZ) * scale + 0.8
+            );
+            group.add(sprite);
         });
         
         // Add bonds
@@ -248,18 +394,18 @@ function createMoleculeGroup(formula) {
             if (!a1 || !a2) return;
             
             const start = new THREE.Vector3(
-                (a1.x || 0) * scale, 
-                (a1.y || 0) * scale, 
-                (a1.z || 0) * scale
+                ((a1.x || 0) - centerX) * scale, 
+                ((a1.y || 0) - centerY) * scale, 
+                ((a1.z || 0) - centerZ) * scale
             );
             const end = new THREE.Vector3(
-                (a2.x || 0) * scale, 
-                (a2.y || 0) * scale, 
-                (a2.z || 0) * scale
+                ((a2.x || 0) - centerX) * scale, 
+                ((a2.y || 0) - centerY) * scale, 
+                ((a2.z || 0) - centerZ) * scale
             );
             
             const distance = start.distanceTo(end);
-            const geometry = new THREE.CylinderGeometry(0.06, 0.06, distance, 8);
+            const geometry = new THREE.CylinderGeometry(0.15, 0.15, distance, 12);
             const material = new THREE.MeshPhongMaterial({ color: 0x999999 });
             const cylinder = new THREE.Mesh(geometry, material);
             
@@ -271,18 +417,49 @@ function createMoleculeGroup(formula) {
             group.add(cylinder);
         });
     } else {
-        // Create single atom
+        // Create single atom (বড় সাইজ)
         const element = elementsData.find(e => e.symbol === formula);
         if (element) {
             const color = getCategoryColor(element.category);
-            const geometry = new THREE.SphereGeometry(1.2, 20, 20);
-            const material = new THREE.MeshPhongMaterial({ color: color, shininess: 80 });
+            const geometry = new THREE.SphereGeometry(2.5, 24, 24); // আগে 1.2 ছিল
+            const material = new THREE.MeshPhongMaterial({ 
+                color: color, 
+                shininess: 90,
+                emissive: color,
+                emissiveIntensity: 0.3
+            });
             const sphere = new THREE.Mesh(geometry, material);
             group.add(sphere);
+            
+            // Add element symbol
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(255,255,255,0.95)';
+            ctx.font = 'bold 120px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(element.symbol, 128, 128);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ 
+                map: texture, 
+                transparent: true, 
+                opacity: 0.9 
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(2.5, 2.5, 2.5);
+            sprite.position.set(0, 0, 3);
+            group.add(sprite);
         } else {
-            // Default sphere
-            const geometry = new THREE.SphereGeometry(1, 16, 16);
-            const material = new THREE.MeshPhongMaterial({ color: 0x888888 });
+            // Default sphere (বড় সাইজ)
+            const geometry = new THREE.SphereGeometry(2, 20, 20); // আগে 1 ছিল
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x888888,
+                emissive: 0x444444,
+                emissiveIntensity: 0.2
+            });
             const sphere = new THREE.Mesh(geometry, material);
             group.add(sphere);
         }
@@ -364,4 +541,4 @@ function cleanupTheatre() {
     }
     
     theatreCamera = null;
-                                              }
+}
