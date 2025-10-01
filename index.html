@@ -11,13 +11,10 @@
     <div class="container">
         <div class="header">
             <div class="page-toggle">
-                <label class="switch">
-                    <input id="pageSwitch" type="checkbox">
-                    <span class="slider"></span>
-                </label>
-                <div class="toggle-labels">
-                    <span id="labelPeriodic">Periodic Table</span>
-                    <span id="labelMolecules">Molecules</span>
+                <div class="toggle-options">
+                    <button id="togglePeriodic" class="toggle-btn active">Periodic Table</button>
+                    <button id="toggleMolecules" class="toggle-btn">Molecules</button>
+                    <button id="toggleReactions" class="toggle-btn">Chemical Reactions</button>
                 </div>
             </div>
             <h1>Interactive Periodic Table</h1>
@@ -118,9 +115,45 @@
         </div>
     </div>
 
+    <!-- Chemical Reactions Page -->
+    <div id="reactionsPage" class="reactions-page" aria-hidden="true" style="display:none;">
+        <div class="reactions-container">
+            <!-- Theatre Screen for Animation -->
+            <div class="theatre-screen" id="theatreScreen">
+                <div class="theatre-canvas" id="theatreCanvas"></div>
+            </div>
+            
+            <!-- Equation Builder -->
+            <div class="equation-builder">
+                <div class="equation-section">
+                    <h3>Build Chemical Equation</h3>
+                    <div class="equation-display" id="equationDisplay">
+                        <button class="add-reactant-btn" id="addReactant1">+</button>
+                    </div>
+                    <button class="react-btn" id="reactBtn" disabled>React! →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reactant Selector Modal -->
+    <div class="modal" id="reactantModal" aria-hidden="true">
+        <div class="modal-content reactant-modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Select Reactant</div>
+                <button class="close-btn" id="closeReactantModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="search" id="reactantSearch" placeholder="Search atoms or molecules..." />
+                <div class="reactant-list" id="reactantList"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Load JavaScript Modules -->
     <script src="js/data/elements-data.js"></script>
     <script src="js/data/molecules-data.js"></script>
+    <script src="js/data/reactions-data.js"></script>
     <script src="js/utils/search-utils.js"></script>
     <script src="js/utils/wiki-loader.js"></script>
     <script src="js/periodic-table/table-renderer.js"></script>
@@ -131,7 +164,10 @@
     <script src="js/molecules/molecule-3d.js"></script>
     <script src="js/molecules/molecule-2d.js"></script>
     <script src="js/molecules/molecule-modal.js"></script>
+    <script src="js/reactions/reactions-builder.js"></script>
+    <script src="js/reactions/reactant-selector.js"></script>
+    <script src="js/reactions/reaction-animator.js"></script>
     <script src="js/core/page-toggle.js"></script>
     <script src="js/core/app-init.js"></script>
 </body>
-</html>
+                                                                                 </html>
