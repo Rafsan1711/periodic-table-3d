@@ -312,4 +312,9 @@ Created with ❤️ using vanilla JavaScript and Three.js
 
 ---
 
-**Note**: `js/data/molecules-data.js` ফাইলে শুধু প্রথম ১০টি molecule দেওয়া আছে। বাকি ১০০+ molecules আপনার original code থেকে copy-paste করে নিন।
+##branch links
+
+- [mainl](https://periodic-table-3d-atom-molecule.netlify.app)
+
+  - [modulel](https://periodic-table-3d-module.netlify.app)
+    
