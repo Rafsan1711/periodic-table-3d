@@ -71,6 +71,19 @@ function renderTheatre() {
 }
 
 /**
+ * Calculate scale based on total number of reactants
+ * @param {number} totalCount - Total number of reactant molecules
+ * @returns {number} Scale factor
+ */
+function calculateScale(totalCount) {
+    if (totalCount <= 2) return 3.5;      // 2টা বা কম: অনেক বড়
+    if (totalCount === 3) return 2.8;     // 3টা: মাঝারি
+    if (totalCount === 4) return 2.3;     // 4টা: একটু ছোট
+    if (totalCount <= 6) return 1.9;      // 5-6টা: আরো ছোট
+    return 1.5;                            // 7+ টা: সবচেয়ে ছোট
+}
+
+/**
  * Get starting positions based on number of reactants
  * @param {number} count - Number of reactants
  * @returns {Array} Array of {x, y, z} positions
@@ -128,6 +141,15 @@ function startReactionAnimation(reaction) {
         theatreScene.remove(theatreScene.children[3]);
     }
     
+    // Calculate total reactant count
+    let totalReactantCount = 0;
+    reaction.reactants.forEach((reactant, index) => {
+        totalReactantCount += reaction.coefficients[index];
+    });
+    
+    // Calculate scale based on total count
+    const globalScale = calculateScale(totalReactantCount);
+    
     // Create reactant molecules/atoms
     const reactantGroups = [];
     const totalReactants = reaction.reactants.length;
@@ -138,12 +160,12 @@ function startReactionAnimation(reaction) {
         const coeff = reaction.coefficients[index];
         
         for (let i = 0; i < coeff; i++) {
-            const group = createMoleculeGroup(reactant);
+            const group = createMoleculeGroup(reactant, globalScale);
             if (group) {
                 const startPos = startPositions[posIndex % startPositions.length];
                 
                 // Multiple coefficient এর ক্ষেত্রে একটু offset দিয়ে দিচ্ছি
-                const offset = (i - (coeff - 1) / 2) * 2;
+                const offset = (i - (coeff - 1) / 2) * 2.5;
                 group.position.set(
                     startPos.x + (startPos.y !== 0 ? offset : 0),
                     startPos.y + (startPos.x !== 0 ? offset : 0),
@@ -155,7 +177,7 @@ function startReactionAnimation(reaction) {
                     group: group,
                     targetX: 0,
                     targetY: 0,
-                    speed: 0.08  // আগের চেয়ে ধীর (0.15 থেকে 0.08)
+                    speed: 0.08
                 });
                 
                 posIndex++;
@@ -164,15 +186,16 @@ function startReactionAnimation(reaction) {
     });
     
     // Animation sequence
-    animateCollision(reactantGroups, reaction);
+    animateCollision(reactantGroups, reaction, globalScale);
 }
 
 /**
  * Animate collision and product formation
  * @param {Array} reactantGroups - Array of reactant group objects
  * @param {Object} reaction - Reaction data
+ * @param {number} globalScale - Scale factor for this reaction
  */
-function animateCollision(reactantGroups, reaction) {
+function animateCollision(reactantGroups, reaction, globalScale) {
     let animationStep = 0;
     let collisionTimer = 0;
     
@@ -187,7 +210,7 @@ function animateCollision(reactantGroups, reaction) {
                 if (Math.abs(dx) > 0.3 || Math.abs(dy) > 0.3) {
                     item.group.position.x += dx * item.speed;
                     item.group.position.y += dy * item.speed;
-                    item.group.rotation.y += 0.03; // ধীর rotation
+                    item.group.rotation.y += 0.03;
                     allReached = false;
                 }
             });
@@ -206,41 +229,30 @@ function animateCollision(reactantGroups, reaction) {
                 item.group.scale.set(scale, scale, scale);
             });
             
-            if (collisionTimer > 40) { // আগের চেয়ে বেশি সময় (20 থেকে 40)
+            if (collisionTimer > 40) {
                 // Remove reactants
                 reactantGroups.forEach(item => {
                     theatreScene.remove(item.group);
                 });
                 
-                // Create products
-                createProducts(reaction);
+                // Create products (মাঝখানে থাকবে)
+                createProducts(reaction, globalScale);
                 animationStep = 2;
             }
         } else if (animationStep === 2) {
-            // Products moving apart (ধীরগতিতে)
+            // Products just rotating in center (মাঝখানেই থাকবে, সরবে না)
             const products = theatreScene.children.filter(c => c.userData.isProduct);
-            let allDone = true;
             
             products.forEach(product => {
-                if (product.userData.targetX !== undefined) {
-                    const dx = product.userData.targetX - product.position.x;
-                    const dy = product.userData.targetY - product.position.y;
-                    
-                    if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
-                        product.position.x += dx * 0.06; // ধীর (0.1 থেকে 0.06)
-                        product.position.y += dy * 0.06;
-                        product.rotation.y += 0.02; // ধীর rotation
-                        allDone = false;
-                    }
-                }
+                product.rotation.y += 0.02; // শুধু ঘুরবে
             });
             
-            if (allDone) {
-                return; // Animation complete
-            }
+            // Animation চলতেই থাকবে
+            requestAnimationFrame(animate);
+            return;
         }
         
-        if (animationStep < 2 || animationStep === 2) {
+        if (animationStep < 2) {
             requestAnimationFrame(animate);
         }
     };
@@ -249,83 +261,73 @@ function animateCollision(reactantGroups, reaction) {
 }
 
 /**
- * Create products and position them
+ * Create products and position them in center
  * @param {Object} reaction - Reaction data
+ * @param {number} globalScale - Scale factor
  */
-function createProducts(reaction) {
-    const totalProducts = reaction.products.length;
-    const productPositions = getProductPositions(totalProducts);
+function createProducts(reaction, globalScale) {
+    const totalProducts = reaction.products.reduce((sum, _, idx) => 
+        sum + reaction.productCoefficients[idx], 0
+    );
     
-    let posIndex = 0;
+    // Products মাঝখানে arrange করা হবে
+    let productIndex = 0;
+    
     reaction.products.forEach((product, index) => {
         const coeff = reaction.productCoefficients[index];
         
         for (let i = 0; i < coeff; i++) {
-            const group = createMoleculeGroup(product);
+            const group = createMoleculeGroup(product, globalScale);
             if (group) {
-                const targetPos = productPositions[posIndex % productPositions.length];
+                // মাঝখানে সুন্দরভাবে সাজানো
+                let xPos = 0;
+                let yPos = 0;
                 
-                // Multiple coefficient এর ক্ষেত্রে একটু offset
-                const offset = (i - (coeff - 1) / 2) * 2;
+                if (totalProducts === 1) {
+                    // একটা product হলে একদম মাঝখানে
+                    xPos = 0;
+                    yPos = 0;
+                } else if (totalProducts === 2) {
+                    // দুইটা হলে উপর-নিচে
+                    yPos = (productIndex - 0.5) * 4;
+                } else if (totalProducts === 3) {
+                    // তিনটা হলে ত্রিভুজাকারে
+                    const angles = [Math.PI/2, Math.PI*7/6, Math.PI*11/6];
+                    const radius = 3;
+                    xPos = Math.cos(angles[productIndex]) * radius;
+                    yPos = Math.sin(angles[productIndex]) * radius;
+                } else {
+                    // বেশি হলে circle pattern
+                    const angle = (productIndex / totalProducts) * Math.PI * 2;
+                    const radius = 3.5;
+                    xPos = Math.cos(angle) * radius;
+                    yPos = Math.sin(angle) * radius;
+                }
                 
-                group.position.set(0, 0, 0); // Center থেকে শুরু
+                group.position.set(xPos, yPos, 0);
                 group.userData.isProduct = true;
-                group.userData.targetX = targetPos.x + (targetPos.y !== 0 ? offset : 0);
-                group.userData.targetY = targetPos.y + (targetPos.x !== 0 ? offset : 0);
                 
                 theatreScene.add(group);
-                posIndex++;
+                productIndex++;
             }
         }
     });
 }
 
 /**
- * Get product positions based on number of products
- * @param {number} count - Number of products
- * @returns {Array} Array of {x, y} positions
- */
-function getProductPositions(count) {
-    switch(count) {
-        case 1:
-            return [{x: 12, y: 0}];
-        case 2:
-            return [
-                {x: 12, y: 3},
-                {x: 12, y: -3}
-            ];
-        case 3:
-            return [
-                {x: 12, y: 4},
-                {x: 12, y: 0},
-                {x: 12, y: -4}
-            ];
-        default:
-            const positions = [];
-            const spacing = 3;
-            for (let i = 0; i < count; i++) {
-                positions.push({
-                    x: 12,
-                    y: (i - (count - 1) / 2) * spacing
-                });
-            }
-            return positions;
-    }
-}
-
-/**
  * Create 3D molecule/atom group
  * @param {string} formula - Chemical formula
+ * @param {number} globalScale - Scale factor for this reaction
  * @returns {THREE.Group} 3D group
  */
-function createMoleculeGroup(formula) {
+function createMoleculeGroup(formula, globalScale = 2.5) {
     const group = new THREE.Group();
     
     // Try to find in molecules data
     const molecule = moleculesData.find(m => m.formula === formula);
     if (molecule && molecule.atoms && molecule.bonds) {
-        // Create molecule structure (বড় সাইজ - molecules page এর মতো)
-        const scale = 1.8; // আগে 0.8 ছিল, এখন 1.8
+        // Create molecule structure
+        const scale = globalScale * 0.8; // Molecule এর জন্য একটু adjust
         
         // Center calculation
         let centerX = 0, centerY = 0, centerZ = 0;
@@ -378,11 +380,11 @@ function createMoleculeGroup(formula) {
                 opacity: 0.9 
             });
             const sprite = new THREE.Sprite(spriteMaterial);
-            sprite.scale.set(1.2, 1.2, 1.2);
+            sprite.scale.set(scale * 0.7, scale * 0.7, scale * 0.7);
             sprite.position.set(
                 ((atom.x || 0) - centerX) * scale, 
                 ((atom.y || 0) - centerY) * scale, 
-                ((atom.z || 0) - centerZ) * scale + 0.8
+                ((atom.z || 0) - centerZ) * scale + scale * 0.5
             );
             group.add(sprite);
         });
@@ -405,7 +407,12 @@ function createMoleculeGroup(formula) {
             );
             
             const distance = start.distanceTo(end);
-            const geometry = new THREE.CylinderGeometry(0.15, 0.15, distance, 12);
+            const geometry = new THREE.CylinderGeometry(
+                scale * 0.08, 
+                scale * 0.08, 
+                distance, 
+                12
+            );
             const material = new THREE.MeshPhongMaterial({ color: 0x999999 });
             const cylinder = new THREE.Mesh(geometry, material);
             
@@ -417,11 +424,11 @@ function createMoleculeGroup(formula) {
             group.add(cylinder);
         });
     } else {
-        // Create single atom (বড় সাইজ)
+        // Create single atom
         const element = elementsData.find(e => e.symbol === formula);
         if (element) {
             const color = getCategoryColor(element.category);
-            const geometry = new THREE.SphereGeometry(2.5, 24, 24); // আগে 1.2 ছিল
+            const geometry = new THREE.SphereGeometry(globalScale * 1.2, 24, 24);
             const material = new THREE.MeshPhongMaterial({ 
                 color: color, 
                 shininess: 90,
@@ -449,12 +456,12 @@ function createMoleculeGroup(formula) {
                 opacity: 0.9 
             });
             const sprite = new THREE.Sprite(spriteMaterial);
-            sprite.scale.set(2.5, 2.5, 2.5);
-            sprite.position.set(0, 0, 3);
+            sprite.scale.set(globalScale * 1.2, globalScale * 1.2, globalScale * 1.2);
+            sprite.position.set(0, 0, globalScale * 1.5);
             group.add(sprite);
         } else {
-            // Default sphere (বড় সাইজ)
-            const geometry = new THREE.SphereGeometry(2, 20, 20); // আগে 1 ছিল
+            // Default sphere
+            const geometry = new THREE.SphereGeometry(globalScale, 20, 20);
             const material = new THREE.MeshPhongMaterial({ 
                 color: 0x888888,
                 emissive: 0x444444,
@@ -541,4 +548,4 @@ function cleanupTheatre() {
     }
     
     theatreCamera = null;
-}
+        }
