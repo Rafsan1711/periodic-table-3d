@@ -1148,4 +1148,258 @@ const moleculesData = [
   { id:'d-glucose_alt', name:'D-Glucose (alternate)', formula:'C₆H₁₂O₆', wikiTitle:'Glucose', atoms:(function(){ const a=[]; for(let i=0;i<6;i++) a.push({el:'C',x:Math.cos(i/6*Math.PI*2),y:Math.sin(i/6*Math.PI*2)}); for(let i=0;i<12;i++) a.push({el:'H',x:Math.cos(i)*1.8,y:Math.sin(i)*1.8}); return a; })(), bonds:(function(){ const b=[]; for(let i=0;i<5;i++) b.push([i,i+1]); return b; })() },
 
   // end - total entries now: original 5 + ~100 additional
+                  /**
+ * Missing Molecules - Add these to your molecules-data.js file
+ * এগুলো তোমার moleculesData array তে যোগ করো
+ */
+
+// তোমার moleculesData array এর শেষে এগুলো add করো:
+
+{
+    id: 'cao',
+    name: 'Calcium oxide',
+    formula: 'CaO',
+    wikiTitle: 'Calcium_oxide',
+    atoms: [
+        {el: 'Ca', x: -0.8, y: 0, z: 0},
+        {el: 'O', x: 0.8, y: 0, z: 0}
+    ],
+    bonds: [[0, 1]]
+},
+{
+    id: 'mgo',
+    name: 'Magnesium oxide',
+    formula: 'MgO',
+    wikiTitle: 'Magnesium_oxide',
+    atoms: [
+        {el: 'Mg', x: -0.7, y: 0, z: 0},
+        {el: 'O', x: 0.7, y: 0, z: 0}
+    ],
+    bonds: [[0, 1]]
+},
+{
+    id: 'fes',
+    name: 'Iron sulfide',
+    formula: 'FeS',
+    wikiTitle: 'Iron(II)_sulfide',
+    atoms: [
+        {el: 'Fe', x: -0.8, y: 0, z: 0},
+        {el: 'S', x: 0.8, y: 0, z: 0}
+    ],
+    bonds: [[0, 1]]
+},
+{
+    id: 'al2o3',
+    name: 'Aluminum oxide',
+    formula: 'Al₂O₃',
+    wikiTitle: 'Aluminium_oxide',
+    atoms: [
+        {el: 'Al', x: -1.2, y: 0.6, z: 0},
+        {el: 'Al', x: -1.2, y: -0.6, z: 0},
+        {el: 'O', x: 0, y: 1.2, z: 0},
+        {el: 'O', x: 0, y: 0, z: 0},
+        {el: 'O', x: 0, y: -1.2, z: 0}
+    ],
+    bonds: [[0, 2], [0, 3], [1, 3], [1, 4]]
+},
+{
+    id: 'feso4',
+    name: 'Iron(II) sulfate',
+    formula: 'FeSO₄',
+    wikiTitle: 'Iron(II)_sulfate',
+    atoms: [
+        {el: 'Fe', x: -1.5, y: 0, z: 0},
+        {el: 'S', x: 0, y: 0, z: 0},
+        {el: 'O', x: 1.2, y: 0.8, z: 0},
+        {el: 'O', x: 1.2, y: -0.8, z: 0},
+        {el: 'O', x: 0, y: 1.4, z: 0},
+        {el: 'O', x: 0, y: -1.4, z: 0}
+    ],
+    bonds: [[0, 1], [1, 2], [1, 3], [1, 4], [1, 5]]
+},
+{
+    id: 'cu',
+    name: 'Copper',
+    formula: 'Cu',
+    wikiTitle: 'Copper',
+    atoms: [
+        {el: 'Cu', x: 0, y: 0, z: 0}
+    ],
+    bonds: []
+},
+{
+    id: 'ag',
+    name: 'Silver',
+    formula: 'Ag',
+    wikiTitle: 'Silver',
+    atoms: [
+        {el: 'Ag', x: 0, y: 0, z: 0}
+    ],
+    bonds: []
+},
+{
+    id: 'fe',
+    name: 'Iron',
+    formula: 'Fe',
+    wikiTitle: 'Iron',
+    atoms: [
+        {el: 'Fe', x: 0, y: 0, z: 0}
+    ],
+    bonds: []
+},
+{
+    id: 'zncl2',
+    name: 'Zinc chloride',
+    formula: 'ZnCl₂',
+    wikiTitle: 'Zinc_chloride',
+    atoms: [
+        {el: 'Zn', x: 0, y: 0, z: 0},
+        {el: 'Cl', x: -1.2, y: 0.8, z: 0},
+        {el: 'Cl', x: 1.2, y: -0.8, z: 0}
+    ],
+    bonds: [[0, 1], [0, 2]]
+},
+{
+    id: 'br2',
+    name: 'Bromine',
+    formula: 'Br₂',
+    wikiTitle: 'Bromine',
+    atoms: [
+        {el: 'Br', x: -0.7, y: 0, z: 0},
+        {el: 'Br', x: 0.7, y: 0, z: 0}
+    ],
+    bonds: [[0, 1]]
+},
+{
+    id: 'agno3',
+    name: 'Silver nitrate',
+    formula: 'AgNO₃',
+    wikiTitle: 'Silver_nitrate',
+    atoms: [
+        {el: 'Ag', x: -1.5, y: 0, z: 0},
+        {el: 'N', x: 0, y: 0, z: 0},
+        {el: 'O', x: 1.2, y: 0.8, z: 0},
+        {el: 'O', x: 1.2, y: -0.8, z: 0},
+        {el: 'O', x: 0, y: 1.4, z: 0}
+    ],
+    bonds: [[0, 1], [1, 2], [1, 3], [1, 4]]
+},
+{
+    id: 'cu_no3_2',
+    name: 'Copper(II) nitrate',
+    formula: 'Cu(NO₃)₂',
+    wikiTitle: 'Copper(II)_nitrate',
+    atoms: [
+        {el: 'Cu', x: 0, y: 0, z: 0},
+        {el: 'N', x: -1.5, y: 0.9, z: 0},
+        {el: 'N', x: 1.5, y: -0.9, z: 0},
+        {el: 'O', x: -2.5, y: 1.5, z: 0},
+        {el: 'O', x: -1.5, y: 0, z: 0},
+        {el: 'O', x: 2.5, y: -1.5, z: 0},
+        {el: 'O', x: 1.5, y: 0, z: 0}
+    ],
+    bonds: [[0, 1], [0, 2], [1, 3], [1, 4], [2, 5], [2, 6]]
+},
+{
+    id: 'cuo',
+    name: 'Copper(II) oxide',
+    formula: 'CuO',
+    wikiTitle: 'Copper(II)_oxide',
+    atoms: [
+        {el: 'Cu', x: -0.7, y: 0, z: 0},
+        {el: 'O', x: 0.7, y: 0, z: 0}
+    ],
+    bonds: [[0, 1]]
+},
+{
+    id: 'fe2o3',
+    name: 'Iron(III) oxide',
+    formula: 'Fe₂O₃',
+    wikiTitle: 'Iron(III)_oxide',
+    atoms: [
+        {el: 'Fe', x: -1.2, y: 0.6, z: 0},
+        {el: 'Fe', x: -1.2, y: -0.6, z: 0},
+        {el: 'O', x: 0, y: 1.2, z: 0},
+        {el: 'O', x: 0, y: 0, z: 0},
+        {el: 'O', x: 0, y: -1.2, z: 0}
+    ],
+    bonds: [[0, 2], [0, 3], [1, 3], [1, 4]]
+},
+{
+    id: 'agcl',
+    name: 'Silver chloride',
+    formula: 'AgCl',
+    wikiTitle: 'Silver_chloride',
+    atoms: [
+        {el: 'Ag', x: -0.7, y: 0, z: 0},
+        {el: 'Cl', x: 0.7, y: 0, z: 0}
+    ],
+    bonds: [[0, 1]]
+},
+{
+    id: 'no',
+    name: 'Nitric oxide',
+    formula: 'NO',
+    wikiTitle: 'Nitric_oxide',
+    atoms: [
+        {el: 'N', x: -0.6, y: 0, z: 0},
+        {el: 'O', x: 0.6, y: 0, z: 0}
+    ],
+    bonds: [[0, 1]]
+},
+{
+    id: 'no2',
+    name: 'Nitrogen dioxide',
+    formula: 'NO₂',
+    wikiTitle: 'Nitrogen_dioxide',
+    atoms: [
+        {el: 'N', x: 0, y: 0, z: 0},
+        {el: 'O', x: 1.2, y: 0.6, z: 0},
+        {el: 'O', x: -1.2, y: 0.6, z: 0}
+    ],
+    bonds: [[0, 1], [0, 2]]
+},
+{
+    id: 'so3',
+    name: 'Sulfur trioxide',
+    formula: 'SO₃',
+    wikiTitle: 'Sulfur_trioxide',
+    atoms: [
+        {el: 'S', x: 0, y: 0, z: 0},
+        {el: 'O', x: 1.2, y: 0.8, z: 0},
+        {el: 'O', x: -1.2, y: 0.8, z: 0},
+        {el: 'O', x: 0, y: -1.4, z: 0}
+    ],
+    bonds: [[0, 1], [0, 2], [0, 3]]
+},
+{
+    id: 'kno3',
+    name: 'Potassium nitrate',
+    formula: 'KNO₃',
+    wikiTitle: 'Potassium_nitrate',
+    atoms: [
+        {el: 'K', x: -1.5, y: 0, z: 0},
+        {el: 'N', x: 0, y: 0, z: 0},
+        {el: 'O', x: 1.2, y: 0.8, z: 0},
+        {el: 'O', x: 1.2, y: -0.8, z: 0},
+        {el: 'O', x: 0, y: 1.4, z: 0}
+    ],
+    bonds: [[0, 1], [1, 2], [1, 3], [1, 4]]
+},
+{
+    id: 'na2so4',
+    name: 'Sodium sulfate',
+    formula: 'Na₂SO₄',
+    wikiTitle: 'Sodium_sulfate',
+    atoms: [
+        {el: 'Na', x: -2, y: 0.8, z: 0},
+        {el: 'Na', x: -2, y: -0.8, z: 0},
+        {el: 'S', x: 0, y: 0, z: 0},
+        {el: 'O', x: 1.2, y: 0.9, z: 0},
+        {el: 'O', x: 1.2, y: -0.9, z: 0},
+        {el: 'O', x: 0, y: 1.4, z: 0},
+        {el: 'O', x: 0, y: -1.4, z: 0}
+    ],
+    bonds: [[0, 2], [1, 2], [2, 3], [2, 4], [2, 5], [2, 6]]
+      }
 ];

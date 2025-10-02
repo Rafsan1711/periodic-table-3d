@@ -744,3 +744,313 @@ body {
         min-width: 600px;
     }
 }
+/* Add these styles to your existing css/styles.css file */
+
+/* Updated Toggle Buttons */
+.page-toggle {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.toggle-options {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-tertiary);
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid var(--border-primary);
+}
+
+.toggle-btn {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.toggle-btn.active {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    color: white;
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+}
+
+/* Reactions Page */
+.reactions-page {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.reactions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Theatre Screen */
+.theatre-screen {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-lg);
+}
+
+.theatre-canvas {
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    height: 500px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Equation Builder */
+.equation-builder {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+}
+
+.equation-section h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    margin-bottom: 16px;
+}
+
+.equation-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 2px dashed var(--border-primary);
+    min-height: 80px;
+}
+
+.add-reactant-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    border: none;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(124, 227, 139, 0.3);
+}
+
+.add-reactant-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(124, 227, 139, 0.5);
+}
+
+.reactant-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-primary);
+    border: 1px solid var(--accent-blue);
+    border-radius: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    animation: slideIn 0.3s ease;
+}
+
+.reactant-chip .formula {
+    font-size: 1.1rem;
+}
+
+.reactant-chip .remove-btn {
+    background: none;
+    border: none;
+    color: var(--accent-red);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: transform 0.2s ease;
+}
+
+.reactant-chip .remove-btn:hover {
+    transform: scale(1.2);
+}
+
+.equation-operator {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+
+.equation-arrow {
+    font-size: 2rem;
+    color: var(--accent-purple);
+    font-weight: bold;
+}
+
+.product-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+    border-radius: 20px;
+    font-weight: 600;
+    color: white;
+    animation: fadeIn 0.5s ease;
+}
+
+.react-btn {
+    margin-top: 16px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 166, 87, 0.3);
+}
+
+.react-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 166, 87, 0.5);
+}
+
+.react-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Reactant Selector Modal */
+.reactant-modal-content {
+    max-width: 600px;
+}
+
+.reactant-modal-content .modal-body {
+    padding: 24px;
+}
+
+#reactantSearch {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: 16px;
+}
+
+.reactant-list {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.reactant-item {
+    padding: 12px 16px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reactant-item:hover {
+    background: var(--bg-primary);
+    border-color: var(--accent-blue);
+    transform: translateX(4px);
+}
+
+.reactant-item-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.reactant-item-formula {
+    color: var(--accent-blue);
+    font-weight: 500;
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Subscript for chemical formulas */
+sub {
+    font-size: 0.7em;
+    vertical-align: sub;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .theatre-canvas {
+        height: 350px;
+    }
+    
+    .equation-display {
+        padding: 15px;
+        min-height: 60px;
+    }
+    
+    .add-reactant-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    
+    .toggle-options {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .toggle-btn {
+        width: 100%;
+    }
+    }
