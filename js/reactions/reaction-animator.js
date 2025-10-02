@@ -1,5 +1,5 @@
 /**
- * Reaction Animator Module (Enhanced with GSAP)
+ * Reaction Animator Module (All Bugs Fixed)
  * Professional 3D animation of chemical reactions
  */
 
@@ -19,7 +19,6 @@ function initTheatre() {
     // Scene setup
     theatreScene = new THREE.Scene();
     theatreScene.background = new THREE.Color(0x0d1117);
-    theatreScene.fog = new THREE.Fog(0x0d1117, 30, 50);
     
     // Camera
     theatreCamera = new THREE.PerspectiveCamera(
@@ -34,8 +33,7 @@ function initTheatre() {
     // Renderer
     theatreRenderer = new THREE.WebGLRenderer({ 
         antialias: true, 
-        alpha: true,
-        powerPreference: "high-performance"
+        alpha: true
     });
     theatreRenderer.setSize(container.clientWidth, container.clientHeight);
     theatreRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -78,12 +76,6 @@ function renderTheatre() {
     if (!theatreRenderer || !theatreScene || !theatreCamera) return;
     
     animationFrameId = requestAnimationFrame(renderTheatre);
-    
-    // Update particle system if exists
-    if (particleSystem) {
-        particleSystem.rotation.y += 0.001;
-    }
-    
     theatreRenderer.render(theatreScene, theatreCamera);
 }
 
@@ -91,11 +83,11 @@ function renderTheatre() {
  * Calculate scale based on total number of reactants
  */
 function calculateScale(totalCount) {
-    if (totalCount <= 2) return 5.0;      // অনেক অনেক বড়
-    if (totalCount === 3) return 4.2;     // বড়
-    if (totalCount === 4) return 3.5;     // মাঝারি
-    if (totalCount <= 6) return 3.0;      // একটু ছোট
-    return 2.5;                            // ছোট
+    if (totalCount <= 2) return 5.0;
+    if (totalCount === 3) return 4.2;
+    if (totalCount === 4) return 3.5;
+    if (totalCount <= 6) return 3.0;
+    return 2.5;
 }
 
 /**
@@ -198,8 +190,12 @@ function createParticleExplosion(position) {
             particleSystem.geometry.attributes.position.needsUpdate = true;
         },
         onComplete: function() {
-            theatreScene.remove(particleSystem);
-            particleSystem = null;
+            if (particleSystem) {
+                theatreScene.remove(particleSystem);
+                particleSystem.geometry.dispose();
+                particleSystem.material.dispose();
+                particleSystem = null;
+            }
         }
     });
 }
@@ -210,19 +206,28 @@ function createParticleExplosion(position) {
 function startReactionAnimation(reaction) {
     if (!theatreScene) return;
     
-    // Clear previous objects
-    while (theatreScene.children.length > 4) {
-        const child = theatreScene.children[4];
-        if (child.geometry) child.geometry.dispose();
-        if (child.material) {
-            if (Array.isArray(child.material)) {
-                child.material.forEach(m => m.dispose());
+    console.log('Starting reaction:', reaction);
+    
+    // Clear previous objects (keep lights)
+    const objectsToRemove = [];
+    theatreScene.children.forEach(child => {
+        if (!child.isLight && child.type !== 'AmbientLight' && 
+            child.type !== 'DirectionalLight' && child.type !== 'PointLight') {
+            objectsToRemove.push(child);
+        }
+    });
+    
+    objectsToRemove.forEach(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+            if (Array.isArray(obj.material)) {
+                obj.material.forEach(m => m.dispose());
             } else {
-                child.material.dispose();
+                obj.material.dispose();
             }
         }
-        theatreScene.remove(child);
-    }
+        theatreScene.remove(obj);
+    });
     
     // Calculate total molecules
     let totalMolecules = 0;
@@ -231,6 +236,7 @@ function startReactionAnimation(reaction) {
     });
     
     const globalScale = calculateScale(totalMolecules);
+    console.log('Total molecules:', totalMolecules, 'Scale:', globalScale);
     
     // Create reactant groups with proper coefficients
     const reactantGroups = [];
@@ -239,6 +245,8 @@ function startReactionAnimation(reaction) {
     reaction.reactants.forEach((reactant, reactantIndex) => {
         const coefficient = reaction.coefficients[reactantIndex];
         const startPos = startPositions[reactantIndex];
+        
+        console.log('Creating reactant:', reactant, 'Coefficient:', coefficient, 'Position:', startPos);
         
         // Create multiple copies based on coefficient
         for (let i = 0; i < coefficient; i++) {
@@ -255,29 +263,27 @@ function startReactionAnimation(reaction) {
                     startPos.z
                 );
                 
-                // Add trail effect
-                const trailGeometry = new THREE.SphereGeometry(globalScale * 0.3, 8, 8);
-                const trailMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x4488ff,
-                    transparent: true,
-                    opacity: 0.3
-                });
-                const trail = new THREE.Mesh(trailGeometry, trailMaterial);
-                trail.position.copy(group.position);
-                theatreScene.add(trail);
-                
                 theatreScene.add(group);
                 reactantGroups.push({
                     group: group,
-                    trail: trail,
-                    startPos: {x: group.position.x, y: group.position.y}
+                    startPos: {x: group.position.x, y: group.position.y, z: group.position.z}
                 });
+                
+                console.log('Added reactant group at:', group.position);
+            } else {
+                console.error('Failed to create molecule group for:', reactant);
             }
         }
     });
     
+    console.log('Total reactant groups created:', reactantGroups.length);
+    
     // Start animation with GSAP
-    animateCollisionGSAP(reactantGroups, reaction, globalScale);
+    if (reactantGroups.length > 0) {
+        animateCollisionGSAP(reactantGroups, reaction, globalScale);
+    } else {
+        console.error('No reactant groups created!');
+    }
 }
 
 /**
@@ -286,7 +292,7 @@ function startReactionAnimation(reaction) {
 function animateCollisionGSAP(reactantGroups, reaction, globalScale) {
     const timeline = gsap.timeline();
     
-    // Phase 1: Move to center with trails
+    // Phase 1: Move to center
     reactantGroups.forEach((item, index) => {
         timeline.to(item.group.position, {
             x: 0,
@@ -294,11 +300,7 @@ function animateCollisionGSAP(reactantGroups, reaction, globalScale) {
             z: 0,
             duration: 2,
             ease: "power2.inOut",
-            delay: index * 0.1,
-            onUpdate: function() {
-                // Update trail
-                item.trail.position.lerp(item.group.position, 0.1);
-            }
+            delay: index * 0.1
         }, 0);
         
         timeline.to(item.group.rotation, {
@@ -306,20 +308,12 @@ function animateCollisionGSAP(reactantGroups, reaction, globalScale) {
             duration: 2,
             ease: "power1.inOut"
         }, 0);
-        
-        // Fade out trail
-        timeline.to(item.trail.material, {
-            opacity: 0,
-            duration: 1.5
-        }, 0.5);
     });
     
     // Phase 2: Collision effect
     timeline.call(() => {
-        // Create particle explosion
         createParticleExplosion({x: 0, y: 0, z: 0});
         
-        // Pulsing effect on reactants
         reactantGroups.forEach(item => {
             gsap.to(item.group.scale, {
                 x: 1.3,
@@ -333,33 +327,38 @@ function animateCollisionGSAP(reactantGroups, reaction, globalScale) {
         });
     });
     
-    timeline.to({}, {duration: 1.2}); // Wait for collision
+    timeline.to({}, {duration: 1.2});
     
-    // Phase 3: Remove reactants and create products
+    // Phase 3: Remove reactants
     timeline.call(() => {
-        // Remove reactants with fade
         reactantGroups.forEach(item => {
-            gsap.to(item.group.material, {
-                opacity: 0,
-                duration: 0.5,
-                onComplete: () => {
-                    theatreScene.remove(item.group);
-                    theatreScene.remove(item.trail);
+            item.group.traverse(child => {
+                if (child.material) {
+                    gsap.to(child.material, {
+                        opacity: 0,
+                        duration: 0.5
+                    });
                 }
             });
+            
+            setTimeout(() => {
+                theatreScene.remove(item.group);
+                if (item.group.geometry) item.group.geometry.dispose();
+                if (item.group.material) item.group.material.dispose();
+            }, 500);
         });
     });
     
-    timeline.to({}, {duration: 0.5}); // Wait for fade
+    timeline.to({}, {duration: 0.6});
     
-    // Phase 4: Create products with animation
+    // Phase 4: Create products
     timeline.call(() => {
         createProductsAnimated(reaction, globalScale);
     });
 }
 
 /**
- * Create products with entrance animation
+ * Create products with entrance animation - FIXED POSITIONING
  */
 function createProductsAnimated(reaction, globalScale) {
     let totalProducts = 0;
@@ -367,27 +366,36 @@ function createProductsAnimated(reaction, globalScale) {
         totalProducts += reaction.productCoefficients[index];
     });
     
+    console.log('Creating products, total:', totalProducts);
+    
     let productIndex = 0;
     
     reaction.products.forEach((product, prodIndex) => {
         const coefficient = reaction.productCoefficients[prodIndex];
         
+        console.log('Creating product:', product, 'Coefficient:', coefficient);
+        
         for (let i = 0; i < coefficient; i++) {
             const group = createMoleculeGroup(product, globalScale);
             if (group) {
-                // Calculate position
+                // FIXED: Calculate static positions (no movement after placement)
                 let xPos = 0, yPos = 0;
                 
                 if (totalProducts === 1) {
-                    xPos = 0; yPos = 0;
+                    xPos = 0;
+                    yPos = 0;
                 } else if (totalProducts === 2) {
-                    yPos = (productIndex - 0.5) * (globalScale * 2);
+                    // উপর-নিচে fixed gap
+                    yPos = (productIndex === 0) ? (globalScale * 1.2) : -(globalScale * 1.2);
+                    xPos = 0;
                 } else if (totalProducts === 3) {
+                    // ত্রিভুজাকারে
                     const angles = [Math.PI/2, Math.PI*7/6, Math.PI*11/6];
                     const radius = globalScale * 1.5;
                     xPos = Math.cos(angles[productIndex]) * radius;
                     yPos = Math.sin(angles[productIndex]) * radius;
                 } else {
+                    // বৃত্তাকারে
                     const angle = (productIndex / totalProducts) * Math.PI * 2;
                     const radius = globalScale * 1.8;
                     xPos = Math.cos(angle) * radius;
@@ -398,13 +406,18 @@ function createProductsAnimated(reaction, globalScale) {
                 group.position.set(0, 0, 0);
                 group.scale.set(0.1, 0.1, 0.1);
                 group.userData.isProduct = true;
+                group.userData.finalX = xPos;
+                group.userData.finalY = yPos;
                 
                 theatreScene.add(group);
                 
-                // Animate entrance
+                console.log('Product', productIndex, 'will be placed at:', xPos, yPos);
+                
+                // Animate entrance to FINAL position
                 gsap.to(group.position, {
                     x: xPos,
                     y: yPos,
+                    z: 0,
                     duration: 1,
                     ease: "back.out(1.7)",
                     delay: productIndex * 0.15
@@ -419,51 +432,38 @@ function createProductsAnimated(reaction, globalScale) {
                     delay: productIndex * 0.15
                 });
                 
-                // Continuous rotation
+                // FIXED: Continuous smooth rotation around Y axis
                 gsap.to(group.rotation, {
-                    y: Math.PI * 2,
+                    y: "+=6.28318", // 2*PI in radians
                     duration: 4,
                     repeat: -1,
                     ease: "none"
                 });
                 
-                // Gentle floating animation
-                gsap.to(group.position, {
-                    z: 0.5,
-                    duration: 2,
-                    yoyo: true,
-                    repeat: -1,
-                    ease: "sine.inOut",
-                    delay: productIndex * 0.2
-                });
-                
-                // Subtle pulsing
-                gsap.to(group.scale, {
-                    x: 1.05,
-                    y: 1.05,
-                    z: 1.05,
-                    duration: 2.5,
-                    yoyo: true,
-                    repeat: -1,
-                    ease: "sine.inOut",
-                    delay: productIndex * 0.25
-                });
+                // REMOVED: Floating animation (যা bug করছিল)
+                // শুধু rotation থাকবে, position change হবে না
                 
                 productIndex++;
+            } else {
+                console.error('Failed to create product:', product);
             }
         }
     });
 }
 
 /**
- * Create 3D molecule/atom group with enhanced visuals
+ * Create 3D molecule/atom group - FIXED FORMULA MATCHING
  */
 function createMoleculeGroup(formula, globalScale = 3.5) {
     const group = new THREE.Group();
     
+    console.log('Creating molecule for formula:', formula);
+    
     // Try to find in molecules data
     const molecule = moleculesData.find(m => m.formula === formula);
+    
     if (molecule && molecule.atoms && molecule.bonds) {
+        console.log('Found molecule data:', molecule.name);
         const scale = globalScale * 1.0;
         
         // Center calculation
@@ -490,7 +490,7 @@ function createMoleculeGroup(formula, globalScale = 3.5) {
                 emissive: color,
                 emissiveIntensity: 0.3,
                 transparent: true,
-                opacity: 0.95
+                opacity: 1
             });
             const sphere = new THREE.Mesh(geometry, material);
             
@@ -541,7 +541,7 @@ function createMoleculeGroup(formula, globalScale = 3.5) {
             group.add(sprite);
         });
         
-        // Add bonds with glow
+        // Add bonds
         molecule.bonds.forEach(bond => {
             const a1 = molecule.atoms[bond[0]];
             const a2 = molecule.atoms[bond[1]];
@@ -560,7 +560,6 @@ function createMoleculeGroup(formula, globalScale = 3.5) {
             
             const distance = start.distanceTo(end);
             
-            // Main bond
             const geometry = new THREE.CylinderGeometry(
                 scale * 0.1, 
                 scale * 0.1, 
@@ -579,29 +578,14 @@ function createMoleculeGroup(formula, globalScale = 3.5) {
             cylinder.rotateX(Math.PI / 2);
             
             group.add(cylinder);
-            
-            // Bond glow
-            const glowGeometry = new THREE.CylinderGeometry(
-                scale * 0.15, 
-                scale * 0.15, 
-                distance, 
-                8
-            );
-            const glowMaterial = new THREE.MeshBasicMaterial({
-                color: 0x4488ff,
-                transparent: true,
-                opacity: 0.1
-            });
-            const glowCylinder = new THREE.Mesh(glowGeometry, glowMaterial);
-            glowCylinder.position.copy(midpoint);
-            glowCylinder.lookAt(end);
-            glowCylinder.rotateX(Math.PI / 2);
-            group.add(glowCylinder);
         });
     } else {
-        // Create single atom with enhanced visuals
+        // Create single atom
+        console.log('Creating single atom for:', formula);
+        
         const element = elementsData.find(e => e.symbol === formula);
         if (element) {
+            console.log('Found element:', element.name);
             const color = getCategoryColor(element.category);
             const radius = globalScale * 1.5;
             
@@ -613,12 +597,12 @@ function createMoleculeGroup(formula, globalScale = 3.5) {
                 emissive: color,
                 emissiveIntensity: 0.4,
                 transparent: true,
-                opacity: 0.95
+                opacity: 1
             });
             const sphere = new THREE.Mesh(geometry, material);
             group.add(sphere);
             
-            // Multi-layer glow effect
+            // Glow layers
             for (let i = 1; i <= 3; i++) {
                 const glowGeometry = new THREE.SphereGeometry(radius * (1 + i * 0.15), 16, 16);
                 const glowMaterial = new THREE.MeshBasicMaterial({
@@ -636,13 +620,6 @@ function createMoleculeGroup(formula, globalScale = 3.5) {
             canvas.width = 256;
             canvas.height = 256;
             const ctx = canvas.getContext('2d');
-            
-            // Add shadow for better readability
-            ctx.shadowColor = 'rgba(0,0,0,0.8)';
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 2;
-            
             ctx.fillStyle = 'rgba(255,255,255,0.98)';
             ctx.font = 'bold 140px sans-serif';
             ctx.textAlign = 'center';
@@ -660,28 +637,20 @@ function createMoleculeGroup(formula, globalScale = 3.5) {
             sprite.position.set(0, 0, globalScale * 2);
             group.add(sprite);
         } else {
-            // Default sphere with glow
+            console.warn('Element not found, creating default sphere for:', formula);
+            // Default sphere
             const radius = globalScale * 1.2;
             const geometry = new THREE.SphereGeometry(radius, 24, 24);
             const material = new THREE.MeshPhongMaterial({ 
                 color: 0x888888,
                 emissive: 0x444444,
                 emissiveIntensity: 0.3,
-                shininess: 80
+                shininess: 80,
+                transparent: true,
+                opacity: 1
             });
             const sphere = new THREE.Mesh(geometry, material);
             group.add(sphere);
-            
-            // Glow
-            const glowGeometry = new THREE.SphereGeometry(radius * 1.3, 16, 16);
-            const glowMaterial = new THREE.MeshBasicMaterial({
-                color: 0x888888,
-                transparent: true,
-                opacity: 0.2,
-                side: THREE.BackSide
-            });
-            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-            group.add(glow);
         }
     }
     
@@ -739,7 +708,6 @@ function getCategoryColor(category) {
  * Cleanup theatre
  */
 function cleanupTheatre() {
-    // Kill all GSAP animations
     gsap.killTweensOf("*");
     
     if (animationFrameId) {
@@ -749,6 +717,8 @@ function cleanupTheatre() {
     
     if (particleSystem) {
         theatreScene.remove(particleSystem);
+        if (particleSystem.geometry) particleSystem.geometry.dispose();
+        if (particleSystem.material) particleSystem.material.dispose();
         particleSystem = null;
     }
     
@@ -772,4 +742,4 @@ function cleanupTheatre() {
     }
     
     theatreCamera = null;
-        }
+}
