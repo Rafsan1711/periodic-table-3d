@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 * {
     margin: 0;
@@ -32,46 +31,204 @@ body {
     background: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.6;
-    overflow-x: auto;
+    overflow-x: hidden;
     min-height: 100vh;
 }
 
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px;
+/* ============ LOADER ============ */
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease;
 }
 
+.loader-content {
+    text-align: center;
+}
+
+.atom-loader {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+}
+
+.nucleus {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 20px var(--accent-blue);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.electron-orbit {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border: 2px solid rgba(88, 166, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.orbit-1 {
+    width: 60px;
+    height: 60px;
+    animation: rotate 2s linear infinite;
+}
+
+.orbit-2 {
+    width: 90px;
+    height: 90px;
+    animation: rotate 3s linear infinite reverse;
+}
+
+.orbit-3 {
+    width: 120px;
+    height: 120px;
+    animation: rotate 4s linear infinite;
+}
+
+.electron {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px var(--accent-green);
+}
+
+.loader-text {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    font-weight: 500;
+    animation: fadeInOut 1.5s ease-in-out infinite;
+}
+
+@keyframes rotate {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.2); }
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ============ CONTAINER ============ */
+.container-fluid {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* ============ HEADER ============ */
 .header {
     text-align: center;
-    margin-bottom: 32px;
-    padding: 40px 0;
+    margin-bottom: 2rem;
+    padding: 2rem 0 1rem;
 }
 
 .header h1 {
-    font-size: clamp(2.5rem, 5vw, 3.5rem);
-    font-weight: 700;
+    font-size: clamp(1.8rem, 5vw, 3.5rem);
+    font-weight: 800;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
     letter-spacing: -0.02em;
 }
 
-.header p {
-    font-size: 1.2rem;
+.header .lead {
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
     color: var(--text-secondary);
     font-weight: 300;
 }
 
+.text-gradient {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ============ PAGE TOGGLE ============ */
+.page-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1.5rem 0;
+}
+
+.toggle-options {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--bg-tertiary);
+    padding: 0.4rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-primary);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.toggle-btn {
+    padding: 0.6rem 1.2rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.toggle-btn.active {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    color: white;
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+}
+
+.toggle-btn i {
+    font-size: 1rem;
+}
+
+/* ============ LEGEND ============ */
 .legend {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 12px;
-    margin-bottom: 32px;
-    padding: 24px;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
     background: var(--bg-secondary);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-primary);
@@ -80,14 +237,15 @@ body {
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
+    gap: 0.5rem;
+    padding: 0.5rem 0.8rem;
     background: var(--bg-tertiary);
     border-radius: var(--radius-sm);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 500;
     transition: all 0.2s ease;
     border: 1px solid transparent;
+    cursor: pointer;
 }
 
 .legend-item:hover {
@@ -97,32 +255,37 @@ body {
 }
 
 .legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+/* ============ PERIODIC TABLE ============ */
+.periodic-table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 2rem;
+    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border: 1px solid var(--border-primary);
 }
 
 .periodic-table {
     display: grid;
     grid-template-columns: repeat(19, 1fr);
-    gap: 3px;
-    margin-bottom: 40px;
-    padding: 24px;
-    background: var(--bg-secondary);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-primary);
-    overflow-x: auto;
-    min-width: 1140px;
+    gap: 2px;
+    min-width: 320px;
+    margin: 0 auto;
 }
 
 .element {
     aspect-ratio: 1;
-    min-width: 50px;
-    max-width: 60px;
+    min-width: 28px;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-primary);
-    border-radius: var(--radius-sm);
+    border-radius: 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -131,7 +294,7 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
 }
 
 .element::before {
@@ -147,7 +310,7 @@ body {
 }
 
 .element:hover {
-    transform: translateY(-4px) scale(1.05);
+    transform: translateY(-4px) scale(1.08);
     box-shadow: var(--shadow-lg);
     border-color: var(--accent-blue);
     z-index: 10;
@@ -157,107 +320,80 @@ body {
     opacity: 1;
 }
 
+.element:active {
+    transform: translateY(-2px) scale(1.05);
+}
+
 .element.active {
-    transform: translateY(-6px) scale(1.08);
+    transform: translateY(-6px) scale(1.1);
     box-shadow: 0 0 32px rgba(88, 166, 255, 0.4);
     border-color: var(--accent-blue);
     z-index: 20;
+    animation: pulse-border 2s infinite;
 }
 
 .element-header {
     position: absolute;
-    top: 4px;
-    left: 4px;
-    font-size: 0.6rem;
+    top: 2px;
+    left: 2px;
+    font-size: 0.5rem;
     color: var(--text-secondary);
     font-weight: 400;
 }
 
 .element .symbol {
-    font-size: 1.2rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 8px 0 2px 0;
+    margin: 4px 0 1px 0;
     z-index: 1;
 }
 
 .element .number {
-    font-size: 0.65rem;
+    font-size: 0.55rem;
     color: var(--text-secondary);
     font-weight: 500;
     z-index: 1;
 }
 
 /* Element category colors */
-.nonmetal { 
-    background: linear-gradient(135deg, #1a365d, #2a4a6b);
-    border-color: #3182ce;
-}
+.nonmetal { background: linear-gradient(135deg, #1a365d, #2a4a6b); border-color: #3182ce; }
 .nonmetal .symbol { color: #63b3ed; }
 
-.noblegas { 
-    background: linear-gradient(135deg, #553c9a, #6b46c1);
-    border-color: #8b5cf6;
-}
+.noblegas { background: linear-gradient(135deg, #553c9a, #6b46c1); border-color: #8b5cf6; }
 .noblegas .symbol { color: #c4b5fd; }
 
-.alkalimetal { 
-    background: linear-gradient(135deg, #c05621, #dd6b20);
-    border-color: #ed8936;
-}
+.alkalimetal { background: linear-gradient(135deg, #c05621, #dd6b20); border-color: #ed8936; }
 .alkalimetal .symbol { color: #fbd38d; }
 
-.alkearthmetal { 
-    background: linear-gradient(135deg, #2c7a7b, #319795);
-    border-color: #38b2ac;
-}
+.alkearthmetal { background: linear-gradient(135deg, #2c7a7b, #319795); border-color: #38b2ac; }
 .alkearthmetal .symbol { color: #81e6d9; }
 
-.metalloid { 
-    background: linear-gradient(135deg, #805ad5, #9f7aea);
-    border-color: #b794f6;
-}
+.metalloid { background: linear-gradient(135deg, #805ad5, #9f7aea); border-color: #b794f6; }
 .metalloid .symbol { color: #d6bcfa; }
 
-.halogen { 
-    background: linear-gradient(135deg, #d69e2e, #ecc94b);
-    border-color: #f6e05e;
-}
+.halogen { background: linear-gradient(135deg, #d69e2e, #ecc94b); border-color: #f6e05e; }
 .halogen .symbol { color: #faf089; }
 
-.transitionmetal { 
-    background: linear-gradient(135deg, #4a5568, #718096);
-    border-color: #a0aec0;
-}
+.transitionmetal { background: linear-gradient(135deg, #4a5568, #718096); border-color: #a0aec0; }
 .transitionmetal .symbol { color: #e2e8f0; }
 
-.post-transitionmetal { 
-    background: linear-gradient(135deg, #e53e3e, #f56565);
-    border-color: #fc8181;
-}
+.post-transitionmetal { background: linear-gradient(135deg, #e53e3e, #f56565); border-color: #fc8181; }
 .post-transitionmetal .symbol { color: #fed7d7; }
 
-.lanthanide { 
-    background: linear-gradient(135deg, #d53f8c, #e53e3e);
-    border-color: #f687b3;
-}
+.lanthanide { background: linear-gradient(135deg, #d53f8c, #e53e3e); border-color: #f687b3; }
 .lanthanide .symbol { color: #fbb6ce; }
 
-.actinide { 
-    background: linear-gradient(135deg, #2d3748, #4a5568);
-    border-color: #718096;
-}
+.actinide { background: linear-gradient(135deg, #2d3748, #4a5568); border-color: #718096; }
 .actinide .symbol { color: #cbd5e0; }
 
-.unknown { 
-    background: linear-gradient(135deg, #1a202c, #2d3748);
-    border-color: #4a5568;
-}
+.unknown { background: linear-gradient(135deg, #1a202c, #2d3748); border-color: #4a5568; }
 .unknown .symbol { color: #a0aec0; }
 
+/* ============ SERIES ============ */
 .lanthanide-series, .actinide-series {
-    margin-top: 24px;
-    padding: 20px;
+    margin-top: 1rem;
+    padding: 1rem;
     background: var(--bg-secondary);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-primary);
@@ -265,27 +401,32 @@ body {
 }
 
 .series-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .series-elements {
     display: grid;
     grid-template-columns: repeat(15, 1fr);
-    gap: 3px;
-    min-width: 900px;
+    gap: 2px;
+    min-width: 450px;
 }
 
+/* ============ MODAL ============ */
 .modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(8px);
     z-index: 1000;
     display: flex;
@@ -294,6 +435,7 @@ body {
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
+    padding: 1rem;
 }
 
 .modal.active {
@@ -305,8 +447,8 @@ body {
     background: var(--bg-secondary);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-primary);
-    width: 90%;
-    max-width: 1000px;
+    width: 100%;
+    max-width: 900px;
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: var(--shadow-lg);
@@ -316,47 +458,71 @@ body {
 
 .modal.active .modal-content {
     transform: scale(1);
+    animation: modalSlideIn 0.4s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .modal-header {
-    padding: 24px 32px;
+    padding: 1.5rem 2rem;
     border-bottom: 1px solid var(--border-primary);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    z-index: 10;
 }
 
 .modal-title {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .close-btn {
-    background: none;
+    background: var(--bg-tertiary);
     border: none;
     color: var(--text-secondary);
     font-size: 1.5rem;
     cursor: pointer;
-    padding: 8px;
+    padding: 0.5rem;
     border-radius: var(--radius-sm);
     transition: all 0.2s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .close-btn:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    transform: scale(1.1);
+    background: var(--accent-red);
+    color: white;
+    transform: rotate(90deg) scale(1.1);
 }
 
 .modal-body {
-    padding: 32px;
+    padding: 2rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 32px;
+    gap: 2rem;
     align-items: start;
 }
 
@@ -366,35 +532,53 @@ body {
     border: 1px solid var(--border-primary);
     height: 400px;
     position: relative;
+    overflow: hidden;
+}
+
+.viewer-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
 }
 
 .atom-info {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 1.5rem;
 }
 
 .info-section {
     background: var(--bg-tertiary);
-    padding: 20px;
+    padding: 1.25rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--border-primary);
+    transition: all 0.3s ease;
+}
+
+.info-section:hover {
+    border-color: var(--accent-blue);
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.1);
 }
 
 .info-section h3 {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--accent-blue);
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
     border-bottom: 1px solid var(--border-primary);
-    padding-bottom: 8px;
+    padding-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .property {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 0;
+    padding: 0.5rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -414,126 +598,89 @@ body {
 
 .wiki-section {
     grid-column: 1 / -1;
-    margin-top: 24px;
+    margin-top: 1.5rem;
 }
 
 .wiki-content {
-    background: var(--bg-tertiary);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-primary);
-    padding: 20px;
+    color: var(--text-secondary);
+    line-height: 1.8;
     max-height: 200px;
     overflow-y: auto;
 }
 
-/* Toggle switch */
-.page-toggle {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    justify-content: center;
-    margin: 20px 0;
+.wiki-content a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 58px;
-    height: 32px;
+.wiki-content a:hover {
+    color: var(--accent-purple);
+    text-decoration: underline;
 }
 
-.switch input { 
-    display: none; 
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    inset: 0;
-    background: var(--bg-tertiary);
-    border-radius: 999px;
-    border: 1px solid var(--border-primary);
-    transition: all .25s ease;
-    box-shadow: var(--shadow-md);
-}
-
-.slider::after {
-    content: '';
-    position: absolute;
-    left: 4px;
-    top: 4px;
-    width: 24px;
-    height: 24px;
-    background: var(--bg-primary);
-    border-radius: 50%;
-    transition: transform .25s ease;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.35);
-}
-
-.switch input:checked + .slider {
-    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-    border-color: transparent;
-}
-
-.switch input:checked + .slider::after {
-    transform: translateX(26px);
-}
-
-.toggle-labels { 
-    display: flex; 
-    gap: 12px; 
-    align-items: center; 
-    color: var(--text-secondary); 
-    font-weight: 500; 
-}
-
-#labelPeriodic { 
-    opacity: 1; 
-    transition: .2s; 
-}
-
-#labelMolecules { 
-    opacity: 0.5; 
-    transition: .2s; 
-}
-
-/* Molecules page layout */
-.molecules-page { 
-    padding: 12px 20px; 
+/* ============ MOLECULES PAGE ============ */
+.molecules-page {
+    padding: 1rem;
 }
 
 .molecules-container {
     background: var(--bg-secondary);
     border: 1px solid var(--border-primary);
     border-radius: var(--radius-md);
-    padding: 18px;
+    padding: 1.5rem;
     box-shadow: var(--shadow-md);
 }
 
 .molecules-controls {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 1.5rem;
 }
 
-#moleculeSearch {
-    flex: 1;
-    padding: 10px 14px;
+.molecules-controls .input-group {
+    margin-bottom: 0.75rem;
+}
+
+.molecules-controls .input-group-text {
     background: var(--bg-tertiary);
     border: 1px solid var(--border-primary);
-    border-radius: 10px;
+    color: var(--accent-blue);
+}
+
+.molecules-controls input {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
     color: var(--text-primary);
-    font-size: 1rem;
+    padding: 0.75rem 1rem;
+}
+
+.molecules-controls input:focus {
+    background: var(--bg-primary);
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25);
+}
+
+.sort-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .sort-controls button {
-    padding: 8px 12px;
+    padding: 0.5rem 1rem;
     border-radius: 8px;
     border: 1px solid var(--border-primary);
-    background: transparent;
+    background: var(--bg-tertiary);
     color: var(--text-secondary);
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sort-controls button:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transform: translateY(-2px);
 }
 
 .sort-controls button.active {
@@ -544,285 +691,96 @@ body {
 
 .molecules-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 10px;
-    margin-top: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
 }
 
 .molecule-item {
-    padding: 12px;
+    padding: 1rem;
     background: var(--bg-tertiary);
     border-radius: 10px;
     border: 1px solid var(--border-primary);
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 1rem;
     cursor: pointer;
-    transition: transform .15s ease, box-shadow .15s ease;
+    transition: all 0.2s ease;
 }
 
 .molecule-item:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
+    border-color: var(--accent-blue);
+}
+
+.molecule-item:active {
+    transform: translateY(-2px);
 }
 
 .molecule-badge {
-    width: 52px; 
-    height: 52px; 
+    width: 52px;
+    height: 52px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
-    color: #041124; 
+    color: #041124;
     font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
 }
 
-.molecule-meta { 
-    flex: 1; 
+.molecule-meta {
+    flex: 1;
+    min-width: 0;
 }
 
-.molecule-name { 
-    font-weight: 700; 
-    color: var(--text-primary); 
-}
-
-.molecule-formula { 
-    color: var(--text-secondary); 
-    font-size: 0.9rem; 
-}
-
-#matterModal { 
-    z-index: 1200; 
-}
-
-#matterModal .modal-content { 
-    max-width: 980px; 
-}
-
-#matter2D svg { 
-    width: 100%; 
-    height: 100%; 
-    display: block; 
-}
-
-/* Loading animation */
-.loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 2px solid var(--border-primary);
-    border-radius: 50%;
-    border-top-color: var(--accent-blue);
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(88, 166, 255, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0); }
-}
-
-.element.active {
-    animation: pulse 2s infinite;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--bg-primary);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--border-primary);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--text-secondary);
-}
-
-/* Mobile Responsive */
-@media (max-width: 1200px) {
-    .periodic-table {
-        padding: 16px;
-        margin: 0 -20px;
-        border-radius: 0;
-    }
-}
-
-@media (max-width: 768px) {
-    .container {
-        padding: 16px;
-    }
-    
-    .header {
-        padding: 20px 0;
-        margin-bottom: 24px;
-    }
-    
-    .legend {
-        padding: 16px;
-        gap: 8px;
-    }
-    
-    .legend-item {
-        font-size: 0.75rem;
-        padding: 6px 10px;
-    }
-    
-    .periodic-table {
-        gap: 2px;
-        min-width: 950px;
-    }
-    
-    .element {
-        min-width: 45px;
-        max-width: 50px;
-        font-size: 0.7rem;
-    }
-    
-    .element .symbol {
-        font-size: 1rem;
-    }
-    
-    .modal-content {
-        width: 95%;
-        max-height: 85vh;
-    }
-    
-    .modal-header {
-        padding: 20px 24px;
-    }
-    
-    .modal-title {
-        font-size: 1.5rem;
-    }
-    
-    .modal-body {
-        padding: 24px;
-        grid-template-columns: 1fr;
-        gap: 24px;
-    }
-    
-    .atom-viewer {
-        height: 300px;
-    }
-    
-    .series-elements {
-        min-width: 750px;
-    }
-    
-    .molecules-list { 
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
-    }
-}
-
-@media (max-width: 480px) {
-    .periodic-table {
-        min-width: 800px;
-    }
-    
-    .element {
-        min-width: 38px;
-        max-width: 42px;
-    }
-    
-    .element .symbol {
-        font-size: 0.9rem;
-    }
-    
-    .series-elements {
-        min-width: 600px;
-    }
-}
-/* Add these styles to your existing css/styles.css file */
-
-/* Updated Toggle Buttons */
-.page-toggle {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    justify-content: center;
-    margin: 20px 0;
-}
-
-.toggle-options {
-    display: flex;
-    gap: 8px;
-    background: var(--bg-tertiary);
-    padding: 6px;
-    border-radius: 12px;
-    border: 1px solid var(--border-primary);
-}
-
-.toggle-btn {
-    padding: 10px 20px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    color: var(--text-secondary);
-    font-weight: 500;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.toggle-btn:hover {
-    background: var(--bg-secondary);
+.molecule-name {
+    font-weight: 700;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.toggle-btn.active {
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-    color: white;
-    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+.molecule-formula {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
-/* Reactions Page */
+/* ============ REACTIONS PAGE ============ */
 .reactions-page {
-    padding: 20px;
-    max-width: 1400px;
-    margin: 0 auto;
+    padding: 1rem;
 }
 
 .reactions-container {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 1.5rem;
 }
 
-/* Theatre Screen */
 .theatre-screen {
     background: var(--bg-secondary);
     border: 1px solid var(--border-primary);
     border-radius: var(--radius-lg);
-    padding: 20px;
+    padding: 1rem;
     box-shadow: var(--shadow-lg);
 }
 
 .theatre-canvas {
     background: var(--bg-primary);
     border-radius: var(--radius-md);
-    height: 500px;
+    height: 400px;
     position: relative;
     overflow: hidden;
 }
 
-/* Equation Builder */
 .equation-builder {
     background: var(--bg-secondary);
     border: 1px solid var(--border-primary);
     border-radius: var(--radius-lg);
-    padding: 24px;
+    padding: 1.5rem;
     box-shadow: var(--shadow-md);
 }
 
@@ -830,15 +788,18 @@ body {
     font-size: 1.2rem;
     font-weight: 600;
     color: var(--accent-blue);
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .equation-display {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
     flex-wrap: wrap;
-    padding: 20px;
+    padding: 1.25rem;
     background: var(--bg-tertiary);
     border-radius: var(--radius-md);
     border: 2px dashed var(--border-primary);
@@ -846,29 +807,32 @@ body {
 }
 
 .add-reactant-btn {
-    width: 50px;
-    height: 50px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
     border: none;
     color: white;
-    font-size: 24px;
+    font-size: 1.5rem;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(124, 227, 139, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .add-reactant-btn:hover {
-    transform: scale(1.1);
+    transform: scale(1.15) rotate(90deg);
     box-shadow: 0 6px 16px rgba(124, 227, 139, 0.5);
 }
 
 .reactant-chip {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
     background: var(--bg-primary);
     border: 1px solid var(--accent-blue);
     border-radius: 20px;
@@ -878,21 +842,22 @@ body {
 }
 
 .reactant-chip .formula {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
 }
 
 .reactant-chip .remove-btn {
     background: none;
     border: none;
     color: var(--accent-red);
-    font-size: 18px;
+    font-size: 1.25rem;
     cursor: pointer;
-    padding: 0 4px;
+    padding: 0 0.25rem;
     transition: transform 0.2s ease;
+    line-height: 1;
 }
 
 .reactant-chip .remove-btn:hover {
-    transform: scale(1.2);
+    transform: scale(1.3) rotate(90deg);
 }
 
 .equation-operator {
@@ -910,8 +875,8 @@ body {
 .product-chip {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
     background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
     border-radius: 20px;
     font-weight: 600;
@@ -920,8 +885,8 @@ body {
 }
 
 .react-btn {
-    margin-top: 16px;
-    padding: 14px 32px;
+    margin-top: 1rem;
+    padding: 0.875rem 2rem;
     background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
     border: none;
     border-radius: 10px;
@@ -931,6 +896,11 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(255, 166, 87, 0.3);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .react-btn:hover:not(:disabled) {
@@ -943,24 +913,9 @@ body {
     cursor: not-allowed;
 }
 
-/* Reactant Selector Modal */
+/* ============ REACTANT MODAL ============ */
 .reactant-modal-content {
     max-width: 600px;
-}
-
-.reactant-modal-content .modal-body {
-    padding: 24px;
-}
-
-#reactantSearch {
-    width: 100%;
-    padding: 12px 16px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-primary);
-    border-radius: 10px;
-    color: var(--text-primary);
-    font-size: 1rem;
-    margin-bottom: 16px;
 }
 
 .reactant-list {
@@ -968,11 +923,11 @@ body {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
 }
 
 .reactant-item {
-    padding: 12px 16px;
+    padding: 0.875rem 1rem;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-primary);
     border-radius: 8px;
@@ -999,7 +954,7 @@ body {
     font-weight: 500;
 }
 
-/* Animations */
+/* ============ ANIMATIONS ============ */
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -1022,35 +977,284 @@ body {
     }
 }
 
-/* Subscript for chemical formulas */
-sub {
-    font-size: 0.7em;
-    vertical-align: sub;
+@keyframes pulse-border {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(88, 166, 255, 0);
+    }
 }
 
-/* Responsive */
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* ============ RESPONSIVE BREAKPOINTS ============ */
+
+/* Tablets and below (≤ 992px) */
+@media (max-width: 992px) {
+    .header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .modal-body {
+        grid-template-columns: 1fr;
+    }
+    
+    .atom-viewer {
+        height: 300px;
+    }
+    
+    .periodic-table {
+        grid-template-columns: repeat(19, minmax(30px, 1fr));
+        gap: 1px;
+    }
+    
+    .element {
+        min-width: 30px;
+        font-size: 0.6rem;
+    }
+    
+    .element .symbol {
+        font-size: 0.8rem;
+    }
+}
+
+/* Mobile devices (≤ 768px) */
 @media (max-width: 768px) {
+    .header {
+        padding: 1.5rem 0 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .legend {
+        padding: 0.75rem;
+        gap: 0.4rem;
+    }
+    
+    .legend-item {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .legend-color {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .periodic-table-wrapper {
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .periodic-table {
+        gap: 1px;
+    }
+    
+    .element {
+        min-width: 26px;
+        border-radius: 4px;
+    }
+    
+    .element .symbol {
+        font-size: 0.75rem;
+        margin: 2px 0;
+    }
+    
+    .element .number {
+        font-size: 0.5rem;
+    }
+    
+    .element-header {
+        font-size: 0.45rem;
+        top: 1px;
+        left: 1px;
+    }
+    
+    .series-title {
+        font-size: 0.9rem;
+    }
+    
+    .series-elements {
+        min-width: 400px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-height: 85vh;
+    }
+    
+    .modal-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .modal-title {
+        font-size: 1.2rem;
+    }
+    
+    .close-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1.25rem;
+    }
+    
+    .modal-body {
+        padding: 1.25rem;
+        gap: 1.25rem;
+    }
+    
+    .molecules-list {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.6rem;
+    }
+    
+    .molecule-item {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+    
+    .molecule-badge {
+        width: 44px;
+        height: 44px;
+        font-size: 0.75rem;
+    }
+    
     .theatre-canvas {
-        height: 350px;
+        height: 300px;
     }
     
     .equation-display {
-        padding: 15px;
-        min-height: 60px;
+        padding: 1rem;
+        gap: 0.5rem;
+        min-height: 70px;
     }
     
     .add-reactant-btn {
         width: 40px;
         height: 40px;
-        font-size: 20px;
-    }
-    
-    .toggle-options {
-        flex-direction: column;
-        width: 100%;
+        font-size: 1.25rem;
     }
     
     .toggle-btn {
-        width: 100%;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
     }
+}
+
+/* Small mobile devices (≤ 480px) */
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.75rem;
     }
+    
+    .header .lead {
+        font-size: 0.85rem;
+    }
+    
+    .toggle-options {
+        gap: 0.35rem;
+        padding: 0.35rem;
+    }
+    
+    .toggle-btn {
+        padding: 0.45rem 0.7rem;
+        font-size: 0.8rem;
+    }
+    
+    .legend {
+        gap: 0.35rem;
+        padding: 0.6rem;
+    }
+    
+    .legend-item {
+        font-size: 0.65rem;
+        padding: 0.35rem 0.5rem;
+    }
+    
+    .periodic-table {
+        min-width: 300px;
+    }
+    
+    .element {
+        min-width: 24px;
+        border-radius: 3px;
+    }
+    
+    .element .symbol {
+        font-size: 0.7rem;
+    }
+    
+    .element .number {
+        font-size: 0.45rem;
+    }
+    
+    .series-elements {
+        min-width: 360px;
+    }
+    
+    .molecules-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .theatre-canvas {
+        height: 250px;
+    }
+    
+    .equation-builder {
+        padding: 1rem;
+    }
+    
+    .equation-section h3 {
+        font-size: 1rem;
+    }
+    
+    .react-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* ============ TIPPY THEME ============ */
+.tippy-box[data-theme~='dark'] {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+    box-shadow: var(--shadow-md);
+    font-size: 0.85rem;
+}
+
+.tippy-box[data-theme~='dark'][data-placement^='top'] > .tippy-arrow::before {
+    border-top-color: var(--bg-tertiary);
+}
+
+.tippy-box[data-theme~='dark'][data-placement^='bottom'] > .tippy-arrow::before {
+    border-bottom-color: var(--bg-tertiary);
+}
+
+.tippy-box[data-theme~='dark'][data-placement^='left'] > .tippy-arrow::before {
+    border-left-color: var(--bg-tertiary);
+}
+
+.tippy-box[data-theme~='dark'][data-placement^='right'] > .tippy-arrow::before {
+    border-right-color: var(--bg-tertiary);
+}
