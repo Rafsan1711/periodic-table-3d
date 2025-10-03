@@ -1,11 +1,10 @@
 /**
- * Molecules Data Module
- * Contains molecule data with 3D coordinates and bond information
- * NOTE: Only first 10 molecules included - add remaining molecules from original code
+ * Molecules Data
+ * Contains 3D structure data for common molecules
  */
 
 const moleculesData = [
-  {
+      {
     id: 'co2',
     name: 'Carbon dioxide',
     formula: 'CO₂',
@@ -1403,3 +1402,5 @@ const moleculesData = [
     bonds: [[0, 2], [1, 2], [2, 3], [2, 4], [2, 5], [2, 6]]
       }
 ];
+
+console.log('✅ Molecules data loaded:', moleculesData.length, 'molecules');
