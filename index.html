@@ -2,51 +2,148 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Periodic Table</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Interactive Periodic Table - 3D Chemistry</title>
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚛️</text></svg>">
+    
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- JS Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://unpkg.com/tippy.js@6.3.7/dist/tippy-bundle.umd.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="page-toggle">
-                <div class="toggle-options">
-                    <button id="togglePeriodic" class="toggle-btn active">Periodic Table</button>
-                    <button id="toggleMolecules" class="toggle-btn">Molecules</button>
-                    <button id="toggleReactions" class="toggle-btn">Chemical Reactions</button>
+    <!-- Loader -->
+    <div id="globalLoader" class="loader-overlay">
+        <div class="loader-content">
+            <div class="atom-loader">
+                <div class="nucleus"></div>
+                <div class="electron-orbit orbit-1">
+                    <div class="electron"></div>
+                </div>
+                <div class="electron-orbit orbit-2">
+                    <div class="electron"></div>
+                </div>
+                <div class="electron-orbit orbit-3">
+                    <div class="electron"></div>
                 </div>
             </div>
-            <h1>Interactive Periodic Table</h1>
-            <p>Explore the building blocks of matter with 3D atomic visualization</p>
+            <p class="loader-text">Loading Chemistry Lab...</p>
+        </div>
+    </div>
+
+    <div class="container-fluid px-2 px-md-4">
+        <!-- Header -->
+        <div class="header text-center" data-aos="fade-down">
+            <div class="page-toggle mb-4">
+                <div class="toggle-options">
+                    <button id="togglePeriodic" class="toggle-btn active" data-tippy-content="Explore 118 Elements">
+                        <i class="fas fa-table me-2"></i>
+                        <span class="d-none d-sm-inline">Periodic Table</span>
+                        <span class="d-inline d-sm-none">Table</span>
+                    </button>
+                    <button id="toggleMolecules" class="toggle-btn" data-tippy-content="Explore Molecules">
+                        <i class="fas fa-flask me-2"></i>
+                        <span class="d-none d-sm-inline">Molecules</span>
+                        <span class="d-inline d-sm-none">Mols</span>
+                    </button>
+                    <button id="toggleReactions" class="toggle-btn" data-tippy-content="Chemical Reactions">
+                        <i class="fas fa-atom me-2"></i>
+                        <span class="d-none d-sm-inline">Reactions</span>
+                        <span class="d-inline d-sm-none">React</span>
+                    </button>
+                </div>
+            </div>
+            <h1 class="display-4 display-md-3">
+                <i class="fas fa-atom text-gradient"></i>
+                Interactive Periodic Table
+            </h1>
+            <p class="lead">Explore the building blocks of matter with stunning 3D visualizations</p>
         </div>
         
-        <div class="legend">
-            <div class="legend-item"><div class="legend-color nonmetal"></div><span>Non metals</span></div>
-            <div class="legend-item"><div class="legend-color noblegas"></div><span>Noble Gases</span></div>
-            <div class="legend-item"><div class="legend-color alkalimetal"></div><span>Alkali Metals</span></div>
-            <div class="legend-item"><div class="legend-color alkearthmetal"></div><span>Alkaline Earth Metals</span></div>
-            <div class="legend-item"><div class="legend-color transitionmetal"></div><span>Transition Metals</span></div>
-            <div class="legend-item"><div class="legend-color metalloid"></div><span>Metalloids</span></div>
-            <div class="legend-item"><div class="legend-color halogen"></div><span>Halogens</span></div>
-            <div class="legend-item"><div class="legend-color post-transitionmetal"></div><span>Post transition Metals</span></div>
-            <div class="legend-item"><div class="legend-color lanthanide"></div><span>Lanthanoids</span></div>
-            <div class="legend-item"><div class="legend-color actinide"></div><span>Actinoids</span></div>
-            <div class="legend-item"><div class="legend-color unknown"></div><span>Unknown</span></div>
+        <!-- Legend -->
+        <div class="legend" data-aos="fade-up">
+            <div class="legend-item" data-tippy-content="Hydrogen, Carbon, Oxygen...">
+                <div class="legend-color nonmetal"></div>
+                <span>Non metals</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Helium, Neon, Argon...">
+                <div class="legend-color noblegas"></div>
+                <span>Noble Gases</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Lithium, Sodium, Potassium...">
+                <div class="legend-color alkalimetal"></div>
+                <span>Alkali Metals</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Beryllium, Magnesium, Calcium...">
+                <div class="legend-color alkearthmetal"></div>
+                <span>Alkaline Earth</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Iron, Copper, Gold...">
+                <div class="legend-color transitionmetal"></div>
+                <span>Transition</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Boron, Silicon, Germanium...">
+                <div class="legend-color metalloid"></div>
+                <span>Metalloids</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Fluorine, Chlorine, Bromine...">
+                <div class="legend-color halogen"></div>
+                <span>Halogens</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Aluminum, Tin, Lead...">
+                <div class="legend-color post-transitionmetal"></div>
+                <span>Post-transition</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Lanthanide series">
+                <div class="legend-color lanthanide"></div>
+                <span>Lanthanoids</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Actinide series">
+                <div class="legend-color actinide"></div>
+                <span>Actinoids</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Unknown properties">
+                <div class="legend-color unknown"></div>
+                <span>Unknown</span>
+            </div>
         </div>
         
-        <div class="periodic-table" id="periodicTable"></div>
-        
-        <div class="lanthanide-series">
-            <div class="series-title">Lanthanide Series</div>
-            <div class="series-elements" id="lanthanideElements"></div>
+        <!-- Periodic Table -->
+        <div class="periodic-table-wrapper" data-aos="zoom-in">
+            <div class="periodic-table" id="periodicTable"></div>
         </div>
         
-        <div class="actinide-series">
-            <div class="series-title">Actinide Series</div>
-            <div class="series-elements" id="actinideElements"></div>
+        <!-- Series -->
+        <div class="row g-3 mt-3">
+            <div class="col-12" data-aos="fade-right">
+                <div class="lanthanide-series">
+                    <div class="series-title">
+                        <i class="fas fa-layer-group me-2"></i>
+                        Lanthanide Series
+                    </div>
+                    <div class="series-elements" id="lanthanideElements"></div>
+                </div>
+            </div>
+            
+            <div class="col-12" data-aos="fade-left">
+                <div class="actinide-series">
+                    <div class="series-title">
+                        <i class="fas fa-radiation me-2"></i>
+                        Actinide Series
+                    </div>
+                    <div class="series-elements" id="actinideElements"></div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -54,17 +151,27 @@
     <div class="modal" id="elementModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="modalTitle">Element Details</div>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <div class="modal-title" id="modalTitle">
+                    <i class="fas fa-atom me-2"></i>Element Details
+                </div>
+                <button class="close-btn" onclick="closeModal()" data-tippy-content="Close (ESC)">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
-                <div class="atom-viewer" id="atomViewer"></div>
+                <div class="atom-viewer" id="atomViewer">
+                    <div class="viewer-loader">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="atom-info" id="atomInfo"></div>
                 <div class="wiki-section">
                     <div class="info-section">
-                        <h3>Wikipedia Summary</h3>
+                        <h3><i class="fab fa-wikipedia-w me-2"></i>Wikipedia Summary</h3>
                         <div class="wiki-content" id="wikiContent">
-                            <div class="loading"></div>
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
                             <span>Loading information...</span>
                         </div>
                     </div>
@@ -74,13 +181,22 @@
     </div>
 
     <!-- Molecules Page -->
-    <div id="moleculesPage" class="molecules-page" aria-hidden="true" style="display:none;">
-        <div class="molecules-container">
+    <div id="moleculesPage" class="molecules-page" style="display:none;">
+        <div class="molecules-container" data-aos="fade-up">
             <div class="molecules-controls">
-                <input id="moleculeSearch" type="search" placeholder="Search molecules (e.g. CO₂, water, benzene)..." />
-                <div class="sort-controls">
-                    <button id="sortAZ" class="active">A → Z</button>
-                    <button id="sortScore">Best match</button>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input id="moleculeSearch" type="search" class="form-control" placeholder="Search molecules (e.g. CO₂, water, benzene)..." />
+                </div>
+                <div class="sort-controls mt-2">
+                    <button id="sortAZ" class="btn btn-sm active" data-tippy-content="Sort alphabetically">
+                        <i class="fas fa-sort-alpha-down me-1"></i>A → Z
+                    </button>
+                    <button id="sortScore" class="btn btn-sm" data-tippy-content="Sort by relevance">
+                        <i class="fas fa-star me-1"></i>Best match
+                    </button>
                 </div>
             </div>
             <div class="molecules-list-wrapper">
@@ -90,26 +206,35 @@
     </div>
 
     <!-- Molecule Modal -->
-    <div class="modal" id="matterModal" aria-hidden="true">
+    <div class="modal" id="matterModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="matterModalTitle">Matter Details</div>
-                <button class="close-btn" id="closeMatterModal">&times;</button>
+                <div class="modal-title" id="matterModalTitle">
+                    <i class="fas fa-flask me-2"></i>Molecule Details
+                </div>
+                <button class="close-btn" id="closeMatterModal" data-tippy-content="Close (ESC)">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
-                <div class="atom-viewer" id="matterViewer"></div>
+                <div class="atom-viewer" id="matterViewer">
+                    <div class="viewer-loader">
+                        <div class="spinner-border text-primary" role="status"></div>
+                    </div>
+                </div>
                 <div class="atom-info" id="matterInfo"></div>
                 <div class="wiki-section" style="grid-column:1/-1;margin-top:18px;">
                     <div class="info-section">
-                        <h3>Wikipedia Summary</h3>
+                        <h3><i class="fab fa-wikipedia-w me-2"></i>Wikipedia Summary</h3>
                         <div class="wiki-content" id="matterWiki">
-                            <div class="loading"></div><span>Loading information...</span>
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                            <span>Loading...</span>
                         </div>
                     </div>
                 </div>
                 <div style="grid-column:1/-1;margin-top:12px;">
                     <div class="info-section">
-                        <h3>2D Structure</h3>
+                        <h3><i class="fas fa-project-diagram me-2"></i>2D Structure</h3>
                         <div id="matter2D" style="height:200px;"></div>
                     </div>
                 </div>
@@ -118,9 +243,9 @@
     </div>
 
     <!-- Chemical Reactions Page -->
-    <div id="reactionsPage" class="reactions-page" aria-hidden="true" style="display:none;">
-        <div class="reactions-container">
-            <!-- Theatre Screen for Animation -->
+    <div id="reactionsPage" class="reactions-page" style="display:none;">
+        <div class="reactions-container" data-aos="fade-up">
+            <!-- Theatre Screen -->
             <div class="theatre-screen" id="theatreScreen">
                 <div class="theatre-canvas" id="theatreCanvas"></div>
             </div>
@@ -128,30 +253,46 @@
             <!-- Equation Builder -->
             <div class="equation-builder">
                 <div class="equation-section">
-                    <h3>Build Chemical Equation</h3>
+                    <h3><i class="fas fa-flask me-2"></i>Build Chemical Equation</h3>
                     <div class="equation-display" id="equationDisplay">
-                        <button class="add-reactant-btn" id="addReactant1">+</button>
+                        <button class="add-reactant-btn" id="addReactant1" data-tippy-content="Add reactant">
+                            <i class="fas fa-plus"></i>
+                        </button>
                     </div>
-                    <button class="react-btn" id="reactBtn" disabled>React! →</button>
+                    <button class="react-btn" id="reactBtn" disabled>
+                        <i class="fas fa-fire me-2"></i>React! →
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Reactant Selector Modal -->
-    <div class="modal" id="reactantModal" aria-hidden="true">
+    <div class="modal" id="reactantModal">
         <div class="modal-content reactant-modal-content">
             <div class="modal-header">
-                <div class="modal-title">Select Reactant</div>
-                <button class="close-btn" id="closeReactantModal">&times;</button>
+                <div class="modal-title">
+                    <i class="fas fa-atom me-2"></i>Select Reactant
+                </div>
+                <button class="close-btn" id="closeReactantModal" data-tippy-content="Close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
-                <input type="search" id="reactantSearch" placeholder="Search atoms or molecules..." />
+                <div class="input-group mb-3">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="search" id="reactantSearch" class="form-control" placeholder="Search atoms or molecules..." />
+                </div>
                 <div class="reactant-list" id="reactantList"></div>
             </div>
         </div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
     <!-- Load JavaScript Modules -->
     <script src="js/data/elements-data.js"></script>
     <script src="js/data/molecules-data.js"></script>
@@ -171,6 +312,35 @@
     <script src="js/reactions/reaction-animator.js"></script>
     <script src="js/core/page-toggle.js"></script>
     <script src="js/core/app-init.js"></script>
+    
+    <!-- Initialize Tooltips & AOS -->
+    <script>
+        // Hide loader when everything is loaded
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.getElementById('globalLoader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('globalLoader').style.display = 'none';
+                }, 500);
+            }, 1000);
+        });
+        
+        // Initialize AOS animations
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+        
+        // Initialize Tippy tooltips
+        document.addEventListener('DOMContentLoaded', () => {
+            tippy('[data-tippy-content]', {
+                arrow: true,
+                animation: 'scale',
+                theme: 'dark',
+                delay: [200, 0]
+            });
+        });
+    </script>
 </body>
-                                                                                 </html>
-
+</html>
