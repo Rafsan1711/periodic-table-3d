@@ -1,5 +1,5 @@
 /**
- * Page Toggle Module (FIXED - Page switching working)
+ * Page Toggle Module (FULLY FIXED)
  * Handles switching between Periodic Table, Molecules, and Chemical Reactions pages
  */
 
@@ -11,23 +11,39 @@ function initPageToggle() {
     const toggleMolecules = document.getElementById('toggleMolecules');
     const toggleReactions = document.getElementById('toggleReactions');
     
-    // Get all page containers
-    const periodicContainer = document.querySelector('.container-fluid');
+    // Get ONLY the periodic table specific elements (NOT the whole container)
     const periodicTableWrapper = document.querySelector('.periodic-table-wrapper');
-    const lanthanideSeries = document.querySelectorAll('.lanthanide-series, .actinide-series');
     const legend = document.querySelector('.legend');
+    const lanthanideSeries = document.querySelector('.lanthanide-series');
+    const actinideSeries = document.querySelector('.actinide-series');
     
+    // Get other pages
     const moleculesPageEl = document.getElementById('moleculesPage');
     const reactionsPageEl = document.getElementById('reactionsPage');
     
     console.log('🔄 Initializing page toggle...');
+    console.log('Elements found:', {
+        periodicTableWrapper: !!periodicTableWrapper,
+        legend: !!legend,
+        moleculesPage: !!moleculesPageEl,
+        reactionsPage: !!reactionsPageEl
+    });
     
     // Function to hide all pages
     function hideAllPages() {
         // Hide periodic table elements
-        if (periodicTableWrapper) periodicTableWrapper.style.display = 'none';
-        if (legend) legend.style.display = 'none';
-        lanthanideSeries.forEach(el => el.style.display = 'none');
+        if (periodicTableWrapper) {
+            periodicTableWrapper.style.display = 'none';
+        }
+        if (legend) {
+            legend.style.display = 'none';
+        }
+        if (lanthanideSeries) {
+            lanthanideSeries.style.display = 'none';
+        }
+        if (actinideSeries) {
+            actinideSeries.style.display = 'none';
+        }
         
         // Hide molecules page
         if (moleculesPageEl) {
@@ -60,19 +76,21 @@ function initPageToggle() {
             // Show periodic table elements
             if (periodicTableWrapper) {
                 periodicTableWrapper.style.display = 'block';
-                periodicTableWrapper.setAttribute('data-aos', 'fade-up');
+                console.log('✅ Periodic table shown');
             }
             if (legend) {
                 legend.style.display = 'flex';
-                legend.setAttribute('data-aos', 'fade-down');
             }
-            lanthanideSeries.forEach(el => {
-                el.style.display = 'block';
-            });
+            if (lanthanideSeries) {
+                lanthanideSeries.style.display = 'block';
+            }
+            if (actinideSeries) {
+                actinideSeries.style.display = 'block';
+            }
             
             // Refresh AOS
             if (typeof AOS !== 'undefined') {
-                AOS.refresh();
+                setTimeout(() => AOS.refresh(), 100);
             }
         });
     }
@@ -88,18 +106,26 @@ function initPageToggle() {
             if (moleculesPageEl) {
                 moleculesPageEl.style.display = 'block';
                 moleculesPageEl.setAttribute('aria-hidden', 'false');
-                moleculesPageEl.setAttribute('data-aos', 'fade-up');
+                console.log('✅ Molecules page shown');
                 
-                // Render molecules list if not already rendered
-                const moleculesList = document.getElementById('moleculesList');
-                if (moleculesList && moleculesList.children.length === 0) {
-                    renderMoleculesList();
-                }
+                // Render molecules list if empty
+                setTimeout(() => {
+                    const moleculesList = document.getElementById('moleculesList');
+                    if (moleculesList) {
+                        if (moleculesList.children.length === 0 || 
+                            moleculesList.querySelector('.spinner-border')) {
+                            console.log('🔄 Rendering molecules list...');
+                            renderMoleculesList();
+                        }
+                    }
+                }, 100);
+            } else {
+                console.error('❌ Molecules page element not found!');
             }
             
             // Refresh AOS
             if (typeof AOS !== 'undefined') {
-                AOS.refresh();
+                setTimeout(() => AOS.refresh(), 100);
             }
         });
     }
@@ -115,7 +141,7 @@ function initPageToggle() {
             if (reactionsPageEl) {
                 reactionsPageEl.style.display = 'block';
                 reactionsPageEl.setAttribute('aria-hidden', 'false');
-                reactionsPageEl.setAttribute('data-aos', 'fade-up');
+                console.log('✅ Reactions page shown');
                 
                 // Initialize theatre if not already initialized
                 setTimeout(() => {
@@ -123,19 +149,26 @@ function initPageToggle() {
                         console.log('🎬 Initializing theatre...');
                         initTheatre();
                     }
-                }, 100);
+                }, 200);
+            } else {
+                console.error('❌ Reactions page element not found!');
             }
             
             // Refresh AOS
             if (typeof AOS !== 'undefined') {
-                AOS.refresh();
+                setTimeout(() => AOS.refresh(), 100);
             }
         });
     }
     
     // Initialize with Periodic Table visible (default)
+    hideAllPages();
     if (togglePeriodic) {
-        togglePeriodic.click();
+        togglePeriodic.classList.add('active');
+        if (periodicTableWrapper) periodicTableWrapper.style.display = 'block';
+        if (legend) legend.style.display = 'flex';
+        if (lanthanideSeries) lanthanideSeries.style.display = 'block';
+        if (actinideSeries) actinideSeries.style.display = 'block';
     }
     
     console.log('✅ Page toggle initialized successfully');
