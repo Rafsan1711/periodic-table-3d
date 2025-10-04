@@ -1,5 +1,5 @@
 /**
- * Element Modal Module (ENHANCED - Mobile Friendly)
+ * Element Modal Module (ENHANCED with Reactivity Chart)
  * Manages the element details modal window
  */
 
@@ -27,7 +27,7 @@ function openElementModal(element) {
     
     // Show modal with animation
     modal.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent body scroll
+    document.body.style.overflow = 'hidden';
     
     // Remove active class from all elements
     document.querySelectorAll('.element').forEach(el => el.classList.remove('active'));
@@ -53,7 +53,7 @@ function openElementModal(element) {
         `;
     }
 
-    // Create 3D atom visualization with delay for smooth rendering
+    // Create 3D atom visualization with delay
     setTimeout(() => {
         create3DAtom(element);
     }, 150);
@@ -63,6 +63,11 @@ function openElementModal(element) {
     
     // Load Wikipedia info
     loadWikipediaInfo(element.name, 'wikiContent');
+    
+    // Create reactivity chart (NEW)
+    setTimeout(() => {
+        createReactivityChart(element);
+    }, 300);
     
     // Add swipe to close on mobile
     addSwipeToClose(modal);
@@ -77,7 +82,6 @@ function openElementModal(element) {
  * Closes the element modal
  */
 function closeModal() {
-    // Prevent rapid close after open
     if (Date.now() - modalOpenTimestamp < 300) {
         return;
     }
@@ -88,12 +92,11 @@ function closeModal() {
     if (!modal) return;
     
     modal.classList.remove('active');
-    document.body.style.overflow = ''; // Restore body scroll
+    document.body.style.overflow = '';
     
-    // Remove active class from all elements
     document.querySelectorAll('.element').forEach(el => el.classList.remove('active'));
     
-    // Clean up Three.js with delay
+    // Clean up Three.js
     setTimeout(() => {
         if (renderer) {
             const container = document.getElementById('atomViewer');
@@ -122,16 +125,21 @@ function closeModal() {
         }
         camera = null;
         currentAtom = null;
+        
+        // Clear chart
+        const chartContainer = document.getElementById('reactivityChart');
+        if (chartContainer) {
+            chartContainer.innerHTML = '';
+        }
     }, 300);
     
-    // Haptic feedback
     if ('vibrate' in navigator) {
         navigator.vibrate(5);
     }
 }
 
 /**
- * Updates the atom information panel
+ * Updates the atom information panel (UPDATED with chart section)
  * @param {Object} element - Element data
  */
 function updateAtomInfo(element) {
@@ -172,9 +180,14 @@ function updateAtomInfo(element) {
                 <span class="property-value">${shells.length}</span>
             </div>
         </div>
+        
+        <!-- NEW: Reactivity Chart Section -->
+        <div class="info-section reactivity-section" data-aos="fade-left" data-aos-delay="300" style="grid-column: 1/-1;">
+            <h3><i class="fas fa-chart-line me-2"></i>Chemical Reactivity Pattern</h3>
+            <div id="reactivityChart" class="reactivity-chart-container"></div>
+        </div>
     `;
     
-    // Refresh AOS for new elements
     if (typeof AOS !== 'undefined') {
         AOS.refresh();
     }
@@ -220,7 +233,6 @@ function addSwipeToClose(modal) {
         touchEndY = e.touches[0].clientY;
         const diff = touchEndY - touchStartY;
         
-        // Pull down effect
         if (diff > 0 && diff < 200) {
             modalContent.style.transform = `translateY(${diff}px)`;
             modalContent.style.transition = 'none';
@@ -230,11 +242,9 @@ function addSwipeToClose(modal) {
     modalContent.addEventListener('touchend', () => {
         const diff = touchEndY - touchStartY;
         
-        // Close if pulled down more than 100px
         if (diff > 100) {
             closeModal();
         } else {
-            // Reset position
             modalContent.style.transform = '';
             modalContent.style.transition = 'transform 0.3s ease';
         }
@@ -249,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('elementModal');
     const closeBtn = modal?.querySelector('.close-btn');
     
-    // Close button click
     if (closeBtn) {
         closeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -257,7 +266,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Close modal on outside click
     if (modal) {
         modal.addEventListener('click', (e) => {
             if (e.target.id === 'elementModal') {
@@ -266,7 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ESC key to close modal
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             const elementModal = document.getElementById('elementModal');
@@ -276,7 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle window resize for Three.js
     window.addEventListener('optimizedResize', () => {
         if (renderer && camera) {
             const container = document.getElementById('atomViewer');
@@ -289,4 +295,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
     
     console.log('✅ Element modal initialized');
-});
+        });
