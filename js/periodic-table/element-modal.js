@@ -1,63 +1,133 @@
 /**
- * Element Modal Module
+ * Element Modal Module (ENHANCED - Mobile Friendly)
  * Manages the element details modal window
  */
+
+let modalOpenTimestamp = 0;
 
 /**
  * Opens modal with element details
  * @param {Object} element - Element data
  */
 function openElementModal(element) {
-    document.getElementById('modalTitle').textContent = `${element.name} (${element.symbol})`;
-    document.getElementById('elementModal').classList.add('active');
+    console.log('🔬 Opening modal for:', element.name);
+    
+    modalOpenTimestamp = Date.now();
+    
+    const modal = document.getElementById('elementModal');
+    const modalTitle = document.getElementById('modalTitle');
+    
+    if (!modal || !modalTitle) {
+        console.error('Modal elements not found');
+        return;
+    }
+    
+    // Update title
+    modalTitle.innerHTML = `<i class="fas fa-atom me-2"></i>${element.name} (${element.symbol})`;
+    
+    // Show modal with animation
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent body scroll
     
     // Remove active class from all elements
     document.querySelectorAll('.element').forEach(el => el.classList.remove('active'));
     
     // Add active class to clicked element
-    document.querySelector(`[data-number="${element.number}"]`).classList.add('active');
+    const clickedElement = document.querySelector(`[data-number="${element.number}"]`);
+    if (clickedElement) {
+        clickedElement.classList.add('active');
+    }
+    
+    // Show loader in viewer
+    const atomViewer = document.getElementById('atomViewer');
+    if (atomViewer) {
+        atomViewer.innerHTML = `
+            <div class="viewer-loader">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading 3D model...</span>
+                </div>
+                <p style="color: var(--text-secondary); margin-top: 10px; font-size: 0.9rem;">
+                    Loading 3D atom...
+                </p>
+            </div>
+        `;
+    }
 
-    // Create 3D atom visualization
-    create3DAtom(element);
+    // Create 3D atom visualization with delay for smooth rendering
+    setTimeout(() => {
+        create3DAtom(element);
+    }, 150);
     
     // Update atom info
     updateAtomInfo(element);
     
     // Load Wikipedia info
-    loadWikipediaInfo(element.name);
+    loadWikipediaInfo(element.name, 'wikiContent');
+    
+    // Add swipe to close on mobile
+    addSwipeToClose(modal);
+    
+    // Haptic feedback
+    if ('vibrate' in navigator) {
+        navigator.vibrate(10);
+    }
 }
 
 /**
  * Closes the element modal
  */
 function closeModal() {
-    document.getElementById('elementModal').classList.remove('active');
+    // Prevent rapid close after open
+    if (Date.now() - modalOpenTimestamp < 300) {
+        return;
+    }
+    
+    console.log('❌ Closing element modal');
+    
+    const modal = document.getElementById('elementModal');
+    if (!modal) return;
+    
+    modal.classList.remove('active');
+    document.body.style.overflow = ''; // Restore body scroll
+    
+    // Remove active class from all elements
     document.querySelectorAll('.element').forEach(el => el.classList.remove('active'));
     
-    // Clean up Three.js
-    if (renderer) {
-        const container = document.getElementById('atomViewer');
-        if (container.contains(renderer.domElement)) {
-            container.removeChild(renderer.domElement);
-        }
-        renderer.dispose();
-        renderer = null;
-    }
-    if (scene) {
-        scene.traverse((object) => {
-            if (object.geometry) object.geometry.dispose();
-            if (object.material) {
-                if (Array.isArray(object.material)) {
-                    object.material.forEach(material => material.dispose());
-                } else {
-                    object.material.dispose();
-                }
+    // Clean up Three.js with delay
+    setTimeout(() => {
+        if (renderer) {
+            const container = document.getElementById('atomViewer');
+            if (container && container.contains(renderer.domElement)) {
+                container.removeChild(renderer.domElement);
             }
-        });
-        scene = null;
+            try {
+                renderer.dispose();
+            } catch (e) {
+                console.warn('Renderer disposal warning:', e);
+            }
+            renderer = null;
+        }
+        if (scene) {
+            scene.traverse((object) => {
+                if (object.geometry) object.geometry.dispose();
+                if (object.material) {
+                    if (Array.isArray(object.material)) {
+                        object.material.forEach(material => material.dispose());
+                    } else {
+                        object.material.dispose();
+                    }
+                }
+            });
+            scene = null;
+        }
+        camera = null;
+        currentAtom = null;
+    }, 300);
+    
+    // Haptic feedback
+    if ('vibrate' in navigator) {
+        navigator.vibrate(5);
     }
-    camera = null;
-    currentAtom = null;
 }
 
 /**
@@ -67,35 +137,47 @@ function closeModal() {
 function updateAtomInfo(element) {
     const shells = calculateElectronShells(element.number);
     const totalElectrons = shells.reduce((sum, electrons) => sum + electrons, 0);
+    
+    const atomInfo = document.getElementById('atomInfo');
+    if (!atomInfo) return;
 
-    document.getElementById('atomInfo').innerHTML = `
-        <div class="info-section">
-            <h3>Basic Properties</h3>
+    atomInfo.innerHTML = `
+        <div class="info-section" data-aos="fade-left" data-aos-delay="100">
+            <h3><i class="fas fa-info-circle me-2"></i>Basic Properties</h3>
             <div class="property">
-                <span class="property-label">Atomic Number:</span>
+                <span class="property-label"><i class="fas fa-hashtag me-1"></i>Atomic Number:</span>
                 <span class="property-value">${element.number}</span>
             </div>
             <div class="property">
-                <span class="property-label">Atomic Weight:</span>
+                <span class="property-label"><i class="fas fa-weight me-1"></i>Atomic Weight:</span>
                 <span class="property-value">${element.weight} u</span>
             </div>
             <div class="property">
-                <span class="property-label">Category:</span>
+                <span class="property-label"><i class="fas fa-tag me-1"></i>Category:</span>
                 <span class="property-value">${formatCategory(element.category)}</span>
             </div>
         </div>
-        <div class="info-section">
-            <h3>Electron Configuration</h3>
+        <div class="info-section" data-aos="fade-left" data-aos-delay="200">
+            <h3><i class="fas fa-atom me-2"></i>Electron Configuration</h3>
             <div class="property">
-                <span class="property-label">Shell Distribution:</span>
+                <span class="property-label"><i class="fas fa-layer-group me-1"></i>Shell Distribution:</span>
                 <span class="property-value">${shells.join(', ')}</span>
             </div>
             <div class="property">
-                <span class="property-label">Total Electrons:</span>
+                <span class="property-label"><i class="fas fa-circle-notch me-1"></i>Total Electrons:</span>
                 <span class="property-value">${totalElectrons}</span>
+            </div>
+            <div class="property">
+                <span class="property-label"><i class="fas fa-shapes me-1"></i>Electron Shells:</span>
+                <span class="property-value">${shells.length}</span>
             </div>
         </div>
     `;
+    
+    // Refresh AOS for new elements
+    if (typeof AOS !== 'undefined') {
+        AOS.refresh();
+    }
 }
 
 /**
@@ -120,29 +202,91 @@ function formatCategory(category) {
     return categoryMap[category] || category;
 }
 
+/**
+ * Add swipe to close functionality for mobile
+ */
+function addSwipeToClose(modal) {
+    let touchStartY = 0;
+    let touchEndY = 0;
+    
+    const modalContent = modal.querySelector('.modal-content');
+    if (!modalContent) return;
+    
+    modalContent.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    
+    modalContent.addEventListener('touchmove', (e) => {
+        touchEndY = e.touches[0].clientY;
+        const diff = touchEndY - touchStartY;
+        
+        // Pull down effect
+        if (diff > 0 && diff < 200) {
+            modalContent.style.transform = `translateY(${diff}px)`;
+            modalContent.style.transition = 'none';
+        }
+    }, { passive: true });
+    
+    modalContent.addEventListener('touchend', () => {
+        const diff = touchEndY - touchStartY;
+        
+        // Close if pulled down more than 100px
+        if (diff > 100) {
+            closeModal();
+        } else {
+            // Reset position
+            modalContent.style.transform = '';
+            modalContent.style.transition = 'transform 0.3s ease';
+        }
+        
+        touchStartY = 0;
+        touchEndY = 0;
+    }, { passive: true });
+}
+
 // Event listeners for modal
 document.addEventListener('DOMContentLoaded', () => {
-    // Close modal on outside click
-    document.getElementById('elementModal').addEventListener('click', (e) => {
-        if (e.target.id === 'elementModal') {
+    const modal = document.getElementById('elementModal');
+    const closeBtn = modal?.querySelector('.close-btn');
+    
+    // Close button click
+    if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             closeModal();
-        }
-    });
+        });
+    }
+    
+    // Close modal on outside click
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target.id === 'elementModal') {
+                closeModal();
+            }
+        });
+    }
 
     // ESC key to close modal
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            closeModal();
+            const elementModal = document.getElementById('elementModal');
+            if (elementModal && elementModal.classList.contains('active')) {
+                closeModal();
+            }
         }
     });
 
     // Handle window resize for Three.js
-    window.addEventListener('resize', () => {
+    window.addEventListener('optimizedResize', () => {
         if (renderer && camera) {
             const container = document.getElementById('atomViewer');
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
+            if (container) {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            }
         }
-    });
+    }, { passive: true });
+    
+    console.log('✅ Element modal initialized');
 });

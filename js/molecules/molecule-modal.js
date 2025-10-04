@@ -1,92 +1,234 @@
 /**
- * Molecule Modal Module
+ * Molecule Modal Module (ENHANCED - Mobile Ready)
  * Manages the molecule details modal window
  */
+
+let matterModalOpenTimestamp = 0;
 
 /**
  * Opens modal with molecule details
  * @param {Object} molecule - Molecule data
  */
 function openMatterModal(molecule) {
-    document.getElementById('matterModal').classList.add('active');
-    document.getElementById('matterModalTitle').textContent = `${molecule.name} — ${molecule.formula}`;
+    console.log('🧬 Opening molecule modal:', molecule.name);
+    
+    matterModalOpenTimestamp = Date.now();
+    
+    const modal = document.getElementById('matterModal');
+    const modalTitle = document.getElementById('matterModalTitle');
+    
+    if (!modal || !modalTitle) {
+        console.error('Matter modal elements not found');
+        return;
+    }
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    modalTitle.innerHTML = `<i class="fas fa-flask me-2"></i>${molecule.name} — ${molecule.formula}`;
 
+    // Show loaders
+    const matterViewer = document.getElementById('matterViewer');
+    if (matterViewer) {
+        matterViewer.innerHTML = `
+            <div class="viewer-loader">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p style="color: var(--text-secondary); margin-top: 10px; font-size: 0.9rem;">
+                    Loading 3D molecule...
+                </p>
+            </div>
+        `;
+    }
+    
     // Update info
-    document.getElementById('matterInfo').innerHTML = `
-        <div class="info-section">
-            <h3>Properties</h3>
-            <div class="property">
-                <span class="property-label">Name:</span>
-                <span class="property-value">${molecule.name}</span>
+    const matterInfo = document.getElementById('matterInfo');
+    if (matterInfo) {
+        matterInfo.innerHTML = `
+            <div class="info-section" data-aos="fade-left">
+                <h3><i class="fas fa-info-circle me-2"></i>Properties</h3>
+                <div class="property">
+                    <span class="property-label"><i class="fas fa-tag me-1"></i>Name:</span>
+                    <span class="property-value">${molecule.name}</span>
+                </div>
+                <div class="property">
+                    <span class="property-label"><i class="fas fa-flask me-1"></i>Formula:</span>
+                    <span class="property-value">${molecule.formula}</span>
+                </div>
+                <div class="property">
+                    <span class="property-label"><i class="fas fa-circle me-1"></i>Atoms:</span>
+                    <span class="property-value">${molecule.atoms.length}</span>
+                </div>
+                <div class="property">
+                    <span class="property-label"><i class="fas fa-project-diagram me-1"></i>Bonds:</span>
+                    <span class="property-value">${molecule.bonds.length}</span>
+                </div>
             </div>
-            <div class="property">
-                <span class="property-label">Formula:</span>
-                <span class="property-value">${molecule.formula}</span>
-            </div>
-            <div class="property">
-                <span class="property-label">Atoms:</span>
-                <span class="property-value">${molecule.atoms.length}</span>
-            </div>
-            <div class="property">
-                <span class="property-label">Bonds:</span>
-                <span class="property-value">${molecule.bonds.length}</span>
-            </div>
-        </div>
-    `;
+        `;
+    }
 
+    // Load Wikipedia
     loadMatterWiki(molecule.wikiTitle);
-    create3DMolecule(molecule);
-    draw2DMolecule(molecule);
+    
+    // Create 3D molecule with delay
+    setTimeout(() => {
+        create3DMolecule(molecule);
+    }, 150);
+    
+    // Draw 2D structure
+    setTimeout(() => {
+        draw2DMolecule(molecule);
+    }, 300);
+    
+    // Add swipe to close
+    addMatterSwipeToClose(modal);
+    
+    // Haptic feedback
+    if ('vibrate' in navigator) {
+        navigator.vibrate(10);
+    }
+    
+    // Refresh AOS
+    if (typeof AOS !== 'undefined') {
+        setTimeout(() => AOS.refresh(), 100);
+    }
 }
 
 /**
  * Closes the molecule modal
  */
 function closeMatterModal() {
-    const modal = document.getElementById('matterModal');
-    modal.classList.remove('active');
+    // Prevent rapid close
+    if (Date.now() - matterModalOpenTimestamp < 300) {
+        return;
+    }
     
-    // Cleanup Three.js
-    if (matterRenderer) {
-        const c = document.getElementById('matterViewer');
-        if (c.contains(matterRenderer.domElement)) {
-            c.removeChild(matterRenderer.domElement);
-        }
-        try { 
-            matterRenderer.dispose(); 
-        } catch (e) {}
-        matterRenderer = null;
-    }
-    if (matterScene) {
-        matterScene.traverse(o => {
-            if (o.geometry) o.geometry.dispose();
-            if (o.material) {
-                if (Array.isArray(o.material)) {
-                    o.material.forEach(m => m.dispose());
-                } else {
-                    o.material.dispose();
-                }
+    console.log('❌ Closing molecule modal');
+    
+    const modal = document.getElementById('matterModal');
+    if (!modal) return;
+    
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    
+    // Cleanup Three.js with delay
+    setTimeout(() => {
+        if (matterRenderer) {
+            const c = document.getElementById('matterViewer');
+            if (c && c.contains(matterRenderer.domElement)) {
+                c.removeChild(matterRenderer.domElement);
             }
-        });
-        matterScene = null;
+            try { 
+                matterRenderer.dispose(); 
+            } catch (e) {
+                console.warn('Matter renderer disposal warning:', e);
+            }
+            matterRenderer = null;
+        }
+        if (matterScene) {
+            matterScene.traverse(o => {
+                if (o.geometry) o.geometry.dispose();
+                if (o.material) {
+                    if (Array.isArray(o.material)) {
+                        o.material.forEach(m => m.dispose());
+                    } else {
+                        o.material.dispose();
+                    }
+                }
+            });
+            matterScene = null;
+        }
+        matterCamera = null;
+        matterGroup = null;
+    }, 300);
+    
+    // Haptic feedback
+    if ('vibrate' in navigator) {
+        navigator.vibrate(5);
     }
-    matterCamera = null;
-    matterGroup = null;
+}
+
+/**
+ * Add swipe to close for molecule modal
+ */
+function addMatterSwipeToClose(modal) {
+    let touchStartY = 0;
+    let touchEndY = 0;
+    
+    const modalContent = modal.querySelector('.modal-content');
+    if (!modalContent) return;
+    
+    modalContent.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    
+    modalContent.addEventListener('touchmove', (e) => {
+        touchEndY = e.touches[0].clientY;
+        const diff = touchEndY - touchStartY;
+        
+        if (diff > 0 && diff < 200) {
+            modalContent.style.transform = `translateY(${diff}px)`;
+            modalContent.style.transition = 'none';
+        }
+    }, { passive: true });
+    
+    modalContent.addEventListener('touchend', () => {
+        const diff = touchEndY - touchStartY;
+        
+        if (diff > 100) {
+            closeMatterModal();
+        } else {
+            modalContent.style.transform = '';
+            modalContent.style.transition = 'transform 0.3s ease';
+        }
+        
+        touchStartY = 0;
+        touchEndY = 0;
+    }, { passive: true });
 }
 
 // Event listeners for molecule modal
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('closeMatterModal').addEventListener('click', closeMatterModal);
+    const modal = document.getElementById('matterModal');
+    const closeBtn = document.getElementById('closeMatterModal');
     
-    document.getElementById('matterModal').addEventListener('click', (e) => {
-        if (e.target.id === 'matterModal') {
+    // Close button
+    if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             closeMatterModal();
-        }
-    });
+        });
+    }
     
+    // Outside click
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target.id === 'matterModal') {
+                closeMatterModal();
+            }
+        });
+    }
+    
+    // ESC key
     document.addEventListener('keydown', (e) => { 
         if (e.key === 'Escape') {
-            closeMatterModal();
+            const matterModal = document.getElementById('matterModal');
+            if (matterModal && matterModal.classList.contains('active')) {
+                closeMatterModal();
+            }
         }
     });
+    
+    // Window resize
+    window.addEventListener('optimizedResize', () => {
+        if (matterRenderer && matterCamera) {
+            const container = document.getElementById('matterViewer');
+            if (container) {
+                matterCamera.aspect = container.clientWidth / container.clientHeight;
+                matterCamera.updateProjectionMatrix();
+                matterRenderer.setSize(container.clientWidth, container.clientHeight);
+            }
+        }
+    }, { passive: true });
+    
+    console.log('✅ Molecule modal initialized');
 });
