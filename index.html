@@ -16,6 +16,7 @@
     
     <!-- JS Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
     <script src="https://unpkg.com/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://unpkg.com/tippy.js@6.3.7/dist/tippy-bundle.umd.min.js"></script>
@@ -245,12 +246,10 @@
     <!-- Chemical Reactions Page -->
     <div id="reactionsPage" class="reactions-page" style="display:none;">
         <div class="reactions-container" data-aos="fade-up">
-            <!-- Theatre Screen -->
             <div class="theatre-screen" id="theatreScreen">
                 <div class="theatre-canvas" id="theatreCanvas"></div>
             </div>
             
-            <!-- Equation Builder -->
             <div class="equation-builder">
                 <div class="equation-section">
                     <h3><i class="fas fa-flask me-2"></i>Build Chemical Equation</h3>
@@ -297,10 +296,12 @@
     <script src="js/data/elements-data.js"></script>
     <script src="js/data/molecules-data.js"></script>
     <script src="js/data/reactions-data.js"></script>
+    <script src="js/data/reactivity-data.js"></script>
     <script src="js/utils/search-utils.js"></script>
     <script src="js/utils/wiki-loader.js"></script>
     <script src="js/periodic-table/table-renderer.js"></script>
     <script src="js/periodic-table/atom-visualization.js"></script>
+    <script src="js/periodic-table/reactivity-chart.js"></script>
     <script src="js/periodic-table/element-modal.js"></script>
     <script src="js/molecules/molecules-search.js"></script>
     <script src="js/molecules/molecules-list.js"></script>
@@ -315,7 +316,6 @@
     
     <!-- Initialize Tooltips & AOS -->
     <script>
-        // Hide loader when everything is loaded
         window.addEventListener('load', function() {
             setTimeout(() => {
                 document.getElementById('globalLoader').style.opacity = '0';
@@ -325,14 +325,12 @@
             }, 1000);
         });
         
-        // Initialize AOS animations
         AOS.init({
             duration: 800,
             once: true,
             offset: 100
         });
         
-        // Initialize Tippy tooltips
         document.addEventListener('DOMContentLoaded', () => {
             tippy('[data-tippy-content]', {
                 arrow: true,
@@ -343,4 +341,4 @@
         });
     </script>
 </body>
-</html>
+                </html>
