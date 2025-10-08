@@ -2426,3 +2426,506 @@ body {
         padding: 0.5rem;
     }
 }
+/* ============ ADDITIONAL STYLES FOR COMPLETE FEATURES ============ */
+
+/* FEATURE 8: Post Menu (Edit/Delete) */
+.post-menu {
+    position: relative;
+    margin-left: auto;
+}
+
+.post-menu-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.post-menu-btn:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.post-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 5px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    min-width: 150px;
+    z-index: 100;
+    overflow: hidden;
+}
+
+.post-menu-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.post-menu-dropdown button:hover {
+    background: var(--bg-tertiary);
+}
+
+.post-menu-dropdown button i {
+    margin-right: 8px;
+    width: 16px;
+}
+
+/* FEATURE 4: Reply System */
+.reply-input-wrapper {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    padding-left: 48px;
+}
+
+.reply-input {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 16px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.reply-input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+.submit-reply-btn {
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.submit-reply-btn:hover {
+    background: var(--accent-purple);
+    transform: scale(1.1);
+}
+
+.show-replies-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: var(--accent-blue);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-top: 8px;
+    margin-left: 48px;
+    transition: all 0.3s ease;
+}
+
+.show-replies-btn:hover {
+    background: var(--bg-primary);
+}
+
+.replies-list {
+    margin-top: 10px;
+    padding-left: 48px;
+}
+
+.reply-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent-blue);
+}
+
+.reply-author-pic {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-blue);
+    object-fit: cover;
+}
+
+.reply-content {
+    flex: 1;
+}
+
+.reply-author {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.reply-text {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.reply-time {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 6px;
+}
+
+.comment-action-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.comment-action-btn:hover {
+    color: var(--accent-blue);
+}
+
+.comment-action-btn i.liked {
+    color: var(--accent-blue);
+}
+
+.comment-like-info {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* FEATURE 6: Detailed Notifications */
+.notif-user-pic {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-blue);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.notif-username {
+    color: var(--accent-blue);
+    font-weight: 700;
+}
+
+.notif-action {
+    color: var(--text-secondary);
+    margin-left: 4px;
+}
+
+.notif-emoji {
+    font-size: 1.1rem;
+    margin-left: 4px;
+}
+
+.notif-time-inline {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-left: 8px;
+    opacity: 0.7;
+}
+
+.notif-post-title {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.9rem;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    border-left: 2px solid var(--accent-blue);
+}
+
+/* Notification Toast Popup */
+.notification-toast-popup {
+    position: fixed;
+    top: 80px;
+    right: 30px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--accent-blue);
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    z-index: 9999;
+    cursor: pointer;
+    max-width: 350px;
+}
+
+.notification-toast-popup.show {
+    transform: translateX(0);
+}
+
+.notification-toast-popup:hover {
+    border-color: var(--accent-purple);
+    transform: translateX(-4px) scale(1.02);
+}
+
+.toast-user-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-blue);
+    object-fit: cover;
+}
+
+.toast-content {
+    flex: 1;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.toast-content strong {
+    color: var(--accent-blue);
+    font-weight: 700;
+}
+
+/* FEATURE 1: Inline Reactant Selector */
+.inline-selector {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.inline-selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.inline-selector-header h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+#inline-search {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+#inline-search:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+.reactant-item {
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reactant-item:hover {
+    background: var(--bg-primary);
+    border-color: var(--accent-blue);
+    transform: translateX(4px);
+}
+
+.reactant-item-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.reactant-item-formula {
+    color: var(--accent-blue);
+    font-weight: 700;
+}
+
+/* Equation Builder Styles */
+.equation-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 15px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    min-height: 60px;
+}
+
+.reactant-chip {
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent-blue);
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reactant-chip .formula {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.reactant-chip .remove-btn {
+    background: var(--accent-red);
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.add-reactant-btn {
+    background: var(--accent-green);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.add-reactant-btn:hover {
+    background: var(--accent-blue);
+    transform: scale(1.1);
+}
+
+.equation-operator {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.react-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+}
+
+.react-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 166, 87, 0.4);
+}
+
+.react-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Embedded Previews in Editor */
+.embedded-reaction-preview,
+.embedded-molecule-preview {
+    margin: 15px 0;
+    padding: 15px;
+    background: var(--bg-primary);
+    border: 2px dashed var(--accent-blue);
+    border-radius: 10px;
+    position: relative;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .notification-toast-popup {
+        right: 15px;
+        left: 15px;
+        max-width: none;
+    }
+    
+    .post-menu-dropdown {
+        right: auto;
+        left: 0;
+    }
+    
+    .reply-input-wrapper {
+        padding-left: 0;
+    }
+    
+    .show-replies-btn {
+        margin-left: 0;
+    }
+    
+    .replies-list {
+        padding-left: 10px;
+    }
+    
+    .inline-selector {
+        max-height: 300px;
+    }
+    
+    .notif-user-pic {
+        width: 40px;
+        height: 40px;
+    }
+}
