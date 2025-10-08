@@ -1,10 +1,12 @@
 /**
- * Forum Post Creation Module
- * Handles post creation with rich text editor and special embeds
+ * Forum Post Creation Module - COMPLETE
+ * FEATURE 1: Full Reaction Builder Integration from reactions page
  */
 
 let currentReactionData = null;
 let currentMoleculeData = null;
+let postReactants = []; // For reaction builder in post
+let postReaction = null;
 
 /**
  * Open create post modal
@@ -23,8 +25,14 @@ function openCreatePostModal() {
     document.getElementById('post-content').innerHTML = '';
     currentReactionData = null;
     currentMoleculeData = null;
+    postReactants = [];
+    postReaction = null;
     
-    // Initialize rich text editor
+    // Reset submit button
+    const submitBtn = document.getElementById('submit-post-btn');
+    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Post';
+    submitBtn.onclick = submitForumPost;
+    
     initRichTextEditor();
 }
 
@@ -46,11 +54,7 @@ function initRichTextEditor() {
     const editor = document.getElementById('post-content');
     if (!editor) return;
     
-    // Make contenteditable
     editor.contentEditable = true;
-    editor.style.minHeight = '150px';
-    
-    // Setup toolbar
     setupEditorToolbar();
 }
 
@@ -58,42 +62,34 @@ function initRichTextEditor() {
  * Setup editor toolbar
  */
 function setupEditorToolbar() {
-    // Bold
     document.getElementById('btn-bold')?.addEventListener('click', () => {
         document.execCommand('bold', false, null);
     });
     
-    // Italic
     document.getElementById('btn-italic')?.addEventListener('click', () => {
         document.execCommand('italic', false, null);
     });
     
-    // Underline
     document.getElementById('btn-underline')?.addEventListener('click', () => {
         document.execCommand('underline', false, null);
     });
     
-    // Strikethrough
     document.getElementById('btn-strike')?.addEventListener('click', () => {
         document.execCommand('strikeThrough', false, null);
     });
     
-    // Heading
     document.getElementById('btn-heading')?.addEventListener('click', () => {
         document.execCommand('formatBlock', false, '<h3>');
     });
     
-    // Bullet list
     document.getElementById('btn-ul')?.addEventListener('click', () => {
         document.execCommand('insertUnorderedList', false, null);
     });
     
-    // Numbered list
     document.getElementById('btn-ol')?.addEventListener('click', () => {
         document.execCommand('insertOrderedList', false, null);
     });
     
-    // Code block
     document.getElementById('btn-code')?.addEventListener('click', () => {
         const selection = window.getSelection().toString();
         if (selection) {
@@ -101,7 +97,6 @@ function setupEditorToolbar() {
         }
     });
     
-    // Link
     document.getElementById('btn-link')?.addEventListener('click', () => {
         const url = prompt('Enter URL:');
         if (url) {
@@ -109,7 +104,6 @@ function setupEditorToolbar() {
         }
     });
     
-    // Special Chemistry Tool
     document.getElementById('btn-chemistry')?.addEventListener('click', openChemistryToolModal);
 }
 
@@ -119,7 +113,6 @@ function setupEditorToolbar() {
 function openChemistryToolModal() {
     const modal = document.getElementById('chemistry-tool-modal');
     if (!modal) return;
-    
     modal.classList.add('active');
 }
 
@@ -129,12 +122,11 @@ function openChemistryToolModal() {
 function closeChemistryToolModal() {
     const modal = document.getElementById('chemistry-tool-modal');
     if (!modal) return;
-    
     modal.classList.remove('active');
 }
 
 /**
- * Select chemistry tool type (Reaction or Molecule)
+ * Select chemistry tool type
  */
 function selectChemistryTool(type) {
     closeChemistryToolModal();
@@ -147,16 +139,17 @@ function selectChemistryTool(type) {
 }
 
 /**
- * Open Reaction Builder Modal (Reuse from reactions page)
+ * FEATURE 1: Open Reaction Builder Modal (FULL INTEGRATION)
  */
 function openReactionBuilderModal() {
     const modal = document.getElementById('post-reaction-modal');
     if (!modal) return;
     
     modal.classList.add('active');
+    postReactants = [];
+    postReaction = null;
     
-    // Initialize reaction builder (same as reactions page)
-    initPostReactionBuilder();
+    renderPostEquationBuilder();
 }
 
 /**
@@ -165,42 +158,240 @@ function openReactionBuilderModal() {
 function closeReactionBuilderModal() {
     const modal = document.getElementById('post-reaction-modal');
     if (!modal) return;
-    
     modal.classList.remove('active');
 }
 
 /**
- * Initialize Post Reaction Builder
+ * FEATURE 1: Render equation builder (Same as reactions page)
  */
-function initPostReactionBuilder() {
-    // Same logic as reactions-builder.js
+function renderPostEquationBuilder() {
     const container = document.getElementById('post-reaction-builder');
     if (!container) return;
     
+    const reactBtn = document.getElementById('post-react-btn');
+    const canReact = postReactants.length >= 1;
+    
     container.innerHTML = `
-        <div class="equation-display" id="post-equation-display">
-            <button class="add-reactant-btn" onclick="openPostReactantSelector()">+</button>
-        </div>
-        <button id="post-react-btn" class="react-btn" disabled>React! →</button>
+        <div class="equation-display" id="post-equation-display"></div>
     `;
+    
+    const equationDisplay = document.getElementById('post-equation-display');
+    
+    if (postReactants.length === 0) {
+        equationDisplay.innerHTML = `
+            <button class="add-reactant-btn" onclick="openPostReactantSelector()">+</button>
+        `;
+        if (reactBtn) {
+            reactBtn.disabled = true;
+            reactBtn.textContent = 'Add reactants to continue';
+        }
+    } else {
+        // Check if reaction exists
+        const reaction = findReaction(postReactants);
+        
+        if (reaction) {
+            // Show with coefficients
+            reaction.reactants.forEach((reactant, index) => {
+                if (index > 0) {
+                    const operator = document.createElement('span');
+                    operator.className = 'equation-operator';
+                    operator.textContent = '+';
+                    equationDisplay.appendChild(operator);
+                }
+                
+                const chip = document.createElement('div');
+                chip.className = 'reactant-chip';
+                const coeff = reaction.coefficients[index];
+                chip.innerHTML = `
+                    <span class="formula">${coeff > 1 ? coeff : ''}${reactant}</span>
+                    <button class="remove-btn" onclick="removePostReactant('${reactant}')">&times;</button>
+                `;
+                equationDisplay.appendChild(chip);
+            });
+            
+            // Add button
+            const addBtn = document.createElement('button');
+            addBtn.className = 'add-reactant-btn';
+            addBtn.textContent = '+';
+            addBtn.onclick = openPostReactantSelector;
+            equationDisplay.appendChild(addBtn);
+            
+            if (reactBtn) {
+                reactBtn.disabled = false;
+                reactBtn.innerHTML = `<i class="fas fa-fire me-2"></i>React! → (${reaction.name || 'Unknown'})`;
+                reactBtn.onclick = () => performPostReaction(reaction);
+            }
+        } else {
+            // No reaction found - show plain
+            postReactants.forEach((reactant, index) => {
+                if (index > 0) {
+                    const operator = document.createElement('span');
+                    operator.className = 'equation-operator';
+                    operator.textContent = '+';
+                    equationDisplay.appendChild(operator);
+                }
+                
+                const chip = document.createElement('div');
+                chip.className = 'reactant-chip';
+                chip.innerHTML = `
+                    <span class="formula">${reactant}</span>
+                    <button class="remove-btn" onclick="removePostReactant('${reactant}')">&times;</button>
+                `;
+                equationDisplay.appendChild(chip);
+            });
+            
+            const addBtn = document.createElement('button');
+            addBtn.className = 'add-reactant-btn';
+            addBtn.textContent = '+';
+            addBtn.onclick = openPostReactantSelector;
+            equationDisplay.appendChild(addBtn);
+            
+            if (reactBtn) {
+                reactBtn.disabled = true;
+                reactBtn.textContent = 'No Reaction Found ❌';
+            }
+        }
+    }
 }
 
 /**
- * Submit reaction to post
+ * FEATURE 1: Open reactant selector for post
  */
-function submitReactionToPost() {
-    // Get reaction data from post-reaction-builder
-    const reaction = getCurrentReaction();
-    if (!reaction) {
-        alert('Please create a valid reaction first!');
+function openPostReactantSelector() {
+    const modal = document.getElementById('reactant-modal');
+    if (!modal) {
+        // Create inline selector
+        showInlineReactantSelector();
         return;
     }
     
-    currentReactionData = reaction;
-    closeReactionBuilderModal();
+    // Reuse existing reactant modal
+    modal.classList.add('active');
+    renderPostReactantList();
     
-    // Show preview in editor
+    // Override close to return to reaction builder
+    const closeBtn = modal.querySelector('.close-btn');
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            modal.classList.remove('active');
+        };
+    }
+}
+
+/**
+ * Show inline reactant selector
+ */
+function showInlineReactantSelector() {
+    const selectorHTML = `
+        <div class="inline-selector" id="inline-selector">
+            <div class="inline-selector-header">
+                <h4>Select Reactant</h4>
+                <button onclick="closeInlineSelector()" class="close-btn">×</button>
+            </div>
+            <input type="text" id="inline-search" placeholder="Search..." class="form-control mb-2" />
+            <div class="reactant-list" id="inline-reactant-list"></div>
+        </div>
+    `;
+    
+    const container = document.getElementById('post-reaction-builder');
+    container.insertAdjacentHTML('afterend', selectorHTML);
+    
+    renderInlineReactantList();
+    
+    document.getElementById('inline-search')?.addEventListener('input', (e) => {
+        renderInlineReactantList(e.target.value);
+    });
+}
+
+/**
+ * Render inline reactant list
+ */
+function renderInlineReactantList(query = '') {
+    const listEl = document.getElementById('inline-reactant-list');
+    if (!listEl) return;
+    
+    listEl.innerHTML = '';
+    
+    const allItems = [];
+    
+    elementsData.forEach(element => {
+        allItems.push({
+            name: element.name,
+            formula: element.symbol,
+            type: 'atom'
+        });
+    });
+    
+    moleculesData.forEach(molecule => {
+        allItems.push({
+            name: molecule.name,
+            formula: molecule.formula,
+            type: 'molecule'
+        });
+    });
+    
+    let items = allItems;
+    
+    if (query) {
+        const q = query.toLowerCase();
+        items = allItems.filter(item => 
+            item.name.toLowerCase().includes(q) ||
+            item.formula.toLowerCase().includes(q)
+        );
+    }
+    
+    items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'reactant-item';
+        div.innerHTML = `
+            <span class="reactant-item-name">${item.name}</span>
+            <span class="reactant-item-formula">${item.formula}</span>
+        `;
+        div.onclick = () => {
+            addPostReactant(item.formula);
+            closeInlineSelector();
+        };
+        listEl.appendChild(div);
+    });
+}
+
+/**
+ * Close inline selector
+ */
+function closeInlineSelector() {
+    const selector = document.getElementById('inline-selector');
+    if (selector) selector.remove();
+}
+
+/**
+ * Add reactant to post equation
+ */
+function addPostReactant(formula) {
+    if (!postReactants.includes(formula)) {
+        postReactants.push(formula);
+    }
+    renderPostEquationBuilder();
+}
+
+/**
+ * Remove reactant from post equation
+ */
+function removePostReactant(formula) {
+    postReactants = postReactants.filter(r => r !== formula);
+    renderPostEquationBuilder();
+}
+
+/**
+ * FEATURE 1: Perform reaction and save
+ */
+function performPostReaction(reaction) {
+    postReaction = reaction;
+    currentReactionData = reaction;
+    
+    closeReactionBuilderModal();
     showReactionPreview();
+    
+    showNotification('Reaction added! It will animate in your post.', 'success');
 }
 
 /**
@@ -210,14 +401,19 @@ function showReactionPreview() {
     const editor = document.getElementById('post-content');
     if (!editor || !currentReactionData) return;
     
+    // Remove old preview
+    const oldPreview = editor.querySelector('.embedded-reaction-preview');
+    if (oldPreview) oldPreview.remove();
+    
     const preview = document.createElement('div');
     preview.className = 'embedded-reaction-preview';
     preview.innerHTML = `
         <div class="preview-header">
-            <i class="fas fa-flask"></i> Reaction Preview
+            <i class="fas fa-flask"></i> Chemical Reaction
             <button onclick="removeReactionEmbed()" class="remove-embed-btn">×</button>
         </div>
         <div class="preview-equation">${formatReactionEquation(currentReactionData)}</div>
+        <small style="color: var(--text-secondary);">Will animate when posted</small>
     `;
     
     editor.appendChild(preview);
@@ -228,6 +424,7 @@ function showReactionPreview() {
  */
 function removeReactionEmbed() {
     currentReactionData = null;
+    postReaction = null;
     const preview = document.querySelector('.embedded-reaction-preview');
     if (preview) preview.remove();
 }
@@ -249,7 +446,6 @@ function openMoleculePickerModal() {
 function closeMoleculePickerModal() {
     const modal = document.getElementById('post-molecule-modal');
     if (!modal) return;
-    
     modal.classList.remove('active');
 }
 
@@ -279,7 +475,12 @@ function renderMoleculePicker() {
  * Select molecule
  */
 function selectMolecule(molecule) {
-    currentMoleculeData = molecule;
+    currentMoleculeData = {
+        id: molecule.id,
+        name: molecule.name,
+        formula: molecule.formula
+    };
+    
     closeMoleculePickerModal();
     showMoleculePreview();
 }
@@ -291,17 +492,22 @@ function showMoleculePreview() {
     const editor = document.getElementById('post-content');
     if (!editor || !currentMoleculeData) return;
     
+    // Remove old preview
+    const oldPreview = editor.querySelector('.embedded-molecule-preview');
+    if (oldPreview) oldPreview.remove();
+    
     const preview = document.createElement('div');
     preview.className = 'embedded-molecule-preview';
     preview.innerHTML = `
         <div class="preview-header">
-            <i class="fas fa-atom"></i> Molecule Preview
+            <i class="fas fa-atom"></i> 3D Molecule
             <button onclick="removeMoleculeEmbed()" class="remove-embed-btn">×</button>
         </div>
         <div class="preview-content">
             <strong>${currentMoleculeData.name}</strong>
             <span>${currentMoleculeData.formula}</span>
         </div>
+        <small style="color: var(--text-secondary);">Will show 3D model when posted</small>
     `;
     
     editor.appendChild(preview);
@@ -335,7 +541,6 @@ async function submitForumPost() {
         return;
     }
     
-    // Create post data
     const postData = {
         authorId: currentForumUser.uid,
         authorName: currentForumUser.displayName || 'Anonymous',
@@ -349,21 +554,14 @@ async function submitForumPost() {
         comments: {}
     };
     
-    // Add reaction data if exists
     if (currentReactionData) {
         postData.reactionData = currentReactionData;
     }
     
-    // Add molecule data if exists
     if (currentMoleculeData) {
-        postData.moleculeData = {
-            id: currentMoleculeData.id,
-            name: currentMoleculeData.name,
-            formula: currentMoleculeData.formula
-        };
+        postData.moleculeData = currentMoleculeData;
     }
     
-    // Show loading
     const submitBtn = document.getElementById('submit-post-btn');
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
@@ -371,11 +569,12 @@ async function submitForumPost() {
     try {
         await db.ref('forum/posts').push(postData);
         
-        // Success
         closeCreatePostModal();
-        
-        // Show success message
         showNotification('Post created successfully! 🎉', 'success');
+        
+        // Switch to community page
+        const toggleBtn = document.getElementById('toggleCommunity');
+        if (toggleBtn) toggleBtn.click();
         
     } catch (error) {
         console.error('Error creating post:', error);
@@ -387,23 +586,26 @@ async function submitForumPost() {
 }
 
 /**
- * Show notification toast
+ * Format reaction equation
  */
-function showNotification(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `notification-toast toast-${type}`;
-    toast.textContent = message;
+function formatReactionEquation(reactionData) {
+    let equation = '';
     
-    document.body.appendChild(toast);
+    reactionData.reactants.forEach((reactant, i) => {
+        if (i > 0) equation += ' + ';
+        const coeff = reactionData.coefficients[i];
+        equation += `${coeff > 1 ? coeff : ''}${reactant}`;
+    });
     
-    setTimeout(() => {
-        toast.classList.add('show');
-    }, 100);
+    equation += ' → ';
     
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    reactionData.products.forEach((product, i) => {
+        if (i > 0) equation += ' + ';
+        const coeff = reactionData.productCoefficients[i];
+        equation += `${coeff > 1 ? coeff : ''}${product}`;
+    });
+    
+    return equation;
 }
 
 // Global functions
@@ -412,10 +614,13 @@ window.closeCreatePostModal = closeCreatePostModal;
 window.closeChemistryToolModal = closeChemistryToolModal;
 window.selectChemistryTool = selectChemistryTool;
 window.closeReactionBuilderModal = closeReactionBuilderModal;
-window.submitReactionToPost = submitReactionToPost;
 window.removeReactionEmbed = removeReactionEmbed;
 window.closeMoleculePickerModal = closeMoleculePickerModal;
 window.removeMoleculeEmbed = removeMoleculeEmbed;
 window.submitForumPost = submitForumPost;
+window.openPostReactantSelector = openPostReactantSelector;
+window.addPostReactant = addPostReactant;
+window.removePostReactant = removePostReactant;
+window.closeInlineSelector = closeInlineSelector;
 
-console.log('✅ Forum create post module loaded');
+console.log('✅ Forum create post module loaded (COMPLETE)');
