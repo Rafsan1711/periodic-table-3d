@@ -1,5 +1,5 @@
 /**
- * App Initialization Module (ENHANCED with Loader & Effects)
+ * App Initialization Module (UPDATED with Forum)
  * Main entry point - initializes all features on page load
  */
 
@@ -21,8 +21,18 @@ function hideLoader() {
             setTimeout(() => {
                 loader.style.display = 'none';
             }, 500);
-        }, 800); // Show loader for at least 800ms
+        }, 800);
     }
+}
+
+// Check if user is authenticated
+function checkAuth() {
+    return new Promise((resolve) => {
+        const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+            unsubscribe();
+            resolve(user);
+        });
+    });
 }
 
 // Initialize app with smooth loader transition
@@ -30,45 +40,90 @@ document.addEventListener('DOMContentLoaded', async () => {
     showLoader();
     
     try {
-        // Initialize Periodic Table with delay for smooth rendering
-        await new Promise(resolve => {
-            setTimeout(() => {
-                initPeriodicTable();
-                resolve();
-            }, 100);
-        });
+        // Check authentication status
+        const user = await checkAuth();
         
-        // Initialize Molecules features
-        await new Promise(resolve => {
-            setTimeout(() => {
-                renderMoleculesList();
-                initMoleculesSearch();
-                resolve();
-            }, 200);
-        });
-        
-        // Initialize Chemical Reactions features
-        await new Promise(resolve => {
-            setTimeout(() => {
-                initReactionsBuilder();
-                initReactantSelector();
-                resolve();
-            }, 300);
-        });
-        
-        // Initialize Page Toggle
-        initPageToggle();
+        if (user) {
+            // User is logged in
+            console.log('✅ User authenticated:', user.email);
+            
+            // Show main app, hide auth screen
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            
+            // Initialize Periodic Table with delay for smooth rendering
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    if (typeof initPeriodicTable === 'function') {
+                        initPeriodicTable();
+                    }
+                    resolve();
+                }, 100);
+            });
+            
+            // Initialize Molecules features
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    if (typeof renderMoleculesList === 'function') {
+                        renderMoleculesList();
+                    }
+                    if (typeof initMoleculesSearch === 'function') {
+                        initMoleculesSearch();
+                    }
+                    resolve();
+                }, 200);
+            });
+            
+            // Initialize Chemical Reactions features
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    if (typeof initReactionsBuilder === 'function') {
+                        initReactionsBuilder();
+                    }
+                    if (typeof initReactantSelector === 'function') {
+                        initReactantSelector();
+                    }
+                    resolve();
+                }, 300);
+            });
+            
+            // Initialize Forum/Community features (NEW)
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    if (typeof initForum === 'function') {
+                        initForum();
+                    }
+                    if (typeof initNotifications === 'function') {
+                        initNotifications();
+                    }
+                    resolve();
+                }, 400);
+            });
+            
+            // Initialize Page Toggle
+            if (typeof initPageToggle === 'function') {
+                initPageToggle();
+            }
+            
+            console.log('✅ All modules initialized');
+            
+        } else {
+            // No user logged in - show auth screen
+            console.log('ℹ️ No user authenticated, showing login screen');
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('auth-screen').style.display = 'flex';
+        }
         
         // Initialize tooltips
         initTooltips();
         
-        // Add click sound effect
+        // Add click effects
         addClickEffects();
         
         // Add keyboard shortcuts
         initKeyboardShortcuts();
         
-        console.log('✅ Interactive Periodic Table, Molecules & Chemical Reactions App Initialized');
+        console.log('✅ Interactive Periodic Table with Community App Initialized');
         
     } catch (error) {
         console.error('❌ Error initializing app:', error);
@@ -116,7 +171,7 @@ function addClickEffects() {
         setTimeout(() => ripple.remove(), 600);
     }
     
-    // Add ripple CSS
+    // Add ripple CSS if not exists
     if (!document.getElementById('ripple-styles')) {
         const style = document.createElement('style');
         style.id = 'ripple-styles';
@@ -137,7 +192,7 @@ function addClickEffects() {
                 }
             }
             
-            button, .toggle-btn, .element, .molecule-item, .reactant-item {
+            button, .toggle-btn, .element, .molecule-item, .reactant-item, .forum-post-card {
                 position: relative;
                 overflow: hidden;
             }
@@ -191,13 +246,19 @@ function initKeyboardShortcuts() {
             const elementModal = document.getElementById('elementModal');
             const matterModal = document.getElementById('matterModal');
             const reactantModal = document.getElementById('reactantModal');
+            const createPostModal = document.getElementById('create-post-modal');
+            const notificationModal = document.getElementById('notification-modal');
             
             if (elementModal && elementModal.classList.contains('active')) {
-                closeModal();
+                if (typeof closeModal === 'function') closeModal();
             } else if (matterModal && matterModal.classList.contains('active')) {
-                closeMatterModal();
+                if (typeof closeMatterModal === 'function') closeMatterModal();
             } else if (reactantModal && reactantModal.classList.contains('active')) {
-                closeReactantSelector();
+                if (typeof closeReactantSelector === 'function') closeReactantSelector();
+            } else if (createPostModal && createPostModal.classList.contains('active')) {
+                if (typeof closeCreatePostModal === 'function') closeCreatePostModal();
+            } else if (notificationModal && notificationModal.classList.contains('active')) {
+                if (typeof closeNotificationModal === 'function') closeNotificationModal();
             }
         }
         
@@ -206,15 +267,18 @@ function initKeyboardShortcuts() {
             e.preventDefault();
             const moleculeSearch = document.getElementById('moleculeSearch');
             const reactantSearch = document.getElementById('reactantSearch');
+            const forumSearch = document.getElementById('forum-search');
             
             if (moleculeSearch && moleculeSearch.offsetParent !== null) {
                 moleculeSearch.focus();
             } else if (reactantSearch && reactantSearch.offsetParent !== null) {
                 reactantSearch.focus();
+            } else if (forumSearch && forumSearch.offsetParent !== null) {
+                forumSearch.focus();
             }
         }
         
-        // Tab navigation between pages (1, 2, 3)
+        // Tab navigation between pages (1, 2, 3, 4)
         if (e.key === '1' && !e.ctrlKey && !e.metaKey) {
             const target = document.activeElement;
             if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
@@ -233,12 +297,30 @@ function initKeyboardShortcuts() {
                 document.getElementById('toggleReactions')?.click();
             }
         }
+        if (e.key === '4' && !e.ctrlKey && !e.metaKey) {
+            const target = document.activeElement;
+            if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+                document.getElementById('toggleCommunity')?.click();
+            }
+        }
+        
+        // Ctrl/Cmd + N to create new post (when on community page)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+            const communityPage = document.getElementById('communityPage');
+            if (communityPage && communityPage.style.display !== 'none') {
+                e.preventDefault();
+                if (typeof openCreatePostModal === 'function') {
+                    openCreatePostModal();
+                }
+            }
+        }
     });
     
     console.log('⌨️ Keyboard shortcuts enabled:');
     console.log('  ESC - Close modals');
     console.log('  Ctrl/Cmd + K - Focus search');
-    console.log('  1/2/3 - Switch between pages');
+    console.log('  1/2/3/4 - Switch between pages');
+    console.log('  Ctrl/Cmd + N - Create new post');
 }
 
 /**
@@ -257,7 +339,6 @@ function optimizePerformance() {
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
-            // Trigger resize handlers
             window.dispatchEvent(new Event('optimizedResize'));
         }, 250);
     }, { passive: true });
@@ -310,12 +391,12 @@ window.addEventListener('load', () => {
  */
 window.addEventListener('online', () => {
     console.log('🌐 Connection restored');
-    // Show toast notification if you have one
+    showNotification('Connection restored', 'success');
 });
 
 window.addEventListener('offline', () => {
-    console.log('📵 Connection lost');
-    // Show toast notification if you have one
+    console.log('🔵 Connection lost');
+    showNotification('Connection lost', 'error');
 });
 
 /**
@@ -330,18 +411,8 @@ window.addEventListener('unhandledrejection', (e) => {
 });
 
 /**
- * Service Worker Registration (Optional - for PWA)
- */
-if ('serviceWorker' in navigator) {
-    // Uncomment to enable PWA features
-    // navigator.serviceWorker.register('/sw.js')
-    //     .then(reg => console.log('✅ Service Worker registered'))
-    //     .catch(err => console.log('❌ Service Worker registration failed:', err));
-}
-
-/**
  * Console welcome message
  */
-console.log('%c⚛️ Interactive Periodic Table', 'font-size: 24px; font-weight: bold; color: #58a6ff;');
-console.log('%cBuilt with Three.js, GSAP, and modern web technologies', 'color: #8b949e;');
-console.log('%c🧪 Explore 118 elements, molecules, and chemical reactions!', 'color: #7ce38b;');
+console.log('%c⚛️ Interactive Periodic Table with Community', 'font-size: 24px; font-weight: bold; color: #58a6ff;');
+console.log('%cBuilt with Three.js, GSAP, Firebase, and modern web technologies', 'color: #8b949e;');
+console.log('%c🧪 Explore elements, molecules, reactions, and join the community!', 'color: #7ce38b;');
