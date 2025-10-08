@@ -1,6 +1,6 @@
 /**
- * Forum Notifications Module
- * Handles real-time notifications for likes, comments, etc.
+ * Forum Notifications Module - COMPLETE
+ * FEATURE 6: Detailed notifications with user actions (like "Username Right👍 3hrs ago")
  */
 
 let notificationsRef = null;
@@ -20,10 +20,19 @@ function initNotifications() {
         if (!notification.read) {
             unreadCount++;
             updateNotificationBadge();
+            
+            // Show toast for new notification
+            if (notification.timestamp > (Date.now() - 5000)) {
+                showNotificationToast(notification);
+            }
         }
     });
     
-    // Load existing notifications
+    // Listen for changes
+    notificationsRef.on('child_changed', () => {
+        loadNotifications();
+    });
+    
     loadNotifications();
     
     console.log('✅ Notifications initialized');
@@ -72,7 +81,7 @@ async function loadNotifications() {
     snapshot.forEach(child => {
         const notif = child.val();
         notif.id = child.key;
-        notifications.unshift(notif); // Newest first
+        notifications.unshift(notif);
         if (!notif.read) unreadCount++;
     });
     
@@ -85,42 +94,61 @@ async function loadNotifications() {
 }
 
 /**
- * Create notification element
+ * FEATURE 6: Create detailed notification element
+ * Format: "Username Right👍 3hrs ago"
  */
 function createNotificationElement(notif) {
     const div = document.createElement('div');
     div.className = `notification-item ${notif.read ? 'read' : 'unread'}`;
     
     let icon = '🔔';
-    let action = '';
+    let actionText = '';
+    let emoji = '';
     
     switch(notif.type) {
         case 'like':
             icon = '👍';
-            action = 'liked your post';
+            emoji = '👍';
+            actionText = 'liked your post';
             break;
         case 'comment':
             icon = '💬';
-            action = 'commented on your post';
+            emoji = '💬';
+            actionText = 'commented on your post';
             break;
         case 'reply':
             icon = '↩️';
-            action = 'replied to your comment';
+            emoji = '↩️';
+            actionText = 'replied to your comment';
+            break;
+        case 'commentLike':
+            icon = '👍';
+            emoji = '👍';
+            actionText = 'liked your comment';
             break;
         case 'mention':
             icon = '@';
-            action = 'mentioned you';
+            emoji = '@';
+            actionText = 'mentioned you';
             break;
     }
     
+    // FEATURE 6: Detailed format with action emoji and time
+    const timeAgo = getTimeAgo(notif.timestamp);
+    
     div.innerHTML = `
-        <div class="notif-icon">${icon}</div>
+        <img src="${notif.fromUserPhoto || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(notif.fromUserName)}" 
+             alt="${notif.fromUserName}" class="notif-user-pic" />
         <div class="notif-content">
             <div class="notif-text">
-                <strong>${notif.fromUserName}</strong> ${action}
-                ${notif.postTitle ? `<br><span class="notif-post-title">"${notif.postTitle}"</span>` : ''}
+                <strong class="notif-username">${notif.fromUserName}</strong>
+                <span class="notif-action">${actionText}</span>
+                <span class="notif-emoji">${emoji}</span>
+                <span class="notif-time-inline">${timeAgo}</span>
             </div>
-            <div class="notif-time">${getTimeAgo(notif.timestamp)}</div>
+            ${notif.postTitle ? `
+                <div class="notif-post-title">"${notif.postTitle}"</div>
+            ` : ''}
         </div>
         ${!notif.read ? '<div class="unread-dot"></div>' : ''}
     `;
@@ -134,6 +162,58 @@ function createNotificationElement(notif) {
     });
     
     return div;
+}
+
+/**
+ * Show notification toast for new notifications
+ */
+function showNotificationToast(notif) {
+    let actionText = '';
+    let emoji = '';
+    
+    switch(notif.type) {
+        case 'like':
+            emoji = '👍';
+            actionText = 'liked your post';
+            break;
+        case 'comment':
+            emoji = '💬';
+            actionText = 'commented on your post';
+            break;
+        case 'reply':
+            emoji = '↩️';
+            actionText = 'replied to your comment';
+            break;
+        case 'commentLike':
+            emoji = '👍';
+            actionText = 'liked your comment';
+            break;
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = 'notification-toast-popup';
+    toast.innerHTML = `
+        <img src="${notif.fromUserPhoto || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(notif.fromUserName)}" 
+             alt="${notif.fromUserName}" class="toast-user-pic" />
+        <div class="toast-content">
+            <strong>${notif.fromUserName}</strong> ${actionText} ${emoji}
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+    
+    // Click to open notification modal
+    toast.addEventListener('click', () => {
+        openNotificationModal();
+        toast.remove();
+    });
 }
 
 /**
@@ -163,6 +243,12 @@ function openPostFromNotification(postId) {
         if (postCard) {
             postCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
             postCard.style.animation = 'highlight-pulse 2s ease';
+            
+            // Add temporary highlight
+            postCard.style.border = '2px solid var(--accent-blue)';
+            setTimeout(() => {
+                postCard.style.border = '';
+            }, 3000);
         }
     }, 500);
 }
@@ -212,6 +298,48 @@ function closeNotificationModal() {
     document.body.style.overflow = '';
 }
 
+/**
+ * Mark all as read
+ */
+async function markAllAsRead() {
+    if (!notificationsRef) return;
+    
+    const snapshot = await notificationsRef.once('value');
+    const updates = {};
+    
+    snapshot.forEach(child => {
+        const notif = child.val();
+        if (!notif.read) {
+            updates[`${child.key}/read`] = true;
+        }
+    });
+    
+    if (Object.keys(updates).length > 0) {
+        await notificationsRef.update(updates);
+        unreadCount = 0;
+        updateNotificationBadge();
+        loadNotifications();
+    }
+}
+
+/**
+ * Get time ago string
+ */
+function getTimeAgo(timestamp) {
+    const now = Date.now();
+    const diff = now - timestamp;
+    
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return new Date(timestamp).toLocaleDateString();
+}
+
 // Setup notification bell click handler
 document.addEventListener('DOMContentLoaded', () => {
     const bell = document.getElementById('notification-bell');
@@ -225,5 +353,6 @@ window.openNotificationModal = openNotificationModal;
 window.closeNotificationModal = closeNotificationModal;
 window.initNotifications = initNotifications;
 window.sendNotification = sendNotification;
+window.markAllAsRead = markAllAsRead;
 
-console.log('✅ Forum notifications module loaded');
+console.log('✅ Forum notifications module loaded (COMPLETE with Feature 6)');
