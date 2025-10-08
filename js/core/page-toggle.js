@@ -1,66 +1,36 @@
 /**
- * Page Toggle Module (FULLY FIXED)
- * Handles switching between Periodic Table, Molecules, and Chemical Reactions pages
+ * Page Toggle Module (UPDATED with Community)
+ * Handles switching between Periodic Table, Molecules, Reactions, and Community pages
  */
 
 /**
- * Initializes the page toggle functionality
+ * Initialize page toggle
  */
 function initPageToggle() {
     const togglePeriodic = document.getElementById('togglePeriodic');
     const toggleMolecules = document.getElementById('toggleMolecules');
     const toggleReactions = document.getElementById('toggleReactions');
+    const toggleCommunity = document.getElementById('toggleCommunity');
     
-    // Get ONLY the periodic table specific elements (NOT the whole container)
-    const periodicTableWrapper = document.querySelector('.periodic-table-wrapper');
-    const legend = document.querySelector('.legend');
-    const lanthanideSeries = document.querySelector('.lanthanide-series');
-    const actinideSeries = document.querySelector('.actinide-series');
-    
-    // Get other pages
-    const moleculesPageEl = document.getElementById('moleculesPage');
-    const reactionsPageEl = document.getElementById('reactionsPage');
+    // Get page elements
+    const periodicPage = document.getElementById('periodic-page');
+    const moleculesPage = document.getElementById('moleculesPage');
+    const reactionsPage = document.getElementById('reactionsPage');
+    const communityPage = document.getElementById('communityPage');
     
     console.log('🔄 Initializing page toggle...');
-    console.log('Elements found:', {
-        periodicTableWrapper: !!periodicTableWrapper,
-        legend: !!legend,
-        moleculesPage: !!moleculesPageEl,
-        reactionsPage: !!reactionsPageEl
-    });
     
-    // Function to hide all pages
+    // Hide all pages
     function hideAllPages() {
-        // Hide periodic table elements
-        if (periodicTableWrapper) {
-            periodicTableWrapper.style.display = 'none';
-        }
-        if (legend) {
-            legend.style.display = 'none';
-        }
-        if (lanthanideSeries) {
-            lanthanideSeries.style.display = 'none';
-        }
-        if (actinideSeries) {
-            actinideSeries.style.display = 'none';
-        }
-        
-        // Hide molecules page
-        if (moleculesPageEl) {
-            moleculesPageEl.style.display = 'none';
-            moleculesPageEl.setAttribute('aria-hidden', 'true');
-        }
-        
-        // Hide reactions page
-        if (reactionsPageEl) {
-            reactionsPageEl.style.display = 'none';
-            reactionsPageEl.setAttribute('aria-hidden', 'true');
-        }
+        if (periodicPage) periodicPage.style.display = 'none';
+        if (moleculesPage) moleculesPage.style.display = 'none';
+        if (reactionsPage) reactionsPage.style.display = 'none';
+        if (communityPage) communityPage.style.display = 'none';
     }
     
-    // Function to update button states
+    // Update button states
     function updateButtonStates(activeButton) {
-        [togglePeriodic, toggleMolecules, toggleReactions].forEach(btn => {
+        [togglePeriodic, toggleMolecules, toggleReactions, toggleCommunity].forEach(btn => {
             if (btn) btn.classList.remove('active');
         });
         if (activeButton) activeButton.classList.add('active');
@@ -73,19 +43,9 @@ function initPageToggle() {
             hideAllPages();
             updateButtonStates(togglePeriodic);
             
-            // Show periodic table elements
-            if (periodicTableWrapper) {
-                periodicTableWrapper.style.display = 'block';
+            if (periodicPage) {
+                periodicPage.style.display = 'block';
                 console.log('✅ Periodic table shown');
-            }
-            if (legend) {
-                legend.style.display = 'flex';
-            }
-            if (lanthanideSeries) {
-                lanthanideSeries.style.display = 'block';
-            }
-            if (actinideSeries) {
-                actinideSeries.style.display = 'block';
             }
             
             // Refresh AOS
@@ -102,59 +62,75 @@ function initPageToggle() {
             hideAllPages();
             updateButtonStates(toggleMolecules);
             
-            // Show molecules page
-            if (moleculesPageEl) {
-                moleculesPageEl.style.display = 'block';
-                moleculesPageEl.setAttribute('aria-hidden', 'false');
+            if (moleculesPage) {
+                moleculesPage.style.display = 'block';
                 console.log('✅ Molecules page shown');
                 
                 // Render molecules list if empty
                 setTimeout(() => {
                     const moleculesList = document.getElementById('moleculesList');
-                    if (moleculesList) {
-                        if (moleculesList.children.length === 0 || 
-                            moleculesList.querySelector('.spinner-border')) {
-                            console.log('🔄 Rendering molecules list...');
+                    if (moleculesList && moleculesList.children.length === 0) {
+                        console.log('🔄 Rendering molecules list...');
+                        if (typeof renderMoleculesList === 'function') {
                             renderMoleculesList();
                         }
                     }
                 }, 100);
-            } else {
-                console.error('❌ Molecules page element not found!');
             }
             
-            // Refresh AOS
             if (typeof AOS !== 'undefined') {
                 setTimeout(() => AOS.refresh(), 100);
             }
         });
     }
     
-    // Show Chemical Reactions
+    // Show Reactions
     if (toggleReactions) {
         toggleReactions.addEventListener('click', () => {
             console.log('⚗️ Switching to Reactions');
             hideAllPages();
             updateButtonStates(toggleReactions);
             
-            // Show reactions page
-            if (reactionsPageEl) {
-                reactionsPageEl.style.display = 'block';
-                reactionsPageEl.setAttribute('aria-hidden', 'false');
+            if (reactionsPage) {
+                reactionsPage.style.display = 'block';
                 console.log('✅ Reactions page shown');
                 
                 // Initialize theatre if not already initialized
                 setTimeout(() => {
-                    if (!theatreRenderer) {
+                    if (typeof theatreRenderer === 'undefined' || !theatreRenderer) {
                         console.log('🎬 Initializing theatre...');
-                        initTheatre();
+                        if (typeof initTheatre === 'function') {
+                            initTheatre();
+                        }
                     }
                 }, 200);
-            } else {
-                console.error('❌ Reactions page element not found!');
             }
             
-            // Refresh AOS
+            if (typeof AOS !== 'undefined') {
+                setTimeout(() => AOS.refresh(), 100);
+            }
+        });
+    }
+    
+    // Show Community (NEW)
+    if (toggleCommunity) {
+        toggleCommunity.addEventListener('click', () => {
+            console.log('👥 Switching to Community');
+            hideAllPages();
+            updateButtonStates(toggleCommunity);
+            
+            if (communityPage) {
+                communityPage.style.display = 'block';
+                console.log('✅ Community page shown');
+                
+                // Load forum feed if not already loaded
+                setTimeout(() => {
+                    if (typeof loadForumFeed === 'function') {
+                        loadForumFeed();
+                    }
+                }, 100);
+            }
+            
             if (typeof AOS !== 'undefined') {
                 setTimeout(() => AOS.refresh(), 100);
             }
@@ -165,13 +141,33 @@ function initPageToggle() {
     hideAllPages();
     if (togglePeriodic) {
         togglePeriodic.classList.add('active');
-        if (periodicTableWrapper) periodicTableWrapper.style.display = 'block';
-        if (legend) legend.style.display = 'flex';
-        if (lanthanideSeries) lanthanideSeries.style.display = 'block';
-        if (actinideSeries) actinideSeries.style.display = 'block';
+        if (periodicPage) periodicPage.style.display = 'block';
     }
     
     console.log('✅ Page toggle initialized successfully');
+}
+
+/**
+ * Show specific page programmatically
+ */
+function showPeriodicPage() {
+    const btn = document.getElementById('togglePeriodic');
+    if (btn) btn.click();
+}
+
+function showMoleculesPage() {
+    const btn = document.getElementById('toggleMolecules');
+    if (btn) btn.click();
+}
+
+function showReactionsPage() {
+    const btn = document.getElementById('toggleReactions');
+    if (btn) btn.click();
+}
+
+function showCommunityPage() {
+    const btn = document.getElementById('toggleCommunity');
+    if (btn) btn.click();
 }
 
 // Auto-initialize when DOM is ready
@@ -180,3 +176,9 @@ if (document.readyState === 'loading') {
 } else {
     initPageToggle();
 }
+
+// Global functions
+window.showPeriodicPage = showPeriodicPage;
+window.showMoleculesPage = showMoleculesPage;
+window.showReactionsPage = showReactionsPage;
+window.showCommunityPage = showCommunityPage;
