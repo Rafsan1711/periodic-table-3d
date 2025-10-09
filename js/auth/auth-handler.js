@@ -1,9 +1,8 @@
 /**
- * Authentication Handler
- * 100% copied from provided HTML file
+ * Authentication Handler - FIXED
+ * Properly initializes all modules after login
  */
 
-// UI Elements
 const authScreen = document.getElementById('auth-screen');
 const mainApp = document.getElementById('main-app');
 const signupForm = document.getElementById('signup-form');
@@ -18,19 +17,14 @@ const gotoLogin2 = document.getElementById('goto-login2');
 const verifyEmailNotice = document.getElementById('verify-email-notice');
 const resendVerificationBtn = document.getElementById('resend-verification');
 
-// Current user
 let currentAuthUser = null;
 
-/**
- * Show auth tab (signup/login/reset)
- */
 function showAuthTab(tab) {
     signupForm.style.display = tab === 'signup' ? 'flex' : 'none';
     loginForm.style.display = tab === 'login' ? 'flex' : 'none';
     resetForm.style.display = tab === 'reset' ? 'flex' : 'none';
     verifyEmailNotice.style.display = 'none';
     
-    // Toggle button highlight
     if (showSignupBtn && showLoginBtn) {
         if (tab === 'signup') {
             showSignupBtn.classList.add('active');
@@ -42,7 +36,6 @@ function showAuthTab(tab) {
     }
 }
 
-// Event listeners for tab switching
 if (showSignupBtn) showSignupBtn.onclick = () => showAuthTab('signup');
 if (showLoginBtn) showLoginBtn.onclick = () => showAuthTab('login');
 if (gotoLogin) gotoLogin.onclick = () => showAuthTab('login');
@@ -50,12 +43,8 @@ if (gotoSignup) gotoSignup.onclick = () => showAuthTab('signup');
 if (gotoReset) gotoReset.onclick = () => showAuthTab('reset');
 if (gotoLogin2) gotoLogin2.onclick = () => showAuthTab('login');
 
-// Default: show signup
 showAuthTab('signup');
 
-/**
- * Sign Up with Email/Password
- */
 signupForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     const email = document.getElementById('signup-email').value.trim();
@@ -75,7 +64,6 @@ signupForm.addEventListener('submit', async function(e) {
             let username = cred.user.displayName || email.split('@')[0] || 'Anonymous';
             await cred.user.updateProfile({displayName: username});
             
-            // Create user entry in database
             await db.ref('users/' + cred.user.uid).set({
                 username: username,
                 email: email,
@@ -83,7 +71,6 @@ signupForm.addEventListener('submit', async function(e) {
                 createdAt: Date.now()
             });
             
-            // Send verification email
             await cred.user.sendEmailVerification();
             verifyEmailNotice.style.display = 'block';
             signupForm.style.display = 'none';
@@ -94,9 +81,6 @@ signupForm.addEventListener('submit', async function(e) {
     }
 });
 
-/**
- * Log In with Email/Password
- */
 loginForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value.trim();
@@ -114,15 +98,11 @@ loginForm.addEventListener('submit', async function(e) {
             await auth.signOut();
             return;
         }
-        // Success: handled by onAuthStateChanged
     } catch(err) {
         errorDiv.textContent = err.message.replace('Firebase:', '').replace(/\(auth.*\)/, '');
     }
 });
 
-/**
- * Password Reset
- */
 resetForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     const email = document.getElementById('reset-email').value.trim();
@@ -144,9 +124,6 @@ resetForm.addEventListener('submit', async function(e) {
     }
 });
 
-/**
- * Resend verification email
- */
 if (resendVerificationBtn) {
     resendVerificationBtn.onclick = async function() {
         if (auth.currentUser) {
@@ -163,9 +140,6 @@ if (resendVerificationBtn) {
     };
 }
 
-/**
- * Sign In with Google
- */
 function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).catch(err => {
@@ -174,9 +148,6 @@ function signInWithGoogle() {
     });
 }
 
-/**
- * Sign Out
- */
 function signOut() {
     auth.signOut().then(() => {
         console.log('User signed out');
@@ -186,11 +157,10 @@ function signOut() {
 }
 
 /**
- * Auth State Observer
+ * CRITICAL FIX: Auth State Observer - Properly initialize modules
  */
 auth.onAuthStateChanged(async user => {
     if (user) {
-        // Email/password user - check verification
         if (user.providerData[0].providerId === 'password' && !user.emailVerified) {
             await auth.signOut();
             showAuthTab('login');
@@ -198,19 +168,17 @@ auth.onAuthStateChanged(async user => {
             return;
         }
         
-        // User is authenticated
         currentAuthUser = user;
-        currentForumUser = user; // For forum module
+        currentForumUser = user;
         
-        // Hide auth screen, show main app
         authScreen.style.display = 'none';
         mainApp.style.display = 'block';
         
-        // Initialize app features
-        initializeApp();
+        // CRITICAL FIX: Initialize all modules in correct order
+        console.log('Initializing app for user:', currentAuthUser.displayName);
+        await initializeApp();
         
     } else {
-        // No user signed in
         currentAuthUser = null;
         currentForumUser = null;
         mainApp.style.display = 'none';
@@ -220,21 +188,71 @@ auth.onAuthStateChanged(async user => {
 });
 
 /**
- * Initialize app after authentication
+ * FIXED: Initialize app properly
  */
-function initializeApp() {
-    console.log('Initializing app for user:', currentAuthUser.displayName);
-    
-    // Initialize all modules
-    if (typeof initForum === 'function') {
-        initForum();
+async function initializeApp() {
+    try {
+        // 1. Initialize Periodic Table
+        if (typeof initPeriodicTable === 'function') {
+            console.log('📊 Initializing periodic table...');
+            initPeriodicTable();
+        }
+        
+        await delay(100);
+        
+        // 2. Initialize Molecules
+        if (typeof renderMoleculesList === 'function') {
+            console.log('🧪 Initializing molecules list...');
+            renderMoleculesList();
+        }
+        if (typeof initMoleculesSearch === 'function') {
+            console.log('🔍 Initializing molecules search...');
+            initMoleculesSearch();
+        }
+        
+        await delay(100);
+        
+        // 3. Initialize Reactions
+        if (typeof initReactionsBuilder === 'function') {
+            console.log('⚗️ Initializing reactions builder...');
+            initReactionsBuilder();
+        }
+        if (typeof initReactantSelector === 'function') {
+            console.log('🔬 Initializing reactant selector...');
+            initReactantSelector();
+        }
+        
+        await delay(100);
+        
+        // 4. Initialize Forum
+        if (typeof initForum === 'function') {
+            console.log('👥 Initializing forum...');
+            initForum();
+        }
+        if (typeof initNotifications === 'function') {
+            console.log('🔔 Initializing notifications...');
+            initNotifications();
+        }
+        
+        await delay(100);
+        
+        // 5. Initialize Page Toggle (LAST)
+        if (typeof initPageToggle === 'function') {
+            console.log('🔄 Initializing page toggle...');
+            initPageToggle();
+        }
+        
+        console.log('✅ All modules initialized successfully');
+        
+    } catch (error) {
+        console.error('❌ Error initializing modules:', error);
     }
-    
-    // Show periodic table by default
-    showPeriodicPage();
 }
 
-// Global functions
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 window.signInWithGoogle = signInWithGoogle;
 window.signOut = signOut;
 
