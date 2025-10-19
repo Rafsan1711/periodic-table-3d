@@ -1,0 +1,39 @@
+.reactant-modal-content {
+    max-width: 600px;
+}
+
+.reactant-list {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.reactant-item {
+    padding: 0.875rem 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reactant-item:hover {
+    background: var(--bg-primary);
+    border-color: var(--accent-blue);
+    transform: translateX(4px);
+}
+
+.reactant-item-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.reactant-item-formula {
+    color: var(--accent-blue);
+    font-weight: 500;
+}

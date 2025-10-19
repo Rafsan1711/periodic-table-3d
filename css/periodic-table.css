@@ -1,0 +1,162 @@
+.periodic-table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 2rem;
+    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border: 1px solid var(--border-primary);
+}
+
+.periodic-table {
+    display: grid;
+    grid-template-columns: repeat(19, 1fr);
+    gap: 2px;
+    min-width: 320px;
+    margin: 0 auto;
+}
+
+.element {
+    aspect-ratio: 1;
+    min-width: 28px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    font-size: 0.65rem;
+}
+
+.element::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.element:hover {
+    transform: translateY(-4px) scale(1.08);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-blue);
+    z-index: 10;
+}
+
+.element:hover::before {
+    opacity: 1;
+}
+
+.element:active {
+    transform: translateY(-2px) scale(1.05);
+}
+
+.element.active {
+    transform: translateY(-6px) scale(1.1);
+    box-shadow: 0 0 32px rgba(88, 166, 255, 0.4);
+    border-color: var(--accent-blue);
+    z-index: 20;
+    animation: pulse-border 2s infinite;
+}
+
+.element-header {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.element .symbol {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 4px 0 1px 0;
+    z-index: 1;
+}
+
+.element .number {
+    font-size: 0.55rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    z-index: 1;
+}
+
+.nonmetal { background: linear-gradient(135deg, #1a365d, #2a4a6b); border-color: #3182ce; }
+.nonmetal .symbol { color: #63b3ed; }
+
+.noblegas { background: linear-gradient(135deg, #553c9a, #6b46c1); border-color: #8b5cf6; }
+.noblegas .symbol { color: #c4b5fd; }
+
+.alkalimetal { background: linear-gradient(135deg, #c05621, #dd6b20); border-color: #ed8936; }
+.alkalimetal .symbol { color: #fbd38d; }
+
+.alkearthmetal { background: linear-gradient(135deg, #2c7a7b, #319795); border-color: #38b2ac; }
+.alkearthmetal .symbol { color: #81e6d9; }
+
+.metalloid { background: linear-gradient(135deg, #805ad5, #9f7aea); border-color: #b794f6; }
+.metalloid .symbol { color: #d6bcfa; }
+
+.halogen { background: linear-gradient(135deg, #d69e2e, #ecc94b); border-color: #f6e05e; }
+.halogen .symbol { color: #faf089; }
+
+.transitionmetal { background: linear-gradient(135deg, #4a5568, #718096); border-color: #a0aec0; }
+.transitionmetal .symbol { color: #e2e8f0; }
+
+.post-transitionmetal { background: linear-gradient(135deg, #e53e3e, #f56565); border-color: #fc8181; }
+.post-transitionmetal .symbol { color: #fed7d7; }
+
+.lanthanide { background: linear-gradient(135deg, #d53f8c, #e53e3e); border-color: #f687b3; }
+.lanthanide .symbol { color: #fbb6ce; }
+
+.actinide { background: linear-gradient(135deg, #2d3748, #4a5568); border-color: #718096; }
+.actinide .symbol { color: #cbd5e0; }
+
+.unknown { background: linear-gradient(135deg, #1a202c, #2d3748); border-color: #4a5568; }
+.unknown .symbol { color: #a0aec0; }
+
+.lanthanide-series, .actinide-series {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-primary);
+    overflow-x: auto;
+}
+
+.series-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.series-elements {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    gap: 2px;
+    min-width: 450px;
+}
+
+@keyframes pulse-border {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(88, 166, 255, 0);
+    }
+}
