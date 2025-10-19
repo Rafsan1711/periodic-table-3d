@@ -1,66 +1,50 @@
 /**
- * Page Toggle Module (FULLY FIXED)
- * Handles switching between Periodic Table, Molecules, and Chemical Reactions pages
+ * Page Toggle Module - COMPLETE FIXED
+ * Properly shows/hides pages and renders content
  */
 
-/**
- * Initializes the page toggle functionality
- */
 function initPageToggle() {
     const togglePeriodic = document.getElementById('togglePeriodic');
     const toggleMolecules = document.getElementById('toggleMolecules');
     const toggleReactions = document.getElementById('toggleReactions');
+    const toggleCommunity = document.getElementById('toggleCommunity');
     
-    // Get ONLY the periodic table specific elements (NOT the whole container)
+    // FIXED: Get correct page elements
+    const periodicPage = document.querySelector('.periodic-table-wrapper')?.parentElement || document.getElementById('periodic-page');
+    const moleculesPage = document.getElementById('moleculesPage');
+    const reactionsPage = document.getElementById('reactionsPage');
+    const communityPage = document.getElementById('communityPage');
+    
+    // Also get individual periodic table elements
     const periodicTableWrapper = document.querySelector('.periodic-table-wrapper');
     const legend = document.querySelector('.legend');
-    const lanthanideSeries = document.querySelector('.lanthanide-series');
-    const actinideSeries = document.querySelector('.actinide-series');
-    
-    // Get other pages
-    const moleculesPageEl = document.getElementById('moleculesPage');
-    const reactionsPageEl = document.getElementById('reactionsPage');
+    const seriesRows = document.querySelector('.periodic-table-wrapper')?.parentElement?.querySelector('.row.g-3.mt-3');
     
     console.log('🔄 Initializing page toggle...');
-    console.log('Elements found:', {
-        periodicTableWrapper: !!periodicTableWrapper,
-        legend: !!legend,
-        moleculesPage: !!moleculesPageEl,
-        reactionsPage: !!reactionsPageEl
-    });
     
-    // Function to hide all pages
     function hideAllPages() {
         // Hide periodic table elements
-        if (periodicTableWrapper) {
-            periodicTableWrapper.style.display = 'none';
-        }
-        if (legend) {
-            legend.style.display = 'none';
-        }
-        if (lanthanideSeries) {
-            lanthanideSeries.style.display = 'none';
-        }
-        if (actinideSeries) {
-            actinideSeries.style.display = 'none';
-        }
+        if (periodicTableWrapper) periodicTableWrapper.style.display = 'none';
+        if (legend) legend.style.display = 'none';
+        if (seriesRows) seriesRows.style.display = 'none';
         
-        // Hide molecules page
-        if (moleculesPageEl) {
-            moleculesPageEl.style.display = 'none';
-            moleculesPageEl.setAttribute('aria-hidden', 'true');
+        // Hide other pages
+        if (moleculesPage) {
+            moleculesPage.style.display = 'none';
+            moleculesPage.setAttribute('aria-hidden', 'true');
         }
-        
-        // Hide reactions page
-        if (reactionsPageEl) {
-            reactionsPageEl.style.display = 'none';
-            reactionsPageEl.setAttribute('aria-hidden', 'true');
+        if (reactionsPage) {
+            reactionsPage.style.display = 'none';
+            reactionsPage.setAttribute('aria-hidden', 'true');
+        }
+        if (communityPage) {
+            communityPage.style.display = 'none';
+            communityPage.setAttribute('aria-hidden', 'true');
         }
     }
     
-    // Function to update button states
     function updateButtonStates(activeButton) {
-        [togglePeriodic, toggleMolecules, toggleReactions].forEach(btn => {
+        [togglePeriodic, toggleMolecules, toggleReactions, toggleCommunity].forEach(btn => {
             if (btn) btn.classList.remove('active');
         });
         if (activeButton) activeButton.classList.add('active');
@@ -78,17 +62,9 @@ function initPageToggle() {
                 periodicTableWrapper.style.display = 'block';
                 console.log('✅ Periodic table shown');
             }
-            if (legend) {
-                legend.style.display = 'flex';
-            }
-            if (lanthanideSeries) {
-                lanthanideSeries.style.display = 'block';
-            }
-            if (actinideSeries) {
-                actinideSeries.style.display = 'block';
-            }
+            if (legend) legend.style.display = 'flex';
+            if (seriesRows) seriesRows.style.display = 'block';
             
-            // Refresh AOS
             if (typeof AOS !== 'undefined') {
                 setTimeout(() => AOS.refresh(), 100);
             }
@@ -102,59 +78,77 @@ function initPageToggle() {
             hideAllPages();
             updateButtonStates(toggleMolecules);
             
-            // Show molecules page
-            if (moleculesPageEl) {
-                moleculesPageEl.style.display = 'block';
-                moleculesPageEl.setAttribute('aria-hidden', 'false');
+            if (moleculesPage) {
+                moleculesPage.style.display = 'block';
+                moleculesPage.setAttribute('aria-hidden', 'false');
                 console.log('✅ Molecules page shown');
                 
-                // Render molecules list if empty
+                // FIXED: Render molecules list properly
                 setTimeout(() => {
                     const moleculesList = document.getElementById('moleculesList');
-                    if (moleculesList) {
-                        if (moleculesList.children.length === 0 || 
-                            moleculesList.querySelector('.spinner-border')) {
-                            console.log('🔄 Rendering molecules list...');
-                            renderMoleculesList();
-                        }
+                    if (moleculesList && typeof renderMoleculesList === 'function') {
+                        // Always render to ensure content shows
+                        console.log('🔄 Rendering molecules list...');
+                        renderMoleculesList();
                     }
                 }, 100);
-            } else {
-                console.error('❌ Molecules page element not found!');
             }
             
-            // Refresh AOS
             if (typeof AOS !== 'undefined') {
                 setTimeout(() => AOS.refresh(), 100);
             }
         });
     }
     
-    // Show Chemical Reactions
+    // Show Reactions
     if (toggleReactions) {
         toggleReactions.addEventListener('click', () => {
             console.log('⚗️ Switching to Reactions');
             hideAllPages();
             updateButtonStates(toggleReactions);
             
-            // Show reactions page
-            if (reactionsPageEl) {
-                reactionsPageEl.style.display = 'block';
-                reactionsPageEl.setAttribute('aria-hidden', 'false');
+            if (reactionsPage) {
+                reactionsPage.style.display = 'block';
+                reactionsPage.setAttribute('aria-hidden', 'false');
                 console.log('✅ Reactions page shown');
                 
-                // Initialize theatre if not already initialized
+                // FIXED: Initialize theatre properly
                 setTimeout(() => {
-                    if (!theatreRenderer) {
+                    if (typeof theatreRenderer === 'undefined' || !theatreRenderer) {
                         console.log('🎬 Initializing theatre...');
-                        initTheatre();
+                        if (typeof initTheatre === 'function') {
+                            initTheatre();
+                        }
                     }
                 }, 200);
-            } else {
-                console.error('❌ Reactions page element not found!');
             }
             
-            // Refresh AOS
+            if (typeof AOS !== 'undefined') {
+                setTimeout(() => AOS.refresh(), 100);
+            }
+        });
+    }
+    
+    // Show Community
+    if (toggleCommunity) {
+        toggleCommunity.addEventListener('click', () => {
+            console.log('👥 Switching to Community');
+            hideAllPages();
+            updateButtonStates(toggleCommunity);
+            
+            if (communityPage) {
+                communityPage.style.display = 'block';
+                communityPage.setAttribute('aria-hidden', 'false');
+                console.log('✅ Community page shown');
+                
+                // Load forum feed
+                setTimeout(() => {
+                    if (typeof loadForumFeed === 'function') {
+                        loadForumFeed();
+                    }
+                }, 100);
+            }
+            
             if (typeof AOS !== 'undefined') {
                 setTimeout(() => AOS.refresh(), 100);
             }
@@ -167,16 +161,35 @@ function initPageToggle() {
         togglePeriodic.classList.add('active');
         if (periodicTableWrapper) periodicTableWrapper.style.display = 'block';
         if (legend) legend.style.display = 'flex';
-        if (lanthanideSeries) lanthanideSeries.style.display = 'block';
-        if (actinideSeries) actinideSeries.style.display = 'block';
+        if (seriesRows) seriesRows.style.display = 'block';
     }
     
     console.log('✅ Page toggle initialized successfully');
 }
 
-// Auto-initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPageToggle);
-} else {
-    initPageToggle();
+function showPeriodicPage() {
+    const btn = document.getElementById('togglePeriodic');
+    if (btn) btn.click();
 }
+
+function showMoleculesPage() {
+    const btn = document.getElementById('toggleMolecules');
+    if (btn) btn.click();
+}
+
+function showReactionsPage() {
+    const btn = document.getElementById('toggleReactions');
+    if (btn) btn.click();
+}
+
+function showCommunityPage() {
+    const btn = document.getElementById('toggleCommunity');
+    if (btn) btn.click();
+}
+
+// Don't auto-initialize - let auth-handler do it
+window.initPageToggle = initPageToggle;
+window.showPeriodicPage = showPeriodicPage;
+window.showMoleculesPage = showMoleculesPage;
+window.showReactionsPage = showReactionsPage;
+window.showCommunityPage = showCommunityPage;

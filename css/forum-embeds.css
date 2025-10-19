@@ -1,0 +1,191 @@
+.reaction-embed {
+    margin: 15px 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.reaction-theatre {
+    height: 250px;
+    background: #0d1117;
+    position: relative;
+}
+
+.reaction-equation {
+    padding: 15px;
+    background: var(--bg-tertiary);
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.equation-text {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+}
+
+.molecule-embed {
+    margin: 15px 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.molecule-3d-viewer {
+    height: 200px;
+    background: #0d1117;
+}
+
+.molecule-info {
+    padding: 12px;
+    background: var(--bg-tertiary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.molecule-info strong {
+    color: var(--text-primary);
+}
+
+.molecule-info span {
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.post-menu {
+    position: relative;
+    margin-left: auto;
+}
+
+.post-menu-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.post-menu-btn:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.post-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 5px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    min-width: 150px;
+    z-index: 100;
+    overflow: hidden;
+}
+
+.post-menu-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.post-menu-dropdown button:hover {
+    background: var(--bg-tertiary);
+}
+
+.post-menu-dropdown button i {
+    margin-right: 8px;
+    width: 16px;
+}
+
+.embedded-reaction-preview,
+.embedded-molecule-preview {
+    margin: 15px 0;
+    padding: 15px;
+    background: var(--bg-primary);
+    border: 2px solid var(--accent-blue);
+    border-radius: 10px;
+    position: relative;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: var(--accent-blue);
+}
+
+.remove-embed-btn {
+    background: var(--accent-red);
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-equation,
+.preview-content {
+    font-weight: 600;
+    text-align: center;
+}
+
+.molecule-picker-list {
+    max-height: 400px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.molecule-picker-item {
+    padding: 15px;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-primary);
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.molecule-picker-item:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(88, 166, 255, 0.2);
+}
+
+.molecule-picker-item .molecule-badge {
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    color: white;
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.molecule-picker-item .molecule-name {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}

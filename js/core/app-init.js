@@ -1,9 +1,9 @@
 /**
- * App Initialization Module (ENHANCED with Loader & Effects)
- * Main entry point - initializes all features on page load
+ * App Initialization Module - COMPLETE FIXED
+ * Fixes all initialization and missing function errors
  */
 
-// Show loader initially
+// Show loader
 function showLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) {
@@ -12,7 +12,7 @@ function showLoader() {
     }
 }
 
-// Hide loader with smooth animation
+// Hide loader
 function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) {
@@ -21,54 +21,89 @@ function hideLoader() {
             setTimeout(() => {
                 loader.style.display = 'none';
             }, 500);
-        }, 800); // Show loader for at least 800ms
+        }, 800);
     }
 }
 
-// Initialize app with smooth loader transition
+/**
+ * FIXED: Show notification toast (was missing)
+ */
+function showNotification(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `notification-toast toast-${type}`;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        padding: 15px 25px;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        z-index: 9999;
+        max-width: 350px;
+    `;
+    
+    if (type === 'success') {
+        toast.style.background = '#7ce38b';
+    } else if (type === 'error') {
+        toast.style.background = '#ff7b72';
+    } else {
+        toast.style.background = '#58a6ff';
+    }
+    
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.style.transform = 'translateX(0)', 100);
+    setTimeout(() => {
+        toast.style.transform = 'translateX(400px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Make it globally available
+window.showNotification = showNotification;
+
+// Check authentication
+function checkAuth() {
+    return new Promise((resolve) => {
+        const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+            unsubscribe();
+            resolve(user);
+        });
+    });
+}
+
+// Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
     showLoader();
     
     try {
-        // Initialize Periodic Table with delay for smooth rendering
-        await new Promise(resolve => {
-            setTimeout(() => {
-                initPeriodicTable();
-                resolve();
-            }, 100);
-        });
+        const user = await checkAuth();
         
-        // Initialize Molecules features
-        await new Promise(resolve => {
-            setTimeout(() => {
-                renderMoleculesList();
-                initMoleculesSearch();
-                resolve();
-            }, 200);
-        });
+        if (user) {
+            console.log('✅ User authenticated:', user.email);
+            
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            
+            // CRITICAL FIX: Don't initialize modules here
+            // Let auth-handler.js handle it
+            
+        } else {
+            console.log('ℹ️ No user authenticated, showing login screen');
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('auth-screen').style.display = 'flex';
+        }
         
-        // Initialize Chemical Reactions features
-        await new Promise(resolve => {
-            setTimeout(() => {
-                initReactionsBuilder();
-                initReactantSelector();
-                resolve();
-            }, 300);
-        });
-        
-        // Initialize Page Toggle
-        initPageToggle();
-        
-        // Initialize tooltips
         initTooltips();
-        
-        // Add click sound effect
         addClickEffects();
-        
-        // Add keyboard shortcuts
         initKeyboardShortcuts();
         
-        console.log('✅ Interactive Periodic Table, Molecules & Chemical Reactions App Initialized');
+        console.log('✅ Interactive Periodic Table with Community App Initialized');
         
     } catch (error) {
         console.error('❌ Error initializing app:', error);
@@ -77,9 +112,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-/**
- * Initialize Tippy tooltips
- */
 function initTooltips() {
     if (typeof tippy !== 'undefined') {
         tippy('[data-tippy-content]', {
@@ -93,11 +125,7 @@ function initTooltips() {
     }
 }
 
-/**
- * Add click effects to interactive elements
- */
 function addClickEffects() {
-    // Ripple effect function
     function createRipple(event) {
         const button = event.currentTarget;
         const ripple = document.createElement('span');
@@ -112,11 +140,9 @@ function addClickEffects() {
         ripple.classList.add('ripple');
         
         button.appendChild(ripple);
-        
         setTimeout(() => ripple.remove(), 600);
     }
     
-    // Add ripple CSS
     if (!document.getElementById('ripple-styles')) {
         const style = document.createElement('style');
         style.id = 'ripple-styles';
@@ -129,15 +155,10 @@ function addClickEffects() {
                 transform: scale(0);
                 animation: ripple-animation 0.6s ease-out;
             }
-            
             @keyframes ripple-animation {
-                to {
-                    transform: scale(4);
-                    opacity: 0;
-                }
+                to { transform: scale(4); opacity: 0; }
             }
-            
-            button, .toggle-btn, .element, .molecule-item, .reactant-item {
+            button, .toggle-btn, .element, .molecule-item, .reactant-item, .forum-post-card {
                 position: relative;
                 overflow: hidden;
             }
@@ -145,7 +166,6 @@ function addClickEffects() {
         document.head.appendChild(style);
     }
     
-    // Add click effect to all interactive elements
     const interactiveElements = document.querySelectorAll(
         'button, .toggle-btn, .element, .molecule-item, .reactant-item, .close-btn'
     );
@@ -154,7 +174,6 @@ function addClickEffects() {
         element.addEventListener('click', createRipple);
     });
     
-    // Add effect to dynamically created elements
     const observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
             mutation.addedNodes.forEach(node => {
@@ -175,46 +194,46 @@ function addClickEffects() {
         });
     });
     
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+    observer.observe(document.body, { childList: true, subtree: true });
 }
 
-/**
- * Initialize keyboard shortcuts
- */
 function initKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-        // ESC to close modals
         if (e.key === 'Escape') {
             const elementModal = document.getElementById('elementModal');
             const matterModal = document.getElementById('matterModal');
             const reactantModal = document.getElementById('reactantModal');
+            const createPostModal = document.getElementById('create-post-modal');
+            const notificationModal = document.getElementById('notification-modal');
             
             if (elementModal && elementModal.classList.contains('active')) {
-                closeModal();
+                if (typeof closeModal === 'function') closeModal();
             } else if (matterModal && matterModal.classList.contains('active')) {
-                closeMatterModal();
+                if (typeof closeMatterModal === 'function') closeMatterModal();
             } else if (reactantModal && reactantModal.classList.contains('active')) {
-                closeReactantSelector();
+                if (typeof closeReactantSelector === 'function') closeReactantSelector();
+            } else if (createPostModal && createPostModal.classList.contains('active')) {
+                if (typeof closeCreatePostModal === 'function') closeCreatePostModal();
+            } else if (notificationModal && notificationModal.classList.contains('active')) {
+                if (typeof closeNotificationModal === 'function') closeNotificationModal();
             }
         }
         
-        // Ctrl/Cmd + K to focus search
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
             const moleculeSearch = document.getElementById('moleculeSearch');
             const reactantSearch = document.getElementById('reactantSearch');
+            const forumSearch = document.getElementById('forum-search');
             
             if (moleculeSearch && moleculeSearch.offsetParent !== null) {
                 moleculeSearch.focus();
             } else if (reactantSearch && reactantSearch.offsetParent !== null) {
                 reactantSearch.focus();
+            } else if (forumSearch && forumSearch.offsetParent !== null) {
+                forumSearch.focus();
             }
         }
         
-        // Tab navigation between pages (1, 2, 3)
         if (e.key === '1' && !e.ctrlKey && !e.metaKey) {
             const target = document.activeElement;
             if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
@@ -233,36 +252,44 @@ function initKeyboardShortcuts() {
                 document.getElementById('toggleReactions')?.click();
             }
         }
+        if (e.key === '4' && !e.ctrlKey && !e.metaKey) {
+            const target = document.activeElement;
+            if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+                document.getElementById('toggleCommunity')?.click();
+            }
+        }
+        
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+            const communityPage = document.getElementById('communityPage');
+            if (communityPage && communityPage.style.display !== 'none') {
+                e.preventDefault();
+                if (typeof openCreatePostModal === 'function') {
+                    openCreatePostModal();
+                }
+            }
+        }
     });
     
     console.log('⌨️ Keyboard shortcuts enabled:');
     console.log('  ESC - Close modals');
     console.log('  Ctrl/Cmd + K - Focus search');
-    console.log('  1/2/3 - Switch between pages');
+    console.log('  1/2/3/4 - Switch between pages');
+    console.log('  Ctrl/Cmd + N - Create new post');
 }
 
-/**
- * Add smooth scroll behavior
- */
 function addSmoothScroll() {
     document.documentElement.style.scrollBehavior = 'smooth';
 }
 
-/**
- * Performance optimization - Lazy load elements
- */
 function optimizePerformance() {
-    // Throttle resize events
     let resizeTimeout;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
-            // Trigger resize handlers
             window.dispatchEvent(new Event('optimizedResize'));
         }, 250);
     }, { passive: true });
     
-    // Use Intersection Observer for animations
     if ('IntersectionObserver' in window) {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -270,26 +297,18 @@ function optimizePerformance() {
                     entry.target.classList.add('visible');
                 }
             });
-        }, {
-            threshold: 0.1,
-            rootMargin: '50px'
-        });
+        }, { threshold: 0.1, rootMargin: '50px' });
         
-        // Observe elements with fade-in effect
         document.querySelectorAll('[data-aos]').forEach(el => {
             observer.observe(el);
         });
     }
 }
 
-/**
- * Initialize on page load
- */
 window.addEventListener('load', () => {
     addSmoothScroll();
     optimizePerformance();
     
-    // Initialize AOS if available
     if (typeof AOS !== 'undefined') {
         AOS.init({
             duration: 800,
@@ -299,28 +318,20 @@ window.addEventListener('load', () => {
         });
     }
     
-    // Add loaded class to body
     document.body.classList.add('loaded');
-    
     console.log('🎨 UI enhancements loaded');
 });
 
-/**
- * Handle online/offline status
- */
 window.addEventListener('online', () => {
     console.log('🌐 Connection restored');
-    // Show toast notification if you have one
+    showNotification('Connection restored', 'success');
 });
 
 window.addEventListener('offline', () => {
-    console.log('📵 Connection lost');
-    // Show toast notification if you have one
+    console.log('🔵 Connection lost');
+    showNotification('Connection lost', 'error');
 });
 
-/**
- * Error handling
- */
 window.addEventListener('error', (e) => {
     console.error('❌ Global error:', e.error);
 });
@@ -329,19 +340,6 @@ window.addEventListener('unhandledrejection', (e) => {
     console.error('❌ Unhandled promise rejection:', e.reason);
 });
 
-/**
- * Service Worker Registration (Optional - for PWA)
- */
-if ('serviceWorker' in navigator) {
-    // Uncomment to enable PWA features
-    // navigator.serviceWorker.register('/sw.js')
-    //     .then(reg => console.log('✅ Service Worker registered'))
-    //     .catch(err => console.log('❌ Service Worker registration failed:', err));
-}
-
-/**
- * Console welcome message
- */
-console.log('%c⚛️ Interactive Periodic Table', 'font-size: 24px; font-weight: bold; color: #58a6ff;');
-console.log('%cBuilt with Three.js, GSAP, and modern web technologies', 'color: #8b949e;');
-console.log('%c🧪 Explore 118 elements, molecules, and chemical reactions!', 'color: #7ce38b;');
+console.log('%c⚛️ Interactive Periodic Table with Community', 'font-size: 24px; font-weight: bold; color: #58a6ff;');
+console.log('%cBuilt with Three.js, GSAP, Firebase, and modern web technologies', 'color: #8b949e;');
+console.log('%c🧪 Explore elements, molecules, reactions, and join the community!', 'color: #7ce38b;');

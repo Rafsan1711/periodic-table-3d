@@ -1,0 +1,127 @@
+.molecules-page {
+    padding: 1rem;
+}
+
+.molecules-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+}
+
+.molecules-controls {
+    margin-bottom: 1.5rem;
+}
+
+.molecules-controls .input-group {
+    margin-bottom: 0.75rem;
+}
+
+.molecules-controls .input-group-text {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    color: var(--accent-blue);
+}
+
+.molecules-controls input {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+}
+
+.molecules-controls input:focus {
+    background: var(--bg-primary);
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25);
+}
+
+.sort-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.sort-controls button {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-primary);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sort-controls button:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.sort-controls button.active {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    color: white;
+    border-color: transparent;
+}
+
+.molecules-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.molecule-item {
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+    border: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.molecule-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-blue);
+}
+
+.molecule-item:active {
+    transform: translateY(-2px);
+}
+
+.molecule-badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    color: #041124;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.molecule-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.molecule-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.molecule-formula {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
