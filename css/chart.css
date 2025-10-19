@@ -1,0 +1,64 @@
+.reactivity-section {
+    margin-top: 1rem;
+    animation: chartFadeIn 0.6s ease forwards;
+}
+
+.reactivity-chart-container {
+    min-height: 300px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    border: 1px solid var(--border-primary);
+    overflow-x: auto;
+}
+
+.reactivity-chart-container svg {
+    display: block;
+    margin: 0 auto;
+}
+
+.chart-tooltip {
+    pointer-events: none;
+}
+
+.reactivity-chart-container .domain {
+    stroke: #30363d;
+}
+
+.reactivity-chart-container .tick line {
+    stroke: #30363d;
+}
+
+.reactivity-chart-container .tick text {
+    fill: #8b949e;
+    font-family: 'Inter', sans-serif;
+}
+
+@keyframes chartFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .reactivity-chart-container {
+        min-height: 250px;
+        padding: 0.75rem;
+    }
+    
+    .reactivity-section {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .reactivity-chart-container {
+        min-height: 220px;
+        padding: 0.5rem;
+    }
+}
