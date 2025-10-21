@@ -171,3 +171,27 @@ td {
 tr:hover {
     background: var(--bg-tertiary);
 }
+/* Mobile Performance Optimizations */
+.mobile-device * {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.mobile-device .modal-content {
+    will-change: transform;
+}
+
+.low-end-device * {
+    animation-duration: 0s !important;
+    transition-duration: 0.1s !important;
+}
+
+.low-end-device [data-aos] {
+    animation: none !important;
+}
+
+.molecules-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
