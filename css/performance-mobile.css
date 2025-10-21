@@ -1,0 +1,540 @@
+/**
+ * Performance Mobile CSS
+ * GPU acceleration, animations optimization, efficient rendering
+ */
+
+/* ============================================
+   1. REDUCE MOTION SUPPORT
+   ============================================ */
+
+body.reduce-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   2. GPU ACCELERATION FOR PERFORMANCE
+   ============================================ */
+
+.modal-content,
+.molecule-item,
+.element,
+.forum-post-card,
+.notification-item {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+.modal,
+.periodic-table {
+    will-change: opacity;
+}
+
+/* ============================================
+   3. OPTIMIZED ANIMATIONS
+   ============================================ */
+
+@keyframes fadeInUpOptimized {
+    from {
+        opacity: 0;
+        transform: translateY(10px) translateZ(0);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) translateZ(0);
+    }
+}
+
+@keyframes slideInOptimized {
+    from {
+        opacity: 0;
+        transform: translateX(-20px) translateZ(0);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) translateZ(0);
+    }
+}
+
+.molecule-item {
+    animation: fadeInUpOptimized 0.4s ease forwards;
+}
+
+/* ============================================
+   4. EFFICIENT SCROLLING
+   ============================================ */
+
+.molecules-list,
+.comments-list,
+#forum-feed {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Disable smooth scroll on mobile for better performance */
+@media (max-width: 768px) {
+    html {
+        scroll-behavior: auto;
+    }
+    
+    .molecules-list,
+    .comments-list,
+    #forum-feed {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: auto;
+    }
+}
+
+/* ============================================
+   5. OPTIMIZED MODAL SCROLLING
+   ============================================ */
+
+.modal-content {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    max-height: 90vh;
+}
+
+.modal-body {
+    will-change: scroll-position;
+}
+
+/* ============================================
+   6. EFFICIENT TOUCH TARGETS
+   ============================================ */
+
+button, .toggle-btn, .element, .molecule-item, .reactant-item, .close-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: max(8px, env(safe-area-inset-bottom));
+}
+
+@media (max-width: 480px) {
+    button, .toggle-btn, .element, .molecule-item, .reactant-item, .close-btn {
+        min-height: 48px;
+        min-width: 48px;
+    }
+}
+
+/* ============================================
+   7. LAZY LOADING STYLES
+   ============================================ */
+
+img[data-src] {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+img[data-src].loaded {
+    opacity: 1;
+}
+
+/* ============================================
+   8. LOADING SPINNER (NON-BLOCKING)
+   ============================================ */
+
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(88, 166, 255, 0.2);
+    border-top-color: #58a6ff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    will-change: transform;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg) translateZ(0); }
+}
+
+/* ============================================
+   9. EFFICIENT TRANSITIONS
+   ============================================ */
+
+/* Use transform instead of positional properties */
+.modal.active .modal-content {
+    transform: scale(1) translateZ(0);
+}
+
+.element:hover {
+    transform: translateY(-4px) scale(1.08) translateZ(0);
+}
+
+.molecule-item:hover {
+    transform: translateY(-4px) translateZ(0);
+}
+
+.post-action-btn:hover {
+    transform: translateY(-2px) translateZ(0);
+}
+
+/* ============================================
+   10. CONTENT-VISIBILITY FOR OFFSCREEN ELEMENTS
+   ============================================ */
+
+.molecule-item,
+.forum-post-card,
+.notification-item {
+    content-visibility: auto;
+}
+
+/* ============================================
+   11. OPTIMIZED TEXT RENDERING
+   ============================================ */
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* ============================================
+   12. RESPONSIVE IMAGE OPTIMIZATION
+   ============================================ */
+
+img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* ============================================
+   13. TOUCH ACTION OPTIMIZATION
+   ============================================ */
+
+.modal-content {
+    touch-action: pan-y;
+}
+
+.periodic-table {
+    touch-action: pan-x pan-y;
+}
+
+.element {
+    touch-action: manipulation;
+}
+
+/* ============================================
+   14. EFFICIENT BOX SHADOW (Mobile)
+   ============================================ */
+
+@media (max-width: 768px) {
+    .modal {
+        box-shadow: none;
+    }
+    
+    .modal-content {
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .info-section:hover {
+        box-shadow: none;
+        border-color: var(--accent-blue);
+    }
+}
+
+/* ============================================
+   15. SAFE AREA INSETS (Notch Support)
+   ============================================ */
+
+.header {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+.modal-header {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+/* ============================================
+   16. OPTIMIZED RIPPLE EFFECT
+   ============================================ */
+
+.ripple {
+    transform: scale(0) translateZ(0);
+    animation: ripple-animation-optimized 0.6s ease-out;
+}
+
+@keyframes ripple-animation-optimized {
+    to { 
+        transform: scale(4) translateZ(0);
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   17. EFFICIENT OPACITY CHANGES
+   ============================================ */
+
+.notification-toast-popup {
+    opacity: 1;
+    transform: translateX(0) translateZ(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.notification-toast-popup:not(.show) {
+    opacity: 0;
+    transform: translateX(400px) translateZ(0);
+}
+
+/* ============================================
+   18. MOBILE-SPECIFIC OPTIMIZATIONS
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Disable complex animations on mobile */
+    .element-glow {
+        animation: none;
+        opacity: 0.8;
+    }
+    
+    /* Simpler hover effects */
+    .element:hover {
+        box-shadow: none;
+    }
+    
+    /* Reduce gradient complexity */
+    .header h1 {
+        background: var(--accent-blue);
+        -webkit-text-fill-color: var(--accent-blue);
+    }
+    
+    /* Efficient filtering */
+    .forum-filters {
+        scroll-snap-type: x mandatory;
+    }
+    
+    .topic-filter-btn {
+        scroll-snap-align: start;
+    }
+    
+    /* Reduce transform complexity */
+    .modal-content {
+        transform: none;
+    }
+    
+    /* Optimize transitions */
+    * {
+        transition-duration: 0.15s;
+    }
+    
+    /* Reduce shadow rendering cost */
+    .molecule-item:hover {
+        box-shadow: none;
+        border-color: var(--accent-blue);
+    }
+}
+
+/* ============================================
+   19. EFFICIENT SWIPE INDICATOR
+   ============================================ */
+
+.modal-content {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* ============================================
+   20. THROTTLED SCROLL INDICATOR
+   ============================================ */
+
+.modal-body {
+    scroll-behavior: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+   21. FONT OPTIMIZATION
+   ============================================ */
+
+@media (max-width: 768px) {
+    body {
+        font-size: 15px;
+    }
+    
+    .header h1 {
+        font-size: clamp(1.5rem, 5vw, 2rem);
+    }
+    
+    .element .symbol {
+        font-size: 0.7rem;
+    }
+}
+
+/* ============================================
+   22. PAINT OPTIMIZATION
+   ============================================ */
+
+.periodic-table {
+    contain: layout style paint;
+}
+
+.molecules-list {
+    contain: layout style paint;
+}
+
+#forum-feed {
+    contain: layout style;
+}
+
+/* ============================================
+   23. MEMORY EFFICIENT GRADIENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Simpler gradients on mobile */
+    .accent-gradient {
+        background: var(--accent-blue);
+    }
+    
+    .header h1 {
+        background: none;
+        color: var(--accent-blue);
+        -webkit-text-fill-color: unset;
+    }
+}
+
+/* ============================================
+   24. OPTIMIZED FORM INPUTS
+   ============================================ */
+
+input, textarea, select {
+    font-size: 16px; /* Prevents zoom on iOS */
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+/* ============================================
+   25. EFFICIENT LIST RENDERING
+   ============================================ */
+
+.molecules-list,
+#forum-feed {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+    gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .molecules-list {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+    }
+    
+    #forum-feed {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* ============================================
+   26. PASSIVE EVENT LISTENERS (Via JS)
+   ============================================ */
+
+/* CSS for elements that have passive listeners */
+.modal-content,
+.molecules-list,
+#forum-feed {
+    pointer-events: auto;
+}
+
+/* ============================================
+   27. RESPONSIVE FONT SCALING
+   ============================================ */
+
+@media (max-width: 480px) {
+    .modal-title {
+        font-size: 1.2rem;
+    }
+    
+    .post-title {
+        font-size: 1rem;
+    }
+    
+    .legend-item {
+        font-size: 0.65rem;
+    }
+}
+
+/* ============================================
+   28. OPTIMIZED OVERFLOW HANDLING
+   ============================================ */
+
+.modal-body {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.molecules-list {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+   29. REDUCE REPAINTS
+   ============================================ */
+
+.element,
+.molecule-item,
+.forum-post-card {
+    border: 1px solid var(--border-primary);
+    background: var(--bg-tertiary);
+}
+
+/* Change only necessary properties on hover */
+.element:hover {
+    border-color: var(--accent-blue);
+    /* Don't change background or box-shadow on mobile */
+}
+
+/* ============================================
+   30. VIEWPORT OPTIMIZATION
+   ============================================ */
+
+@viewport {
+    width: device-width;
+    zoom: 1;
+}
+
+/* ============================================
+   31. THEME COLOR
+   ============================================ */
+
+meta[name="theme-color"] {
+    content: #0d1117;
+}
+
+/* ============================================
+   32. CRITICAL RENDERING PATH
+   ============================================ */
+
+.header,
+.periodic-table-wrapper,
+.page-toggle {
+    contain: layout;
+}
+
+/* Hide initially offscreen content */
+.molecules-page,
+.reactionsPage,
+.community-page {
+    contain: content;
+}
