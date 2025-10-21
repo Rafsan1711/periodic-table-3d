@@ -1,29 +1,32 @@
 /**
- * Molecule Modal Module (OPTIMIZED FOR MOBILE)
- * Fixed swipe detection to not conflict with scrolling
+ * Molecule Modal Module (MOBILE OPTIMIZED - SWIPE FIXED)
+ * Manages the molecule details modal window
  */
 
 let matterModalOpenTimestamp = 0;
+let matterIsScrolling = false;
+let matterScrollTimeout;
 
 /**
  * Opens modal with molecule details
+ * @param {Object} molecule - Molecule data
  */
 function openMatterModal(molecule) {
     console.log('🧬 Opening molecule modal:', molecule.name);
-
+    
     matterModalOpenTimestamp = Date.now();
-
+    
     const modal = document.getElementById('matterModal');
     const modalTitle = document.getElementById('matterModalTitle');
-
+    
     if (!modal || !modalTitle) {
         console.error('Matter modal elements not found');
         return;
     }
-
+    
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-
+    
     modalTitle.innerHTML = `<i class="fas fa-flask me-2"></i>${molecule.name} – ${molecule.formula}`;
 
     // Show loaders
@@ -38,7 +41,7 @@ function openMatterModal(molecule) {
             </div>
         `;
     }
-
+    
     // Update info
     const matterInfo = document.getElementById('matterInfo');
     if (matterInfo) {
@@ -67,25 +70,25 @@ function openMatterModal(molecule) {
 
     // Load Wikipedia
     loadMatterWiki(molecule.wikiTitle);
-
+    
     // Create 3D molecule with delay
     setTimeout(() => {
         create3DMolecule(molecule);
     }, 150);
-
+    
     // Draw 2D structure
     setTimeout(() => {
         draw2DMolecule(molecule);
     }, 300);
-
-    // Add improved swipe detection
-    addMatterSwipeToCloseOptimized(modal);
-
+    
+    // Add FIXED swipe to close
+    addMatterSwipeToCloseFixed(modal);
+    
     // Haptic feedback
     if ('vibrate' in navigator) {
         navigator.vibrate(10);
     }
-
+    
     // Refresh AOS
     if (typeof AOS !== 'undefined') {
         setTimeout(() => AOS.refresh(), 100);
@@ -96,34 +99,33 @@ function openMatterModal(molecule) {
  * Closes the molecule modal
  */
 function closeMatterModal() {
-    // Prevent rapid close
     if (Date.now() - matterModalOpenTimestamp < 300) {
         return;
     }
-
-    console.log('✖ Closing molecule modal');
-
+    
+    console.log('❌ Closing molecule modal');
+    
     const modal = document.getElementById('matterModal');
     if (!modal) return;
-
+    
     modal.classList.remove('active');
     document.body.style.overflow = '';
-
+    
     // Cleanup Three.js with delay
     setTimeout(() => {
-        if (typeof matterRenderer !== 'undefined' && matterRenderer) {
+        if (matterRenderer) {
             const c = document.getElementById('matterViewer');
             if (c && c.contains(matterRenderer.domElement)) {
                 c.removeChild(matterRenderer.domElement);
             }
-            try {
-                matterRenderer.dispose();
+            try { 
+                matterRenderer.dispose(); 
             } catch (e) {
                 console.warn('Matter renderer disposal warning:', e);
             }
-            window.matterRenderer = null;
+            matterRenderer = null;
         }
-        if (typeof matterScene !== 'undefined' && matterScene) {
+        if (matterScene) {
             matterScene.traverse(o => {
                 if (o.geometry) o.geometry.dispose();
                 if (o.material) {
@@ -134,12 +136,12 @@ function closeMatterModal() {
                     }
                 }
             });
-            window.matterScene = null;
+            matterScene = null;
         }
-        window.matterCamera = null;
-        window.matterGroup = null;
+        matterCamera = null;
+        matterGroup = null;
     }, 300);
-
+    
     // Haptic feedback
     if ('vibrate' in navigator) {
         navigator.vibrate(5);
@@ -147,71 +149,67 @@ function closeMatterModal() {
 }
 
 /**
- * FIXED: Improved swipe detection that doesn't interfere with scrolling
- * CRITICAL: Only close on deliberate downward drag from top
+ * FIXED: Add swipe to close with scroll detection for molecule modal
  */
-function addMatterSwipeToCloseOptimized(modal) {
-    const modalContent = modal.querySelector('.modal-content');
-    if (!modalContent) return;
-
+function addMatterSwipeToCloseFixed(modal) {
     let touchStartY = 0;
     let touchStartX = 0;
-    let touchCurrentY = 0;
-    let touchStartTime = 0;
-    let isDraggingDown = false;
-
+    let touchEndY = 0;
+    let touchEndX = 0;
+    let initialScrollTop = 0;
+    
+    const modalContent = modal.querySelector('.modal-content');
+    if (!modalContent) return;
+    
     modalContent.addEventListener('touchstart', (e) => {
         touchStartY = e.touches[0].clientY;
         touchStartX = e.touches[0].clientX;
-        touchStartTime = Date.now();
-        isDraggingDown = false;
+        initialScrollTop = modalContent.scrollTop;
+        matterIsScrolling = false;
     }, { passive: true });
-
+    
     modalContent.addEventListener('touchmove', (e) => {
-        if (!e.touches.length) return;
-
-        touchCurrentY = e.touches[0].clientY;
-        const touchCurrentX = e.touches[0].clientX;
-        const deltaY = touchCurrentY - touchStartY;
-        const deltaX = touchCurrentX - touchStartX;
-
-        // CRITICAL: Check if horizontal scroll (don't interfere)
-        if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
-            isDraggingDown = false;
-            return;
-        }
-
-        // Only process downward drags from near top
-        if (deltaY > 0 && touchStartY < 100 && deltaY > 15) {
-            isDraggingDown = true;
-            const opacity = Math.max(0.85, 1 - (deltaY / 300));
-            modalContent.style.opacity = opacity;
-            modalContent.style.transform = `translateY(${deltaY * 0.5}px)`;
+        touchEndY = e.touches[0].clientY;
+        touchEndX = e.touches[0].clientX;
+        
+        const diffY = touchEndY - touchStartY;
+        const diffX = Math.abs(touchEndX - touchStartX);
+        
+        clearTimeout(matterScrollTimeout);
+        matterScrollTimeout = setTimeout(() => {
+            matterIsScrolling = false;
+        }, 100);
+        
+        // Only apply transform if pulling down from top with dominant vertical movement
+        if (diffY > 0 && 
+            initialScrollTop === 0 && 
+            modalContent.scrollTop === 0 &&
+            diffY > diffX * 2 &&
+            diffY < 200) {
+            
+            modalContent.style.transform = `translateY(${diffY}px)`;
+            modalContent.style.transition = 'none';
+            e.preventDefault();
         } else {
-            isDraggingDown = false;
-            modalContent.style.opacity = '1';
-            modalContent.style.transform = 'translateY(0)';
+            matterIsScrolling = true;
+            modalContent.style.transform = '';
         }
-    }, { passive: true });
-
-    modalContent.addEventListener('touchend', (e) => {
-        const deltaY = touchCurrentY - touchStartY;
-        const timeDiff = Date.now() - touchStartTime;
-
-        // Reset styling
-        modalContent.style.opacity = '1';
-        modalContent.style.transform = 'translateY(0)';
-        modalContent.style.transition = 'all 0.3s ease';
-
-        // CRITICAL: Only close on significant downward drag from top
-        if (isDraggingDown && deltaY > 80 && timeDiff < 800 && touchStartY < 100) {
-            setTimeout(() => closeMatterModal(), 100);
+    }, { passive: false });
+    
+    modalContent.addEventListener('touchend', () => {
+        const diffY = touchEndY - touchStartY;
+        
+        if (diffY > 100 && initialScrollTop === 0 && !matterIsScrolling) {
+            closeMatterModal();
+        } else {
+            modalContent.style.transform = '';
+            modalContent.style.transition = 'transform 0.3s ease';
         }
-
-        // Remove transition after animation
-        setTimeout(() => {
-            modalContent.style.transition = '';
-        }, 300);
+        
+        touchStartY = 0;
+        touchEndY = 0;
+        touchStartX = 0;
+        touchEndX = 0;
     }, { passive: true });
 }
 
@@ -219,16 +217,14 @@ function addMatterSwipeToCloseOptimized(modal) {
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('matterModal');
     const closeBtn = document.getElementById('closeMatterModal');
-
-    // Close button
+    
     if (closeBtn) {
         closeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             closeMatterModal();
         });
     }
-
-    // Outside click
+    
     if (modal) {
         modal.addEventListener('click', (e) => {
             if (e.target.id === 'matterModal') {
@@ -236,9 +232,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    // ESC key
-    document.addEventListener('keydown', (e) => {
+    
+    document.addEventListener('keydown', (e) => { 
         if (e.key === 'Escape') {
             const matterModal = document.getElementById('matterModal');
             if (matterModal && matterModal.classList.contains('active')) {
@@ -246,10 +241,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
-    // Window resize
+    
     window.addEventListener('optimizedResize', () => {
-        if (typeof matterRenderer !== 'undefined' && matterRenderer && typeof matterCamera !== 'undefined' && matterCamera) {
+        if (matterRenderer && matterCamera) {
             const container = document.getElementById('matterViewer');
             if (container) {
                 matterCamera.aspect = container.clientWidth / container.clientHeight;
@@ -258,10 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }, { passive: true });
-
-    console.log('✅ Molecule modal initialized (Optimized for Mobile)');
+    
+    console.log('✅ Molecule modal initialized (MOBILE OPTIMIZED)');
 });
-
-// Export functions
-window.openMatterModal = openMatterModal;
-window.closeMatterModal = closeMatterModal;
