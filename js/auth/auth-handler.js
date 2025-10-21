@@ -1,5 +1,5 @@
 /**
- * Authentication Handler - FIXED
+ * Authentication Handler - WITH MOBILE OPTIMIZER
  * Properly initializes all modules after login
  */
 
@@ -157,7 +157,7 @@ function signOut() {
 }
 
 /**
- * CRITICAL FIX: Auth State Observer - Properly initialize modules
+ * Auth State Observer - Properly initialize modules
  */
 auth.onAuthStateChanged(async user => {
     if (user) {
@@ -174,7 +174,7 @@ auth.onAuthStateChanged(async user => {
         authScreen.style.display = 'none';
         mainApp.style.display = 'block';
         
-        // CRITICAL FIX: Initialize all modules in correct order
+        // Initialize all modules
         console.log('Initializing app for user:', currentAuthUser.displayName);
         await initializeApp();
         
@@ -188,10 +188,18 @@ auth.onAuthStateChanged(async user => {
 });
 
 /**
- * FIXED: Initialize app properly
+ * Initialize app with mobile optimizer FIRST
  */
 async function initializeApp() {
     try {
+        // 0. Initialize Mobile Optimizer FIRST
+        if (typeof MobileOptimizer !== 'undefined') {
+            console.log('📱 Initializing mobile optimizer...');
+            MobileOptimizer.init();
+        }
+        
+        await delay(50);
+        
         // 1. Initialize Periodic Table
         if (typeof initPeriodicTable === 'function') {
             console.log('📊 Initializing periodic table...');
@@ -226,7 +234,7 @@ async function initializeApp() {
         
         // 4. Initialize Forum
         if (typeof initForum === 'function') {
-            console.log('👥 Initializing forum...');
+            console.log('💥 Initializing forum...');
             initForum();
         }
         if (typeof initNotifications === 'function') {
