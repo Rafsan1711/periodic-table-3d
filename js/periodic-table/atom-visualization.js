@@ -1,6 +1,6 @@
 /**
- * Atom Visualization Module
- * Creates 3D atomic models using Three.js
+ * Atom Visualization Module (MOBILE OPTIMIZED)
+ * Creates 3D atomic models using Three.js with performance optimization
  */
 
 let currentAtom = null;
@@ -14,6 +14,11 @@ function create3DAtom(element) {
     const container = document.getElementById('atomViewer');
     container.innerHTML = '';
 
+    // Get device settings
+    const settings = window.MobileOptimizer ? 
+        MobileOptimizer.getSettings() : 
+        { enableShadows: true, antialias: true };
+
     // Scene setup
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0d1117);
@@ -22,31 +27,44 @@ function create3DAtom(element) {
     camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
     camera.position.set(0, 0, 20);
 
-    // Renderer setup
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    // Renderer setup with optimized settings
+    renderer = new THREE.WebGLRenderer({ 
+        antialias: settings.antialias,
+        powerPreference: 'high-performance'
+    });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio
+    
+    if (settings.enableShadows) {
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
+    
     container.appendChild(renderer.domElement);
 
     // Atom group
     currentAtom = new THREE.Group();
     scene.add(currentAtom);
 
-    // Create nucleus
-    const nucleusGeometry = new THREE.SphereGeometry(1, 32, 32);
+    // Create nucleus with reduced segments on mobile
+    const nucleusSegments = settings.antialias ? 32 : 16;
+    const nucleusGeometry = new THREE.SphereGeometry(1, nucleusSegments, nucleusSegments);
     const nucleusMaterial = new THREE.MeshPhongMaterial({
         color: 0xff4444,
         emissive: 0x330000,
         shininess: 100
     });
     const nucleus = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
-    nucleus.castShadow = true;
+    
+    if (settings.enableShadows) {
+        nucleus.castShadow = true;
+    }
+    
     currentAtom.add(nucleus);
 
     // Create electron shells
     const shells = calculateElectronShells(element.number);
-    createElectronShells(shells);
+    createElectronShells(shells, settings);
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
@@ -54,7 +72,11 @@ function create3DAtom(element) {
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(10, 10, 5);
-    directionalLight.castShadow = true;
+    
+    if (settings.enableShadows) {
+        directionalLight.castShadow = true;
+    }
+    
     scene.add(directionalLight);
 
     const pointLight = new THREE.PointLight(0x4444ff, 0.5);
@@ -85,11 +107,14 @@ function calculateElectronShells(atomicNumber) {
 }
 
 /**
- * Creates visual electron shells and electrons
+ * Creates visual electron shells and electrons (OPTIMIZED)
  * @param {Array} shells - Electrons per shell
+ * @param {Object} settings - Device settings
  */
-function createElectronShells(shells) {
+function createElectronShells(shells, settings) {
     const shellColors = [0x00ff00, 0x0099ff, 0xffff00, 0xff9900, 0xff0099, 0x9900ff, 0xff0000];
+    const ringSegments = settings.antialias ? 64 : 32;
+    const electronSegments = settings.antialias ? 16 : 8;
 
     shells.forEach((electronCount, shellIndex) => {
         if (electronCount > 0) {
@@ -97,7 +122,7 @@ function createElectronShells(shells) {
             const color = shellColors[shellIndex % shellColors.length];
 
             // Create orbital ring
-            const ringGeometry = new THREE.RingGeometry(radius - 0.1, radius + 0.1, 64);
+            const ringGeometry = new THREE.RingGeometry(radius - 0.1, radius + 0.1, ringSegments);
             const ringMaterial = new THREE.MeshBasicMaterial({
                 color: color,
                 transparent: true,
@@ -109,14 +134,17 @@ function createElectronShells(shells) {
 
             // Create electrons
             for (let i = 0; i < electronCount; i++) {
-                const electronGeometry = new THREE.SphereGeometry(0.2, 16, 16);
+                const electronGeometry = new THREE.SphereGeometry(0.2, electronSegments, electronSegments);
                 const electronMaterial = new THREE.MeshPhongMaterial({
                     color: color,
                     emissive: color,
                     emissiveIntensity: 0.3
                 });
                 const electron = new THREE.Mesh(electronGeometry, electronMaterial);
-                electron.castShadow = true;
+                
+                if (settings.enableShadows) {
+                    electron.castShadow = true;
+                }
 
                 const angle = (i / electronCount) * Math.PI * 2;
                 electron.position.set(
@@ -139,7 +167,7 @@ function createElectronShells(shells) {
 }
 
 /**
- * Animation loop for atom visualization
+ * Animation loop for atom visualization (OPTIMIZED)
  */
 function animateAtom() {
     if (!renderer || !scene || !camera) return;
@@ -163,3 +191,5 @@ function animateAtom() {
 
     renderer.render(scene, camera);
 }
+
+console.log('✅ Atom visualization loaded (MOBILE OPTIMIZED)');
