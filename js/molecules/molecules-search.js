@@ -1,70 +1,61 @@
 /**
  * Molecules Search Module (MOBILE OPTIMIZED)
- * Handles search functionality for molecules with adaptive debouncing
+ * Handles search functionality with debouncing
  */
 
-let currentSortMode = 'az'; // 'az' or 'score'
+let currentSortMode = 'az';
 let searchDebounce = null;
 
 /**
- * Initialize search functionality
+ * Initialize search functionality with mobile optimization
  */
 function initMoleculesSearch() {
     const moleculeSearch = document.getElementById('moleculeSearch');
     const sortAZ = document.getElementById('sortAZ');
     const sortScore = document.getElementById('sortScore');
 
-    // Get optimal debounce time based on device
-    const debounceTime = window.MobileOptimizer ? 
-        MobileOptimizer.getSettings().debounceTime : 
-        180;
+    if (!moleculeSearch) return;
 
-    console.log(`🔍 Search debounce time: ${debounceTime}ms`);
+    // OPTIMIZED: Use longer debounce on mobile (300ms vs 180ms)
+    const debounceTime = (isMobileDevice && isMobileDevice()) ? 300 : 180;
 
-    // Search input handler with adaptive debounce
     moleculeSearch.addEventListener('input', (e) => {
-        const searchTerm = e.target.value;
-        
-        // Show immediate feedback
-        if (searchTerm.length > 0) {
-            moleculeSearch.style.borderColor = 'var(--accent-blue)';
-        } else {
-            moleculeSearch.style.borderColor = '';
-        }
-        
         if (searchDebounce) clearTimeout(searchDebounce);
         
+        // Show loading indicator
+        const moleculesList = document.getElementById('moleculesList');
+        if (moleculesList && e.target.value.trim()) {
+            moleculesList.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 20px;">
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                    <span style="color: var(--text-secondary); margin-left: 10px;">Searching...</span>
+                </div>
+            `;
+        }
+        
         searchDebounce = setTimeout(() => {
-            renderMoleculesList(searchTerm);
+            renderMoleculesList(e.target.value);
         }, debounceTime);
     });
 
-    // Sort button handlers
-    sortAZ.addEventListener('click', () => {
-        currentSortMode = 'az';
-        sortAZ.classList.add('active');
-        sortScore.classList.remove('active');
-        
-        // Haptic feedback
-        if ('vibrate' in navigator) {
-            navigator.vibrate(5);
-        }
-        
-        renderMoleculesList(moleculeSearch.value);
-    });
+    // Sort handlers
+    if (sortAZ) {
+        sortAZ.addEventListener('click', () => {
+            currentSortMode = 'az';
+            sortAZ.classList.add('active');
+            if (sortScore) sortScore.classList.remove('active');
+            renderMoleculesList(moleculeSearch.value);
+        });
+    }
 
-    sortScore.addEventListener('click', () => {
-        currentSortMode = 'score';
-        sortScore.classList.add('active');
-        sortAZ.classList.remove('active');
-        
-        // Haptic feedback
-        if ('vibrate' in navigator) {
-            navigator.vibrate(5);
-        }
-        
-        renderMoleculesList(moleculeSearch.value);
-    });
+    if (sortScore) {
+        sortScore.addEventListener('click', () => {
+            currentSortMode = 'score';
+            sortScore.classList.add('active');
+            if (sortAZ) sortAZ.classList.remove('active');
+            renderMoleculesList(moleculeSearch.value);
+        });
+    }
     
-    console.log('✅ Molecules search initialized (MOBILE OPTIMIZED)');
+    console.log('✅ Molecules search initialized (Mobile Optimized)');
 }
