@@ -1,9 +1,11 @@
 /**
- * Element Modal Module (ENHANCED with Reactivity Chart)
+ * Element Modal Module (MOBILE OPTIMIZED - SWIPE FIXED)
  * Manages the element details modal window
  */
 
 let modalOpenTimestamp = 0;
+let isScrolling = false;
+let scrollTimeout;
 
 /**
  * Opens modal with element details
@@ -64,13 +66,13 @@ function openElementModal(element) {
     // Load Wikipedia info
     loadWikipediaInfo(element.name, 'wikiContent');
     
-    // Create reactivity chart (NEW)
+    // Create reactivity chart
     setTimeout(() => {
         createReactivityChart(element);
     }, 300);
     
-    // Add swipe to close on mobile
-    addSwipeToClose(modal);
+    // Add FIXED swipe to close
+    addSwipeToCloseFixed(modal);
     
     // Haptic feedback
     if ('vibrate' in navigator) {
@@ -139,7 +141,7 @@ function closeModal() {
 }
 
 /**
- * Updates the atom information panel (UPDATED with chart section)
+ * Updates the atom information panel
  * @param {Object} element - Element data
  */
 function updateAtomInfo(element) {
@@ -181,7 +183,6 @@ function updateAtomInfo(element) {
             </div>
         </div>
         
-        <!-- NEW: Reactivity Chart Section -->
         <div class="info-section reactivity-section" data-aos="fade-left" data-aos-delay="300" style="grid-column: 1/-1;">
             <h3><i class="fas fa-chart-line me-2"></i>Chemical Reactivity Pattern</h3>
             <div id="reactivityChart" class="reactivity-chart-container"></div>
@@ -216,33 +217,66 @@ function formatCategory(category) {
 }
 
 /**
- * Add swipe to close functionality for mobile
+ * FIXED: Add swipe to close with scroll detection
  */
-function addSwipeToClose(modal) {
+function addSwipeToCloseFixed(modal) {
     let touchStartY = 0;
+    let touchStartX = 0;
     let touchEndY = 0;
+    let touchEndX = 0;
+    let initialScrollTop = 0;
     
     const modalContent = modal.querySelector('.modal-content');
     if (!modalContent) return;
     
     modalContent.addEventListener('touchstart', (e) => {
         touchStartY = e.touches[0].clientY;
+        touchStartX = e.touches[0].clientX;
+        initialScrollTop = modalContent.scrollTop;
+        isScrolling = false;
     }, { passive: true });
     
     modalContent.addEventListener('touchmove', (e) => {
         touchEndY = e.touches[0].clientY;
-        const diff = touchEndY - touchStartY;
+        touchEndX = e.touches[0].clientX;
         
-        if (diff > 0 && diff < 200) {
-            modalContent.style.transform = `translateY(${diff}px)`;
+        const diffY = touchEndY - touchStartY;
+        const diffX = Math.abs(touchEndX - touchStartX);
+        
+        // Detect if user is scrolling (not swiping to close)
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            isScrolling = false;
+        }, 100);
+        
+        // Only apply transform if:
+        // 1. Pulling down (diffY > 0)
+        // 2. At top of scroll (scrollTop === 0)
+        // 3. Vertical movement dominates (diffY > diffX * 2)
+        // 4. Not currently scrolling content
+        if (diffY > 0 && 
+            initialScrollTop === 0 && 
+            modalContent.scrollTop === 0 &&
+            diffY > diffX * 2 &&
+            diffY < 200) {
+            
+            modalContent.style.transform = `translateY(${diffY}px)`;
             modalContent.style.transition = 'none';
+            e.preventDefault(); // Prevent scroll only when swiping to close
+        } else {
+            isScrolling = true;
+            modalContent.style.transform = '';
         }
-    }, { passive: true });
+    }, { passive: false }); // Not passive because we need preventDefault
     
     modalContent.addEventListener('touchend', () => {
-        const diff = touchEndY - touchStartY;
+        const diffY = touchEndY - touchStartY;
         
-        if (diff > 100) {
+        // Close only if:
+        // 1. Pulled down more than 100px
+        // 2. Was at top of scroll
+        // 3. Not currently scrolling
+        if (diffY > 100 && initialScrollTop === 0 && !isScrolling) {
             closeModal();
         } else {
             modalContent.style.transform = '';
@@ -251,6 +285,8 @@ function addSwipeToClose(modal) {
         
         touchStartY = 0;
         touchEndY = 0;
+        touchStartX = 0;
+        touchEndX = 0;
     }, { passive: true });
 }
 
@@ -294,5 +330,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: true });
     
-    console.log('✅ Element modal initialized');
-        });
+    console.log('✅ Element modal initialized (MOBILE OPTIMIZED)');
+});
