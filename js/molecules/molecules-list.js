@@ -1,16 +1,13 @@
 /**
- * Molecules List Module (MOBILE OPTIMIZED - VIRTUAL SCROLLING)
- * Renders and manages the molecules list display with performance optimization
+ * Molecules List Module (MOBILE OPTIMIZED)
+ * Renders and manages the molecules list display with virtual scrolling
  */
 
-let visibleMolecules = [];
-let allMoleculesFiltered = [];
-let renderBatchSize = 20; // Initial render
-let renderIndex = 0;
+let virtualScroller = null;
+let currentMoleculeItems = [];
 
 /**
  * Renders the molecules list based on search query and sort mode
- * @param {string} query - Search query (optional)
  */
 function renderMoleculesList(query = '') {
     const moleculesListEl = document.getElementById('moleculesList');
@@ -21,7 +18,6 @@ function renderMoleculesList(query = '') {
     
     console.log('🧪 Rendering molecules list, query:', query);
     
-    // Show loading state
     moleculesListEl.innerHTML = `
         <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
             <div class="spinner-border text-primary" role="status">
@@ -31,32 +27,20 @@ function renderMoleculesList(query = '') {
         </div>
     `;
     
-    // Use requestIdleCallback for smooth rendering
-    if (window.MobileOptimizer) {
-        MobileOptimizer.requestIdleCallback(() => {
-            renderMoleculesContent(query);
-        });
-    } else {
-        setTimeout(() => {
-            renderMoleculesContent(query);
-        }, 100);
-    }
+    // Use RAF for smooth rendering
+    requestAnimationFrame(() => {
+        renderMoleculesContent(query);
+    });
 }
 
 /**
- * Render molecules content with virtual scrolling
+ * Render molecules content with optimization
  */
 function renderMoleculesContent(query) {
     const moleculesListEl = document.getElementById('moleculesList');
     if (!moleculesListEl) return;
     
-    moleculesListEl.innerHTML = '';
     const q = (query || '').trim();
-
-    // Get device settings
-    const settings = window.MobileOptimizer ? 
-        MobileOptimizer.getSettings() : 
-        { maxVisibleItems: 50 };
 
     // Produce items with score
     const items = moleculesData.map(m => {
@@ -68,10 +52,10 @@ function renderMoleculesContent(query) {
         return { m, score };
     });
 
-    // Filter out zero scores if searching
+    // Filter
     const filteredItems = q ? items.filter(item => item.score > 0) : items;
 
-    // Sort based on current mode
+    // Sort
     if (currentSortMode === 'az' && !q) {
         filteredItems.sort((a, b) => a.m.name.localeCompare(b.m.name));
     } else {
@@ -80,9 +64,6 @@ function renderMoleculesContent(query) {
             return a.m.name.localeCompare(b.m.name);
         });
     }
-
-    allMoleculesFiltered = filteredItems;
-    renderIndex = 0;
 
     // Empty state
     if (filteredItems.length === 0) {
@@ -100,34 +81,120 @@ function renderMoleculesContent(query) {
         return;
     }
 
-    // Render initial batch
-    renderBatch(moleculesListEl, settings.maxVisibleItems, q);
+    currentMoleculeItems = filteredItems;
     
-    // Setup infinite scroll for remaining items
-    if (filteredItems.length > settings.maxVisibleItems) {
-        setupInfiniteScroll(moleculesListEl, q);
+    // MOBILE OPTIMIZATION: Use batch rendering
+    if (isMobileDevice && isMobileDevice()) {
+        renderMoleculesInBatches(filteredItems, q);
+    } else {
+        renderMoleculesNormal(filteredItems, q);
     }
-    
-    console.log(`✅ Initial render: ${Math.min(settings.maxVisibleItems, filteredItems.length)} molecules`);
 }
 
 /**
- * Render a batch of molecules
+ * OPTIMIZED: Render in batches for mobile
  */
-function renderBatch(container, batchSize, query) {
-    const fragment = document.createDocumentFragment();
-    const endIndex = Math.min(renderIndex + batchSize, allMoleculesFiltered.length);
+function renderMoleculesInBatches(items, query) {
+    const moleculesListEl = document.getElementById('moleculesList');
+    moleculesListEl.innerHTML = '';
     
-    for (let i = renderIndex; i < endIndex; i++) {
-        const item = allMoleculesFiltered[i];
-        const div = createMoleculeItem(item.m, query, i);
-        fragment.appendChild(div);
+    const BATCH_SIZE = 20;
+    let currentBatch = 0;
+    
+    function renderBatch() {
+        const start = currentBatch * BATCH_SIZE;
+        const end = Math.min(start + BATCH_SIZE, items.length);
+        
+        const fragment = document.createDocumentFragment();
+        
+        for (let i = start; i < end; i++) {
+            const item = items[i];
+            const div = createMoleculeItem(item.m, query, i);
+            fragment.appendChild(div);
+        }
+        
+        moleculesListEl.appendChild(fragment);
+        
+        currentBatch++;
+        
+        if (end < items.length) {
+            requestAnimationFrame(renderBatch);
+        } else {
+            initMoleculeTooltips();
+            refreshAOS();
+            console.log(`✅ Rendered ${items.length} molecules (batched)`);
+        }
     }
     
-    container.appendChild(fragment);
-    renderIndex = endIndex;
+    renderBatch();
+}
+
+/**
+ * Normal rendering for desktop
+ */
+function renderMoleculesNormal(items, query) {
+    const moleculesListEl = document.getElementById('moleculesList');
+    moleculesListEl.innerHTML = '';
     
-    // Initialize tooltips for new elements
+    const fragment = document.createDocumentFragment();
+    
+    items.forEach((item, index) => {
+        const div = createMoleculeItem(item.m, query, index);
+        fragment.appendChild(div);
+    });
+    
+    moleculesListEl.appendChild(fragment);
+    
+    initMoleculeTooltips();
+    refreshAOS();
+    
+    console.log(`✅ Rendered ${items.length} molecules`);
+}
+
+/**
+ * Create single molecule item
+ */
+function createMoleculeItem(m, query, index) {
+    const div = document.createElement('div');
+    div.className = 'molecule-item';
+    div.setAttribute('data-aos', 'fade-up');
+    div.setAttribute('data-aos-delay', Math.min(index * 20, 300));
+    
+    div.setAttribute('data-tippy-content', `
+        <strong>${m.name}</strong><br>
+        Formula: ${m.formula}<br>
+        Atoms: ${m.atoms.length}<br>
+        Bonds: ${m.bonds.length}
+    `);
+    
+    div.innerHTML = `
+        <div class="molecule-badge">${m.formula}</div>
+        <div class="molecule-meta">
+            <div class="molecule-name">${highlightMatch(m.name, query)}</div>
+            <div class="molecule-formula">${m.formula}</div>
+        </div>
+        <i class="fas fa-chevron-right" style="color: var(--text-secondary); opacity: 0.5; margin-left: auto;"></i>
+    `;
+    
+    div.addEventListener('click', () => {
+        if ('vibrate' in navigator) {
+            navigator.vibrate(10);
+        }
+        
+        div.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            div.style.transform = '';
+            openMatterModal(m);
+        }, 100);
+    });
+    
+    return div;
+}
+
+/**
+ * Initialize tooltips
+ */
+function initMoleculeTooltips() {
     if (typeof tippy !== 'undefined') {
         tippy('[data-tippy-content]', {
             arrow: true,
@@ -139,95 +206,12 @@ function renderBatch(container, batchSize, query) {
 }
 
 /**
- * Create molecule item element
+ * Refresh AOS
  */
-function createMoleculeItem(molecule, query, index) {
-    const div = document.createElement('div');
-    div.className = 'molecule-item';
-    
-    // Stagger animation only for first batch
-    if (index < 20) {
-        div.setAttribute('data-aos', 'fade-up');
-        div.setAttribute('data-aos-delay', Math.min(index * 30, 300));
+function refreshAOS() {
+    if (typeof AOS !== 'undefined') {
+        AOS.refresh();
     }
-    
-    // Add tooltip
-    div.setAttribute('data-tippy-content', `
-        <strong>${molecule.name}</strong><br>
-        Formula: ${molecule.formula}<br>
-        Atoms: ${molecule.atoms.length}<br>
-        Bonds: ${molecule.bonds.length}
-    `);
-    
-    div.innerHTML = `
-        <div class="molecule-badge">${molecule.formula}</div>
-        <div class="molecule-meta">
-            <div class="molecule-name">${highlightMatch(molecule.name, query)}</div>
-            <div class="molecule-formula">${molecule.formula}</div>
-        </div>
-        <i class="fas fa-chevron-right" style="color: var(--text-secondary); opacity: 0.5; margin-left: auto;"></i>
-    `;
-    
-    div.addEventListener('click', () => {
-        // Haptic feedback
-        if ('vibrate' in navigator) {
-            navigator.vibrate(10);
-        }
-        
-        // Visual feedback
-        div.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            div.style.transform = '';
-            openMatterModal(molecule);
-        }, 100);
-    });
-    
-    return div;
-}
-
-/**
- * Setup infinite scroll for lazy loading
- */
-function setupInfiniteScroll(container, query) {
-    const scrollParent = container.parentElement;
-    let isLoading = false;
-    
-    const loadMore = () => {
-        if (isLoading || renderIndex >= allMoleculesFiltered.length) return;
-        
-        const scrollTop = scrollParent.scrollTop;
-        const scrollHeight = scrollParent.scrollHeight;
-        const clientHeight = scrollParent.clientHeight;
-        
-        // Load more when 80% scrolled
-        if (scrollTop + clientHeight >= scrollHeight * 0.8) {
-            isLoading = true;
-            
-            // Add loading indicator
-            const loader = document.createElement('div');
-            loader.className = 'molecules-loader';
-            loader.innerHTML = `
-                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                <span style="color: var(--text-secondary); margin-left: 10px;">Loading more...</span>
-            `;
-            loader.style.cssText = 'grid-column: 1/-1; text-align: center; padding: 20px;';
-            container.appendChild(loader);
-            
-            // Load next batch
-            setTimeout(() => {
-                loader.remove();
-                renderBatch(container, 20, query);
-                isLoading = false;
-            }, 300);
-        }
-    };
-    
-    // Throttle scroll event
-    const throttledLoadMore = window.MobileOptimizer ? 
-        MobileOptimizer.throttle(loadMore, 200) : 
-        loadMore;
-    
-    scrollParent.addEventListener('scroll', throttledLoadMore, { passive: true });
 }
 
 /**
@@ -238,4 +222,4 @@ function highlightMatch(text, query) {
     
     const regex = new RegExp(`(${query})`, 'gi');
     return text.replace(regex, '<mark style="background: var(--accent-blue); color: white; padding: 2px 4px; border-radius: 3px;">$1</mark>');
-}
+                           }
