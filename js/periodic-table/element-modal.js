@@ -1,15 +1,15 @@
 /**
- * Element Modal Module (MOBILE OPTIMIZED - SWIPE FIXED)
- * Manages the element details modal window
+ * Element Modal Module (MOBILE OPTIMIZED)
+ * Manages the element details modal window with proper swipe handling
  */
 
 let modalOpenTimestamp = 0;
-let isScrolling = false;
-let scrollTimeout;
+let modalTouchStartY = 0;
+let modalTouchCurrentY = 0;
+let modalIsScrolling = false;
 
 /**
  * Opens modal with element details
- * @param {Object} element - Element data
  */
 function openElementModal(element) {
     console.log('🔬 Opening modal for:', element.name);
@@ -24,23 +24,18 @@ function openElementModal(element) {
         return;
     }
     
-    // Update title
     modalTitle.innerHTML = `<i class="fas fa-atom me-2"></i>${element.name} (${element.symbol})`;
     
-    // Show modal with animation
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
-    // Remove active class from all elements
     document.querySelectorAll('.element').forEach(el => el.classList.remove('active'));
     
-    // Add active class to clicked element
     const clickedElement = document.querySelector(`[data-number="${element.number}"]`);
     if (clickedElement) {
         clickedElement.classList.add('active');
     }
     
-    // Show loader in viewer
     const atomViewer = document.getElementById('atomViewer');
     if (atomViewer) {
         atomViewer.innerHTML = `
@@ -55,26 +50,17 @@ function openElementModal(element) {
         `;
     }
 
-    // Create 3D atom visualization with delay
-    setTimeout(() => {
-        create3DAtom(element);
-    }, 150);
+    // Lazy load 3D on mobile
+    const load3D = typeof lazyLoad3D !== 'undefined' ? lazyLoad3D(create3DAtom, 300) : create3DAtom;
+    setTimeout(() => load3D(element), 150);
     
-    // Update atom info
     updateAtomInfo(element);
-    
-    // Load Wikipedia info
     loadWikipediaInfo(element.name, 'wikiContent');
     
-    // Create reactivity chart
-    setTimeout(() => {
-        createReactivityChart(element);
-    }, 300);
+    setTimeout(() => createReactivityChart(element), 300);
     
-    // Add FIXED swipe to close
-    addSwipeToCloseFixed(modal);
+    addSwipeToClose(modal);
     
-    // Haptic feedback
     if ('vibrate' in navigator) {
         navigator.vibrate(10);
     }
@@ -98,7 +84,6 @@ function closeModal() {
     
     document.querySelectorAll('.element').forEach(el => el.classList.remove('active'));
     
-    // Clean up Three.js
     setTimeout(() => {
         if (renderer) {
             const container = document.getElementById('atomViewer');
@@ -128,7 +113,6 @@ function closeModal() {
         camera = null;
         currentAtom = null;
         
-        // Clear chart
         const chartContainer = document.getElementById('reactivityChart');
         if (chartContainer) {
             chartContainer.innerHTML = '';
@@ -142,7 +126,6 @@ function closeModal() {
 
 /**
  * Updates the atom information panel
- * @param {Object} element - Element data
  */
 function updateAtomInfo(element) {
     const shells = calculateElectronShells(element.number);
@@ -196,8 +179,6 @@ function updateAtomInfo(element) {
 
 /**
  * Formats category name for display
- * @param {string} category - Category key
- * @returns {string} Formatted category name
  */
 function formatCategory(category) {
     const categoryMap = {
@@ -217,76 +198,54 @@ function formatCategory(category) {
 }
 
 /**
- * FIXED: Add swipe to close with scroll detection
+ * FIXED: Add swipe to close with proper scroll detection
  */
-function addSwipeToCloseFixed(modal) {
-    let touchStartY = 0;
-    let touchStartX = 0;
-    let touchEndY = 0;
-    let touchEndX = 0;
-    let initialScrollTop = 0;
-    
+function addSwipeToClose(modal) {
     const modalContent = modal.querySelector('.modal-content');
-    if (!modalContent) return;
+    const modalBody = modal.querySelector('.modal-body');
+    if (!modalContent || !modalBody) return;
+    
+    // Reset variables
+    modalTouchStartY = 0;
+    modalTouchCurrentY = 0;
+    modalIsScrolling = false;
     
     modalContent.addEventListener('touchstart', (e) => {
-        touchStartY = e.touches[0].clientY;
-        touchStartX = e.touches[0].clientX;
-        initialScrollTop = modalContent.scrollTop;
-        isScrolling = false;
+        modalTouchStartY = e.touches[0].clientY;
+        modalTouchCurrentY = modalTouchStartY;
+        
+        // Check if user is at top of scroll
+        const isAtTop = modalBody.scrollTop <= 0;
+        modalIsScrolling = !isAtTop;
     }, { passive: true });
     
     modalContent.addEventListener('touchmove', (e) => {
-        touchEndY = e.touches[0].clientY;
-        touchEndX = e.touches[0].clientX;
+        modalTouchCurrentY = e.touches[0].clientY;
+        const diff = modalTouchCurrentY - modalTouchStartY;
         
-        const diffY = touchEndY - touchStartY;
-        const diffX = Math.abs(touchEndX - touchStartX);
-        
-        // Detect if user is scrolling (not swiping to close)
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-            isScrolling = false;
-        }, 100);
-        
-        // Only apply transform if:
-        // 1. Pulling down (diffY > 0)
-        // 2. At top of scroll (scrollTop === 0)
-        // 3. Vertical movement dominates (diffY > diffX * 2)
-        // 4. Not currently scrolling content
-        if (diffY > 0 && 
-            initialScrollTop === 0 && 
-            modalContent.scrollTop === 0 &&
-            diffY > diffX * 2 &&
-            diffY < 200) {
-            
-            modalContent.style.transform = `translateY(${diffY}px)`;
-            modalContent.style.transition = 'none';
-            e.preventDefault(); // Prevent scroll only when swiping to close
-        } else {
-            isScrolling = true;
-            modalContent.style.transform = '';
+        // Only allow swipe-to-close if at top AND swiping down
+        if (!modalIsScrolling && diff > 0 && modalBody.scrollTop <= 0) {
+            if (diff < 200) {
+                modalContent.style.transform = `translateY(${diff}px)`;
+                modalContent.style.transition = 'none';
+            }
         }
-    }, { passive: false }); // Not passive because we need preventDefault
+    }, { passive: true });
     
     modalContent.addEventListener('touchend', () => {
-        const diffY = touchEndY - touchStartY;
+        const diff = modalTouchCurrentY - modalTouchStartY;
         
-        // Close only if:
-        // 1. Pulled down more than 100px
-        // 2. Was at top of scroll
-        // 3. Not currently scrolling
-        if (diffY > 100 && initialScrollTop === 0 && !isScrolling) {
+        // Close only if swiped down more than 100px from top
+        if (!modalIsScrolling && diff > 100 && modalBody.scrollTop <= 0) {
             closeModal();
         } else {
             modalContent.style.transform = '';
             modalContent.style.transition = 'transform 0.3s ease';
         }
         
-        touchStartY = 0;
-        touchEndY = 0;
-        touchStartX = 0;
-        touchEndX = 0;
+        modalTouchStartY = 0;
+        modalTouchCurrentY = 0;
+        modalIsScrolling = false;
     }, { passive: true });
 }
 
@@ -330,5 +289,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: true });
     
-    console.log('✅ Element modal initialized (MOBILE OPTIMIZED)');
+    console.log('✅ Element modal initialized (Mobile Optimized)');
 });
