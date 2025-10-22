@@ -32,37 +32,69 @@
 /* 10. Reactant Modal */
 @import url('reactant-modal.css');
 
-/* 11. Reactivity Chart */
+/* 11. Inline Selector (NEW) */
+@import url('inline-selector.css');
+
+/* 12. Reactivity Chart */
 @import url('chart.css');
 
-/* 12. Forum Main */
+/* 13. Forum Main */
 @import url('forum.css');
 
-/* 13. Forum Comments & Replies */
+/* 14. Forum Comments & Replies */
 @import url('forum-comments.css');
 
-/* 14. Forum Embeds */
+/* 15. Forum Embeds */
 @import url('forum-embeds.css');
 
-/* 15. Create Post Modal */
+/* 16. Create Post Modal */
 @import url('create-post.css');
 
-/* 16. Notifications */
+/* 17. Notifications */
 @import url('notifications.css');
 
-/* 17. Authentication */
+/* 18. Authentication */
 @import url('auth.css');
 
-/* 18. Scrollbar & Tippy */
+/* 19. Scrollbar & Tippy */
 @import url('scrollbar-tippy.css');
 
-/* 19. Responsive Design */
+/* 20. Responsive Design */
 @import url('responsive.css');
 
-/* 20. Utility Classes */
+/* 21. Utility Classes */
 @import url('utility.css');
 
-@import url('performance-mobile.css');
+/* ============================================
+   MOBILE PERFORMANCE STYLES
+   ============================================ */
+
+/* Disable animations on mobile for better performance */
+@media (max-width: 768px) {
+    * {
+        animation-duration: 0.2s !important;
+        transition-duration: 0.2s !important;
+    }
+}
+
+/* Touch-specific optimizations */
+@media (hover: none) and (pointer: coarse) {
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+/* Smooth scrolling on mobile */
+@media (max-width: 768px) {
+    html {
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    body {
+        overscroll-behavior: none;
+    }
+}
 
 /* ============================================
    END OF IMPORTS
