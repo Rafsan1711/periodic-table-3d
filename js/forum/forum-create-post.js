@@ -1,16 +1,13 @@
 /**
- * Forum Post Creation Module - COMPLETE
- * FEATURE 1: Full Reaction Builder Integration from reactions page
+ * Forum Post Creation Module - FIXED
+ * All reaction builder and molecule selector issues fixed
  */
 
 let currentReactionData = null;
 let currentMoleculeData = null;
-let postReactants = []; // For reaction builder in post
+let postReactants = [];
 let postReaction = null;
 
-/**
- * Open create post modal
- */
 function openCreatePostModal() {
     const modal = document.getElementById('create-post-modal');
     if (!modal) return;
@@ -18,7 +15,6 @@ function openCreatePostModal() {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
-    // Reset form
     document.getElementById('post-title').value = '';
     document.getElementById('post-description').value = '';
     document.getElementById('post-topic').value = 'general';
@@ -28,7 +24,6 @@ function openCreatePostModal() {
     postReactants = [];
     postReaction = null;
     
-    // Reset submit button
     const submitBtn = document.getElementById('submit-post-btn');
     submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Post';
     submitBtn.onclick = submitForumPost;
@@ -36,9 +31,6 @@ function openCreatePostModal() {
     initRichTextEditor();
 }
 
-/**
- * Close create post modal
- */
 function closeCreatePostModal() {
     const modal = document.getElementById('create-post-modal');
     if (!modal) return;
@@ -47,9 +39,6 @@ function closeCreatePostModal() {
     document.body.style.overflow = '';
 }
 
-/**
- * Initialize rich text editor
- */
 function initRichTextEditor() {
     const editor = document.getElementById('post-content');
     if (!editor) return;
@@ -58,9 +47,6 @@ function initRichTextEditor() {
     setupEditorToolbar();
 }
 
-/**
- * Setup editor toolbar
- */
 function setupEditorToolbar() {
     document.getElementById('btn-bold')?.addEventListener('click', () => {
         document.execCommand('bold', false, null);
@@ -107,27 +93,18 @@ function setupEditorToolbar() {
     document.getElementById('btn-chemistry')?.addEventListener('click', openChemistryToolModal);
 }
 
-/**
- * Open Chemistry Tool Modal
- */
 function openChemistryToolModal() {
     const modal = document.getElementById('chemistry-tool-modal');
     if (!modal) return;
     modal.classList.add('active');
 }
 
-/**
- * Close Chemistry Tool Modal
- */
 function closeChemistryToolModal() {
     const modal = document.getElementById('chemistry-tool-modal');
     if (!modal) return;
     modal.classList.remove('active');
 }
 
-/**
- * Select chemistry tool type
- */
 function selectChemistryTool(type) {
     closeChemistryToolModal();
     
@@ -139,7 +116,7 @@ function selectChemistryTool(type) {
 }
 
 /**
- * FEATURE 1: Open Reaction Builder Modal (FULL INTEGRATION)
+ * FIXED: Open Reaction Builder Modal
  */
 function openReactionBuilderModal() {
     const modal = document.getElementById('post-reaction-modal');
@@ -152,9 +129,6 @@ function openReactionBuilderModal() {
     renderPostEquationBuilder();
 }
 
-/**
- * Close Reaction Builder Modal
- */
 function closeReactionBuilderModal() {
     const modal = document.getElementById('post-reaction-modal');
     if (!modal) return;
@@ -162,14 +136,13 @@ function closeReactionBuilderModal() {
 }
 
 /**
- * FEATURE 1: Render equation builder (Same as reactions page)
+ * FIXED: Render equation builder
  */
 function renderPostEquationBuilder() {
     const container = document.getElementById('post-reaction-builder');
     if (!container) return;
     
     const reactBtn = document.getElementById('post-react-btn');
-    const canReact = postReactants.length >= 1;
     
     container.innerHTML = `
         <div class="equation-display" id="post-equation-display"></div>
@@ -186,11 +159,9 @@ function renderPostEquationBuilder() {
             reactBtn.textContent = 'Add reactants to continue';
         }
     } else {
-        // Check if reaction exists
         const reaction = findReaction(postReactants);
         
         if (reaction) {
-            // Show with coefficients
             reaction.reactants.forEach((reactant, index) => {
                 if (index > 0) {
                     const operator = document.createElement('span');
@@ -209,7 +180,6 @@ function renderPostEquationBuilder() {
                 equationDisplay.appendChild(chip);
             });
             
-            // Add button
             const addBtn = document.createElement('button');
             addBtn.className = 'add-reactant-btn';
             addBtn.textContent = '+';
@@ -222,7 +192,6 @@ function renderPostEquationBuilder() {
                 reactBtn.onclick = () => performPostReaction(reaction);
             }
         } else {
-            // No reaction found - show plain
             postReactants.forEach((reactant, index) => {
                 if (index > 0) {
                     const operator = document.createElement('span');
@@ -255,41 +224,28 @@ function renderPostEquationBuilder() {
 }
 
 /**
- * FEATURE 1: Open reactant selector for post
+ * FIXED: Open reactant selector
  */
 function openPostReactantSelector() {
-    const modal = document.getElementById('reactant-modal');
-    if (!modal) {
-        // Create inline selector
-        showInlineReactantSelector();
-        return;
-    }
-    
-    // Reuse existing reactant modal
-    modal.classList.add('active');
-    renderPostReactantList();
-    
-    // Override close to return to reaction builder
-    const closeBtn = modal.querySelector('.close-btn');
-    if (closeBtn) {
-        closeBtn.onclick = () => {
-            modal.classList.remove('active');
-        };
-    }
+    showInlineReactantSelector();
 }
 
 /**
- * Show inline reactant selector
+ * FIXED: Show inline reactant selector
  */
 function showInlineReactantSelector() {
+    // Remove existing selector
+    const existing = document.getElementById('inline-selector');
+    if (existing) existing.remove();
+    
     const selectorHTML = `
         <div class="inline-selector" id="inline-selector">
             <div class="inline-selector-header">
                 <h4>Select Reactant</h4>
-                <button onclick="closeInlineSelector()" class="close-btn">×</button>
+                <button onclick="closeInlineSelector()" class="close-btn" style="width: 30px; height: 30px; font-size: 1.2rem;">×</button>
             </div>
-            <input type="text" id="inline-search" placeholder="Search..." class="form-control mb-2" />
-            <div class="reactant-list" id="inline-reactant-list"></div>
+            <input type="text" id="inline-search" placeholder="Search atoms or molecules..." class="form-control mb-2" />
+            <div class="reactant-list" id="inline-reactant-list" style="max-height: 300px; overflow-y: auto;"></div>
         </div>
     `;
     
@@ -304,7 +260,7 @@ function showInlineReactantSelector() {
 }
 
 /**
- * Render inline reactant list
+ * FIXED: Render inline reactant list
  */
 function renderInlineReactantList(query = '') {
     const listEl = document.getElementById('inline-reactant-list');
@@ -353,19 +309,17 @@ function renderInlineReactantList(query = '') {
         };
         listEl.appendChild(div);
     });
+    
+    if (items.length === 0) {
+        listEl.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No results found</div>';
+    }
 }
 
-/**
- * Close inline selector
- */
 function closeInlineSelector() {
     const selector = document.getElementById('inline-selector');
     if (selector) selector.remove();
 }
 
-/**
- * Add reactant to post equation
- */
 function addPostReactant(formula) {
     if (!postReactants.includes(formula)) {
         postReactants.push(formula);
@@ -373,17 +327,11 @@ function addPostReactant(formula) {
     renderPostEquationBuilder();
 }
 
-/**
- * Remove reactant from post equation
- */
 function removePostReactant(formula) {
     postReactants = postReactants.filter(r => r !== formula);
     renderPostEquationBuilder();
 }
 
-/**
- * FEATURE 1: Perform reaction and save
- */
 function performPostReaction(reaction) {
     postReaction = reaction;
     currentReactionData = reaction;
@@ -394,14 +342,10 @@ function performPostReaction(reaction) {
     showNotification('Reaction added! It will animate in your post.', 'success');
 }
 
-/**
- * Show reaction preview in editor
- */
 function showReactionPreview() {
     const editor = document.getElementById('post-content');
     if (!editor || !currentReactionData) return;
     
-    // Remove old preview
     const oldPreview = editor.querySelector('.embedded-reaction-preview');
     if (oldPreview) oldPreview.remove();
     
@@ -419,9 +363,6 @@ function showReactionPreview() {
     editor.appendChild(preview);
 }
 
-/**
- * Remove reaction embed
- */
 function removeReactionEmbed() {
     currentReactionData = null;
     postReaction = null;
@@ -430,7 +371,7 @@ function removeReactionEmbed() {
 }
 
 /**
- * Open Molecule Picker Modal
+ * FIXED: Open Molecule Picker Modal with search
  */
 function openMoleculePickerModal() {
     const modal = document.getElementById('post-molecule-modal');
@@ -440,9 +381,6 @@ function openMoleculePickerModal() {
     renderMoleculePicker();
 }
 
-/**
- * Close Molecule Picker Modal
- */
 function closeMoleculePickerModal() {
     const modal = document.getElementById('post-molecule-modal');
     if (!modal) return;
@@ -450,30 +388,56 @@ function closeMoleculePickerModal() {
 }
 
 /**
- * Render molecule picker list
+ * FIXED: Render molecule picker with search
  */
 function renderMoleculePicker() {
     const list = document.getElementById('molecule-picker-list');
     if (!list) return;
     
-    list.innerHTML = '';
+    // Add search bar
+    const searchBar = document.createElement('input');
+    searchBar.type = 'search';
+    searchBar.placeholder = 'Search molecules...';
+    searchBar.className = 'form-control mb-3';
+    searchBar.style.cssText = 'padding: 10px; background: var(--bg-tertiary); border: 1px solid var(--border-primary); border-radius: 8px; color: var(--text-primary);';
     
-    moleculesData.forEach(molecule => {
-        const item = document.createElement('div');
-        item.className = 'molecule-picker-item';
-        item.innerHTML = `
-            <div class="molecule-badge">${molecule.formula}</div>
-            <div class="molecule-name">${molecule.name}</div>
-        `;
+    list.innerHTML = '';
+    list.parentElement.insertBefore(searchBar, list);
+    
+    function renderFilteredMolecules(query = '') {
+        list.innerHTML = '';
         
-        item.addEventListener('click', () => selectMolecule(molecule));
-        list.appendChild(item);
+        const filtered = query 
+            ? moleculesData.filter(m => 
+                m.name.toLowerCase().includes(query.toLowerCase()) ||
+                m.formula.toLowerCase().includes(query.toLowerCase())
+              )
+            : moleculesData;
+        
+        filtered.forEach(molecule => {
+            const item = document.createElement('div');
+            item.className = 'molecule-picker-item';
+            item.innerHTML = `
+                <div class="molecule-badge">${molecule.formula}</div>
+                <div class="molecule-name">${molecule.name}</div>
+            `;
+            
+            item.addEventListener('click', () => selectMolecule(molecule));
+            list.appendChild(item);
+        });
+        
+        if (filtered.length === 0) {
+            list.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-secondary);">No molecules found</div>';
+        }
+    }
+    
+    renderFilteredMolecules();
+    
+    searchBar.addEventListener('input', (e) => {
+        renderFilteredMolecules(e.target.value);
     });
 }
 
-/**
- * Select molecule
- */
 function selectMolecule(molecule) {
     currentMoleculeData = {
         id: molecule.id,
@@ -485,14 +449,10 @@ function selectMolecule(molecule) {
     showMoleculePreview();
 }
 
-/**
- * Show molecule preview in editor
- */
 function showMoleculePreview() {
     const editor = document.getElementById('post-content');
     if (!editor || !currentMoleculeData) return;
     
-    // Remove old preview
     const oldPreview = editor.querySelector('.embedded-molecule-preview');
     if (oldPreview) oldPreview.remove();
     
@@ -513,18 +473,12 @@ function showMoleculePreview() {
     editor.appendChild(preview);
 }
 
-/**
- * Remove molecule embed
- */
 function removeMoleculeEmbed() {
     currentMoleculeData = null;
     const preview = document.querySelector('.embedded-molecule-preview');
     if (preview) preview.remove();
 }
 
-/**
- * Submit post to Firebase
- */
 async function submitForumPost() {
     if (!currentForumUser) {
         alert('Please sign in first!');
@@ -572,7 +526,6 @@ async function submitForumPost() {
         closeCreatePostModal();
         showNotification('Post created successfully! 🎉', 'success');
         
-        // Switch to community page
         const toggleBtn = document.getElementById('toggleCommunity');
         if (toggleBtn) toggleBtn.click();
         
@@ -585,9 +538,6 @@ async function submitForumPost() {
     }
 }
 
-/**
- * Format reaction equation
- */
 function formatReactionEquation(reactionData) {
     let equation = '';
     
@@ -623,4 +573,4 @@ window.addPostReactant = addPostReactant;
 window.removePostReactant = removePostReactant;
 window.closeInlineSelector = closeInlineSelector;
 
-console.log('✅ Forum create post module loaded (COMPLETE)');
+console.log('✅ Forum create post module loaded (FIXED)');
