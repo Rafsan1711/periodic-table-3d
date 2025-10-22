@@ -542,65 +542,86 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script src="js/data/elements-data.js"></script>
-    <script src="js/data/molecules-data.js"></script>
-    <script src="js/data/reactions-data.js"></script>
-    <script src="js/data/reactivity-data.js"></script>
-    <script src="js/utils/search-utils.js"></script>
-    <script src="js/utils/wiki-loader.js"></script>
-    <script src="js/periodic-table/table-renderer.js"></script>
-    <script src="js/periodic-table/atom-visualization.js"></script>
-    <script src="js/periodic-table/reactivity-chart.js"></script>
-    <script src="js/periodic-table/element-modal.js"></script>
-    <script src="js/molecules/molecules-search.js"></script>
-    <script src="js/molecules/molecules-list.js"></script>
-    <script src="js/molecules/molecule-3d.js"></script>
-    <script src="js/molecules/molecule-2d.js"></script>
-    <script src="js/molecules/molecule-modal.js"></script>
-    <script src="js/reactions/reactions-builder.js"></script>
-    <script src="js/reactions/reactant-selector.js"></script>
-    <script src="js/reactions/reaction-animator.js"></script>
-    
-    <script src="js/auth/firebase-config.js"></script>
-    <script src="js/auth/auth-handler.js"></script>
-    <script src="js/forum/forum-main.js"></script>
-    <script src="js/forum/forum-create-post.js"></script>
-    <script src="js/forum/forum-notifications.js"></script>
-    <script src="js/core/page-toggle.js"></script>
-   <!-- BEFORE app-init.js -->
-<script src="js/core/mobile-optimizer.js"></script>
+  <!-- Add this script BEFORE other scripts in index.html -->
+<!-- Right after Bootstrap bundle and BEFORE data files -->
 
-    <script src="js/core/app-init.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- MOBILE PERFORMANCE MODULE (Load First) -->
+<script src="js/utils/mobile-performance.js"></script>
+
+<!-- Data Files -->
+<script src="js/data/elements-data.js"></script>
+<script src="js/data/molecules-data.js"></script>
+<script src="js/data/reactions-data.js"></script>
+<script src="js/data/reactivity-data.js"></script>
+
+<!-- Utils -->
+<script src="js/utils/search-utils.js"></script>
+<script src="js/utils/wiki-loader.js"></script>
+
+<!-- Periodic Table -->
+<script src="js/periodic-table/table-renderer.js"></script>
+<script src="js/periodic-table/atom-visualization.js"></script>
+<script src="js/periodic-table/reactivity-chart.js"></script>
+<script src="js/periodic-table/element-modal.js"></script>
+
+<!-- Molecules -->
+<script src="js/molecules/molecules-search.js"></script>
+<script src="js/molecules/molecules-list.js"></script>
+<script src="js/molecules/molecule-3d.js"></script>
+<script src="js/molecules/molecule-2d.js"></script>
+<script src="js/molecules/molecule-modal.js"></script>
+
+<!-- Reactions -->
+<script src="js/reactions/reactions-builder.js"></script>
+<script src="js/reactions/reactant-selector.js"></script>
+<script src="js/reactions/reaction-animator.js"></script>
+
+<!-- Auth & Forum -->
+<script src="js/auth/firebase-config.js"></script>
+<script src="js/auth/auth-handler.js"></script>
+<script src="js/forum/forum-main.js"></script>
+<script src="js/forum/forum-create-post.js"></script>
+<script src="js/forum/forum-notifications.js"></script>
+
+<!-- Core -->
+<script src="js/core/page-toggle.js"></script>
+<script src="js/core/app-init.js"></script>
+
+<script>
+    // Initialize mobile performance immediately
+    if (typeof initMobilePerformance === 'function') {
+        initMobilePerformance();
+    }
     
-    <script>
-        window.addEventListener('load', function() {
+    window.addEventListener('load', function() {
+        setTimeout(() => {
+            document.getElementById('globalLoader').style.opacity = '0';
             setTimeout(() => {
-                document.getElementById('globalLoader').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('globalLoader').style.display = 'none';
-                }, 500);
-            }, 1000);
+                document.getElementById('globalLoader').style.display = 'none';
+            }, 500);
+        }, 1000);
+    });
+    
+    AOS.init({
+        duration: 800,
+        once: true,
+        offset: 100
+    });
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        tippy('[data-tippy-content]', {
+            arrow: true,
+            animation: 'scale',
+            theme: 'dark',
+            delay: [200, 0]
         });
-        
-        AOS.init({
-            duration: 800,
-            once: true,
-            offset: 100
-        });
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            tippy('[data-tippy-content]', {
-                arrow: true,
-                animation: 'scale',
-                theme: 'dark',
-                delay: [200, 0]
-            });
-        });
-    </script>
+    });
+</script>
 </body>
     </html>
+
 
 
 
