@@ -51,6 +51,7 @@
     margin-bottom: 20px;
     overflow-x: auto;
     padding-bottom: 10px;
+    -webkit-overflow-scrolling: touch;
 }
 
 .topic-filter-btn {
@@ -64,6 +65,11 @@
     cursor: pointer;
     transition: all 0.3s ease;
     white-space: nowrap;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
 }
 
 .topic-filter-btn:hover {
@@ -132,10 +138,12 @@
     border-radius: 50%;
     border: 2px solid var(--accent-blue);
     object-fit: cover;
+    flex-shrink: 0;
 }
 
 .post-author-info {
     flex: 1;
+    min-width: 0;
 }
 
 .post-author-name {
@@ -149,6 +157,7 @@
     align-items: center;
     gap: 10px;
     font-size: 0.85rem;
+    flex-wrap: wrap;
 }
 
 .post-time {
@@ -156,11 +165,14 @@
 }
 
 .topic-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 4px 10px;
     border-radius: 12px;
     font-size: 0.8rem;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .badge-elements { background: rgba(88, 166, 255, 0.2); color: #58a6ff; }
@@ -176,12 +188,14 @@
     color: var(--text-primary);
     margin-bottom: 10px;
     line-height: 1.4;
+    word-wrap: break-word;
 }
 
 .post-description {
     color: var(--text-secondary);
     line-height: 1.6;
     margin-bottom: 10px;
+    word-wrap: break-word;
 }
 
 .post-description.collapsed {
@@ -212,6 +226,7 @@
     margin-top: 15px;
     padding-top: 15px;
     border-top: 1px solid var(--border-primary);
+    flex-wrap: wrap;
 }
 
 .post-action-btn {
@@ -241,4 +256,97 @@
 
 .post-action-btn i {
     font-size: 1rem;
+}
+
+/* MOBILE OPTIMIZATIONS */
+@media (max-width: 768px) {
+    .forum-container {
+        padding: 15px;
+    }
+    
+    .forum-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .forum-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .create-post-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 20px;
+    }
+    
+    .forum-filters {
+        gap: 8px;
+        padding-bottom: 5px;
+    }
+    
+    .topic-filter-btn {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+    }
+    
+    .forum-post-card {
+        padding: 15px;
+    }
+    
+    .post-author-pic {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .post-header {
+        gap: 10px;
+    }
+    
+    .post-title {
+        font-size: 1.1rem;
+    }
+    
+    .post-meta {
+        font-size: 0.8rem;
+        gap: 8px;
+    }
+    
+    .topic-badge {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .forum-container {
+        padding: 10px;
+    }
+    
+    .forum-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .create-post-btn {
+        font-size: 0.9rem;
+        padding: 8px 16px;
+    }
+    
+    .topic-filter-btn {
+        font-size: 0.8rem;
+        padding: 5px 10px;
+    }
+    
+    .post-title {
+        font-size: 1rem;
+    }
+    
+    .post-actions {
+        gap: 10px;
+    }
+    
+    .post-action-btn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
 }
