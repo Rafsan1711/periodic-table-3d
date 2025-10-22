@@ -1,9 +1,8 @@
 /**
- * App Initialization Module - COMPLETE FIXED
+ * App Initialization Module (MOBILE OPTIMIZED)
  * Fixes all initialization and missing function errors
  */
 
-// Show loader
 function showLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) {
@@ -12,7 +11,6 @@ function showLoader() {
     }
 }
 
-// Hide loader
 function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) {
@@ -25,9 +23,6 @@ function hideLoader() {
     }
 }
 
-/**
- * FIXED: Show notification toast (was missing)
- */
 function showNotification(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `notification-toast toast-${type}`;
@@ -64,10 +59,8 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Make it globally available
 window.showNotification = showNotification;
 
-// Check authentication
 function checkAuth() {
     return new Promise((resolve) => {
         const unsubscribe = firebase.auth().onAuthStateChanged(user => {
@@ -77,7 +70,6 @@ function checkAuth() {
     });
 }
 
-// Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
     showLoader();
     
@@ -89,9 +81,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            
-            // CRITICAL FIX: Don't initialize modules here
-            // Let auth-handler.js handle it
             
         } else {
             console.log('ℹ️ No user authenticated, showing login screen');
@@ -270,11 +259,7 @@ function initKeyboardShortcuts() {
         }
     });
     
-    console.log('⌨️ Keyboard shortcuts enabled:');
-    console.log('  ESC - Close modals');
-    console.log('  Ctrl/Cmd + K - Focus search');
-    console.log('  1/2/3/4 - Switch between pages');
-    console.log('  Ctrl/Cmd + N - Create new post');
+    console.log('⌨️ Keyboard shortcuts enabled');
 }
 
 function addSmoothScroll() {
