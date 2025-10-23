@@ -1,8 +1,6 @@
 /**
- * Molecule 3D Visualization Module (OPTIMIZED)
- * ✅ Uses cached geometries and materials
- * ✅ 70% faster rendering
- * ✅ Memory efficient
+ * Molecule 3D Visualization Module (NO CACHE)
+ * Fallback version if cache system fails
  */
 
 let matterScene, matterCamera, matterRenderer, matterGroup;
@@ -38,10 +36,10 @@ function create3DMolecule(molecule) {
     matterRenderer = new THREE.WebGLRenderer({ 
         antialias: true, 
         alpha: true,
-        powerPreference: 'high-performance' // Better performance
+        powerPreference: 'high-performance'
     });
     matterRenderer.setSize(container.clientWidth, container.clientHeight);
-    matterRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+    matterRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(matterRenderer.domElement);
 
     // Main group
@@ -72,23 +70,21 @@ function create3DMolecule(molecule) {
     center.y /= Math.max(1, molecule.atoms.length); 
     center.z /= Math.max(1, molecule.atoms.length);
 
-    // Add atoms using cached geometries
+    // Add atoms (WITHOUT cache)
     molecule.atoms.forEach((a, idx) => {
         const col = colorMap[a.el] || 0x888888;
         const r = radiusMap[a.el] || 0.35;
         
-        // Use cached geometry
-        const geometry = getCachedSphereGeometry(r, 24, 24);
-        
-        // Use cached material
-        const material = getCachedMaterial('phong', {
+        // Create geometry directly
+        const geometry = new THREE.SphereGeometry(r, 24, 24);
+        const material = new THREE.MeshPhongMaterial({
             color: col, 
             shininess: 80,
             emissive: col,
             emissiveIntensity: 0.3
         });
         
-        const mesh = new THREE.Mesh(geometry, material.clone());
+        const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(
             (a.x || 0) - center.x, 
             (a.y || 0) - center.y, 
@@ -97,8 +93,18 @@ function create3DMolecule(molecule) {
         mesh.castShadow = true;
         matterGroup.add(mesh);
 
-        // Add label using cached texture
-        const texture = getCachedTextTexture(a.el);
+        // Add label
+        const canvas = document.createElement('canvas');
+        canvas.width = 128;
+        canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        ctx.font = 'bold 64px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(a.el, 64, 64);
+        
+        const texture = new THREE.CanvasTexture(canvas);
         const spriteMat = new THREE.SpriteMaterial({ 
             map: texture, 
             transparent: true, 
@@ -114,7 +120,7 @@ function create3DMolecule(molecule) {
         matterGroup.add(sprite);
     });
 
-    // Add bonds using cached geometries
+    // Add bonds (WITHOUT cache)
     molecule.bonds.forEach(b => {
         const a1 = molecule.atoms[b[0]];
         const a2 = molecule.atoms[b[1]];
@@ -133,17 +139,13 @@ function create3DMolecule(molecule) {
         const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
         const dist = start.distanceTo(end);
 
-        // Use cached geometry
-        const cylGeo = getCachedCylinderGeometry(0.08, 0.08, dist, 12);
-        
-        // Use cached material
-        const cylMat = getCachedMaterial('phong', { 
+        const cylGeo = new THREE.CylinderGeometry(0.08, 0.08, dist, 12);
+        const cylMat = new THREE.MeshPhongMaterial({ 
             color: 0x999999,
             shininess: 80
         });
         
-        const cyl = new THREE.Mesh(cylGeo, cylMat.clone());
-
+        const cyl = new THREE.Mesh(cylGeo, cylMat);
         cyl.position.copy(mid);
         cyl.lookAt(end);
         cyl.rotateX(Math.PI / 2);
@@ -174,7 +176,7 @@ function create3DMolecule(molecule) {
 }
 
 /**
- * Animation loop for molecule visualization
+ * Animation loop
  */
 function animateMatter() {
     if (!matterRenderer || !matterScene || !matterCamera) return;
@@ -189,7 +191,7 @@ function animateMatter() {
 }
 
 /**
- * Cleanup function - properly dispose all resources
+ * Cleanup function
  */
 function cleanupMatter3D() {
     // Stop animation
@@ -198,12 +200,13 @@ function cleanupMatter3D() {
         matterAnimationId = null;
     }
     
-    // Dispose scene objects (but keep cached resources)
+    // Dispose scene objects
     if (matterScene) {
         matterScene.traverse(object => {
-            // Don't dispose cached geometries and materials
-            // Only dispose cloned materials and sprites
-            if (object.material && !materialCache.has(object.material)) {
+            if (object.geometry) {
+                object.geometry.dispose();
+            }
+            if (object.material) {
                 if (Array.isArray(object.material)) {
                     object.material.forEach(m => {
                         if (m.map) m.map.dispose();
@@ -232,4 +235,4 @@ function cleanupMatter3D() {
 // Export cleanup function
 window.cleanupMatter3D = cleanupMatter3D;
 
-console.log('✅ Optimized molecule 3D module loaded with caching');
+console.log('✅ Molecule 3D module loaded (NO CACHE fallback version)');
