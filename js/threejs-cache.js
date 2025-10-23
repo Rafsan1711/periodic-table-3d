@@ -1,11 +1,12 @@
 /**
- * Three.js Cache System
- * ✅ Reuse geometries and materials
- * ✅ 70-80% faster rendering
- * ✅ Memory efficient
- * 
- * Usage: এই file টা index.html এ Three.js এর পরে add করো
+ * Three.js Cache System (FIXED)
+ * Must load AFTER Three.js
  */
+
+// Check if Three.js is loaded
+if (typeof THREE === 'undefined') {
+    console.error('❌ Three.js not loaded! Load threejs-cache.js AFTER Three.js');
+}
 
 // Global caches
 const geometryCache = new Map();
@@ -15,7 +16,10 @@ const textureCache = new Map();
 /**
  * Get or create sphere geometry (cached)
  */
-function getCachedSphereGeometry(radius, widthSegments = 24, heightSegments = 24) {
+function getCachedSphereGeometry(radius, widthSegments, heightSegments) {
+    widthSegments = widthSegments || 24;
+    heightSegments = heightSegments || 24;
+    
     const key = `sphere_${radius.toFixed(3)}_${widthSegments}_${heightSegments}`;
     
     if (!geometryCache.has(key)) {
@@ -30,7 +34,9 @@ function getCachedSphereGeometry(radius, widthSegments = 24, heightSegments = 24
 /**
  * Get or create cylinder geometry (cached)
  */
-function getCachedCylinderGeometry(radiusTop, radiusBottom, height, radialSegments = 12) {
+function getCachedCylinderGeometry(radiusTop, radiusBottom, height, radialSegments) {
+    radialSegments = radialSegments || 12;
+    
     const key = `cylinder_${radiusTop.toFixed(3)}_${radiusBottom.toFixed(3)}_${height.toFixed(3)}_${radialSegments}`;
     
     if (!geometryCache.has(key)) {
@@ -45,7 +51,9 @@ function getCachedCylinderGeometry(radiusTop, radiusBottom, height, radialSegmen
 /**
  * Get or create ring geometry (cached)
  */
-function getCachedRingGeometry(innerRadius, outerRadius, thetaSegments = 64) {
+function getCachedRingGeometry(innerRadius, outerRadius, thetaSegments) {
+    thetaSegments = thetaSegments || 64;
+    
     const key = `ring_${innerRadius.toFixed(3)}_${outerRadius.toFixed(3)}_${thetaSegments}`;
     
     if (!geometryCache.has(key)) {
@@ -61,18 +69,8 @@ function getCachedRingGeometry(innerRadius, outerRadius, thetaSegments = 64) {
  * Get or create material (cached)
  */
 function getCachedMaterial(type, options) {
-    // Create unique key from options
-    const optionsKey = JSON.stringify({
-        color: options.color,
-        emissive: options.emissive,
-        emissiveIntensity: options.emissiveIntensity,
-        shininess: options.shininess,
-        transparent: options.transparent,
-        opacity: options.opacity,
-        side: options.side
-    });
-    
-    const key = `${type}_${optionsKey}`;
+    // Create simple key
+    const key = `${type}_${options.color}_${options.emissive || 0}_${options.shininess || 0}`;
     
     if (!materialCache.has(key)) {
         let material;
@@ -99,19 +97,17 @@ function getCachedMaterial(type, options) {
 }
 
 /**
- * Get or create text texture (cached) - for element labels
+ * Get or create text texture (cached)
  */
-function getCachedTextTexture(text, options = {}) {
-    const {
-        width = 128,
-        height = 128,
-        fontSize = 64,
-        fontFamily = 'sans-serif',
-        fontWeight = 'bold',
-        color = 'rgba(255,255,255,0.95)',
-        textAlign = 'center',
-        textBaseline = 'middle'
-    } = options;
+function getCachedTextTexture(text, options) {
+    options = options || {};
+    
+    const width = options.width || 128;
+    const height = options.height || 128;
+    const fontSize = options.fontSize || 64;
+    const fontFamily = options.fontFamily || 'sans-serif';
+    const fontWeight = options.fontWeight || 'bold';
+    const color = options.color || 'rgba(255,255,255,0.95)';
     
     const key = `text_${text}_${fontSize}_${fontFamily}_${color}`;
     
@@ -123,8 +119,8 @@ function getCachedTextTexture(text, options = {}) {
         
         ctx.fillStyle = color;
         ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-        ctx.textAlign = textAlign;
-        ctx.textBaseline = textBaseline;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         ctx.fillText(text, width / 2, height / 2);
         
         const texture = new THREE.CanvasTexture(canvas);
@@ -133,85 +129,6 @@ function getCachedTextTexture(text, options = {}) {
     }
     
     return textureCache.get(key);
-}
-
-/**
- * Create optimized atom mesh (using caches)
- */
-function createOptimizedAtom(element, radius, position, scale = 1) {
-    const group = new THREE.Group();
-    
-    // Get atom color
-    const color = typeof getAtomColor === 'function' ? getAtomColor(element) : 0x888888;
-    
-    // Main sphere with cached geometry
-    const sphereGeometry = getCachedSphereGeometry(radius * scale, 24, 24);
-    const sphereMaterial = getCachedMaterial('phong', {
-        color: color,
-        shininess: 80,
-        emissive: color,
-        emissiveIntensity: 0.3
-    });
-    
-    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial.clone());
-    sphere.position.copy(position);
-    group.add(sphere);
-    
-    // Outer glow with cached geometry
-    const glowGeometry = getCachedSphereGeometry(radius * scale * 1.3, 16, 16);
-    const glowMaterial = getCachedMaterial('basic', {
-        color: color,
-        transparent: true,
-        opacity: 0.15,
-        side: THREE.BackSide
-    });
-    
-    const glow = new THREE.Mesh(glowGeometry, glowMaterial.clone());
-    glow.position.copy(position);
-    group.add(glow);
-    
-    // Label sprite with cached texture
-    const texture = getCachedTextTexture(element);
-    const spriteMaterial = new THREE.SpriteMaterial({
-        map: texture,
-        transparent: true,
-        opacity: 1
-    });
-    
-    const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(scale * 0.8, scale * 0.8, scale * 0.8);
-    sprite.position.set(
-        position.x,
-        position.y,
-        position.z + scale * 0.6
-    );
-    group.add(sprite);
-    
-    return group;
-}
-
-/**
- * Create optimized bond mesh (using caches)
- */
-function createOptimizedBond(start, end, radius = 0.08, scale = 1) {
-    const distance = start.distanceTo(end);
-    
-    // Use cached geometry
-    const geometry = getCachedCylinderGeometry(radius * scale, radius * scale, distance, 12);
-    const material = getCachedMaterial('phong', {
-        color: 0x999999,
-        shininess: 80
-    });
-    
-    const mesh = new THREE.Mesh(geometry, material.clone());
-    
-    // Position and rotation
-    const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-    mesh.position.copy(midpoint);
-    mesh.lookAt(end);
-    mesh.rotateX(Math.PI / 2);
-    
-    return mesh;
 }
 
 /**
@@ -230,27 +147,22 @@ function getCacheStats() {
 }
 
 /**
- * Estimate cache memory usage (approximate)
+ * Estimate cache memory usage
  */
 function estimateCacheMemory() {
     let estimate = 0;
-    
-    // Each geometry ~10KB
-    estimate += geometryCache.size * 10;
-    
-    // Each material ~1KB
-    estimate += materialCache.size * 1;
-    
-    // Each texture ~16KB (128x128 canvas)
-    estimate += textureCache.size * 16;
-    
+    estimate += geometryCache.size * 10; // ~10KB each
+    estimate += materialCache.size * 1;  // ~1KB each
+    estimate += textureCache.size * 16;  // ~16KB each
     return `${estimate.toFixed(0)} KB`;
 }
 
 /**
- * Clear specific cache
+ * Clear cache
  */
-function clearCache(type = 'all') {
+function clearThreeJSCache(type) {
+    type = type || 'all';
+    
     console.log(`🧹 Clearing ${type} cache...`);
     
     switch(type) {
@@ -282,23 +194,14 @@ function clearCache(type = 'all') {
     console.log('✅ Cache cleared');
 }
 
-/**
- * Auto cleanup on page unload
- */
-window.addEventListener('beforeunload', () => {
-    clearCache('all');
-});
-
 // Make functions globally available
 window.getCachedSphereGeometry = getCachedSphereGeometry;
 window.getCachedCylinderGeometry = getCachedCylinderGeometry;
 window.getCachedRingGeometry = getCachedRingGeometry;
 window.getCachedMaterial = getCachedMaterial;
 window.getCachedTextTexture = getCachedTextTexture;
-window.createOptimizedAtom = createOptimizedAtom;
-window.createOptimizedBond = createOptimizedBond;
 window.getCacheStats = getCacheStats;
-window.clearThreeJSCache = clearCache;
+window.clearThreeJSCache = clearThreeJSCache;
 
 console.log('✅ Three.js cache system initialized');
-console.log('💡 Use getCacheStats() to see cache statistics');
+console.log('💡 Available functions:', Object.keys(window).filter(k => k.startsWith('getCached')));
