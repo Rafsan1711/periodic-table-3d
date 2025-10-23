@@ -1,7 +1,45 @@
 /**
- * Molecules List Module (FIXED)
- * Renders and manages the molecules list display
+ * Molecules List Module (OPTIMIZED - Virtual Scrolling)
+ * ✅ Progressive loading - UI কখনো block হবে না
+ * ✅ Memory efficient
+ * ✅ Smooth scrolling
  */
+
+let displayedMolecules = [];
+let allFilteredMolecules = [];
+const BATCH_SIZE = 20; // একবারে 20টা render হবে
+let currentBatch = 0;
+let isRendering = false;
+let scrollObserver = null;
+
+/**
+ * Initialize Intersection Observer for lazy loading
+ */
+function initMoleculesLazyLoad() {
+    // Create sentinel element
+    const sentinel = document.createElement('div');
+    sentinel.id = 'molecules-sentinel';
+    sentinel.style.cssText = 'height: 1px; width: 100%;';
+    
+    // Cleanup old observer
+    if (scrollObserver) {
+        scrollObserver.disconnect();
+    }
+    
+    // Create new observer
+    scrollObserver = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && !isRendering) {
+            if (currentBatch * BATCH_SIZE < allFilteredMolecules.length) {
+                renderNextBatch();
+            }
+        }
+    }, { 
+        rootMargin: '200px',
+        threshold: 0.1
+    });
+    
+    return { sentinel, observer: scrollObserver };
+}
 
 /**
  * Renders the molecules list based on search query and sort mode
@@ -16,24 +54,34 @@ function renderMoleculesList(query = '') {
     
     console.log('🧪 Rendering molecules list, query:', query);
     
-    // Show loading state
+    // Reset state
+    currentBatch = 0;
+    displayedMolecules = [];
+    isRendering = false;
+    moleculesListEl.innerHTML = '';
+    
+    // Disconnect old observer
+    if (scrollObserver) {
+        scrollObserver.disconnect();
+    }
+    
+    // Show loading state briefly
     moleculesListEl.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+        <div style="grid-column: 1/-1; text-align: center; padding: 20px;">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading molecules...</span>
             </div>
-            <p style="color: var(--text-secondary); margin-top: 10px;">Loading molecules...</p>
         </div>
     `;
     
-    // Simulate loading for smooth experience
-    setTimeout(() => {
+    // Use requestAnimationFrame for smooth rendering
+    requestAnimationFrame(() => {
         renderMoleculesContent(query);
-    }, 200);
+    });
 }
 
 /**
- * Render molecules content
+ * Render molecules content with filtering and sorting
  */
 function renderMoleculesContent(query) {
     const moleculesListEl = document.getElementById('moleculesList');
@@ -59,14 +107,15 @@ function renderMoleculesContent(query) {
     if (currentSortMode === 'az' && !q) {
         filteredItems.sort((a, b) => a.m.name.localeCompare(b.m.name));
     } else {
-        // Sort by score desc then name
         filteredItems.sort((a, b) => {
             if (b.score !== a.score) return b.score - a.score;
             return a.m.name.localeCompare(b.m.name);
         });
     }
 
-    // Render items with animation
+    allFilteredMolecules = filteredItems;
+
+    // Empty state
     if (filteredItems.length === 0) {
         moleculesListEl.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
@@ -82,63 +131,131 @@ function renderMoleculesContent(query) {
         return;
     }
 
-    filteredItems.forEach((item, index) => {
-        const m = item.m;
-        const div = document.createElement('div');
-        div.className = 'molecule-item';
-        div.setAttribute('data-aos', 'fade-up');
-        div.setAttribute('data-aos-delay', Math.min(index * 30, 300));
+    // Setup lazy loading
+    const { sentinel, observer } = initMoleculesLazyLoad();
+    moleculesListEl.appendChild(sentinel);
+    observer.observe(sentinel);
+    
+    // Render first batch immediately
+    renderNextBatch();
+    
+    console.log(`✅ Prepared ${filteredItems.length} molecules for progressive loading`);
+}
+
+/**
+ * Render next batch of molecules (Progressive Loading)
+ */
+function renderNextBatch() {
+    if (isRendering) return;
+    
+    isRendering = true;
+    const moleculesListEl = document.getElementById('moleculesList');
+    const sentinel = document.getElementById('molecules-sentinel');
+    
+    if (!moleculesListEl || !sentinel) {
+        isRendering = false;
+        return;
+    }
+    
+    const start = currentBatch * BATCH_SIZE;
+    const end = Math.min(start + BATCH_SIZE, allFilteredMolecules.length);
+    const batch = allFilteredMolecules.slice(start, end);
+    
+    if (batch.length === 0) {
+        isRendering = false;
+        return;
+    }
+    
+    console.log(`📦 Rendering batch ${currentBatch + 1}: ${start}-${end} of ${allFilteredMolecules.length}`);
+    
+    // Use requestAnimationFrame for smooth rendering
+    requestAnimationFrame(() => {
+        const fragment = document.createDocumentFragment();
         
-        // Add tooltip
-        div.setAttribute('data-tippy-content', `
-            <strong>${m.name}</strong><br>
-            Formula: ${m.formula}<br>
-            Atoms: ${m.atoms.length}<br>
-            Bonds: ${m.bonds.length}
-        `);
-        
-        div.innerHTML = `
-            <div class="molecule-badge">${m.formula}</div>
-            <div class="molecule-meta">
-                <div class="molecule-name">${highlightMatch(m.name, q)}</div>
-                <div class="molecule-formula">${m.formula}</div>
-            </div>
-            <i class="fas fa-chevron-right" style="color: var(--text-secondary); opacity: 0.5; margin-left: auto;"></i>
-        `;
-        
-        div.addEventListener('click', () => {
-            // Haptic feedback
-            if ('vibrate' in navigator) {
-                navigator.vibrate(10);
-            }
-            
-            // Visual feedback
-            div.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                div.style.transform = '';
-                openMatterModal(m);
-            }, 100);
+        batch.forEach((item, index) => {
+            const div = createMoleculeElement(item.m, start + index);
+            fragment.appendChild(div);
+            displayedMolecules.push(item.m);
         });
         
-        moleculesListEl.appendChild(div);
+        // Insert before sentinel
+        moleculesListEl.insertBefore(fragment, sentinel);
+        
+        currentBatch++;
+        isRendering = false;
+        
+        // Initialize tooltips for new elements
+        initTooltipsForBatch();
+        
+        // Refresh AOS animations
+        if (typeof AOS !== 'undefined') {
+            AOS.refresh();
+        }
     });
+}
+
+/**
+ * Create single molecule element (Reusable & Optimized)
+ */
+function createMoleculeElement(molecule, index) {
+    const div = document.createElement('div');
+    div.className = 'molecule-item';
+    div.setAttribute('data-aos', 'fade-up');
+    div.setAttribute('data-aos-delay', Math.min((index % BATCH_SIZE) * 15, 200));
     
-    // Initialize tooltips for new elements
-    if (typeof tippy !== 'undefined') {
-        tippy('[data-tippy-content]', {
+    // Tooltip data
+    div.setAttribute('data-tippy-content', `
+        <strong>${molecule.name}</strong><br>
+        Formula: ${molecule.formula}<br>
+        Atoms: ${molecule.atoms.length}<br>
+        Bonds: ${molecule.bonds.length}
+    `);
+    
+    div.innerHTML = `
+        <div class="molecule-badge">${molecule.formula}</div>
+        <div class="molecule-meta">
+            <div class="molecule-name">${molecule.name}</div>
+            <div class="molecule-formula">${molecule.formula}</div>
+        </div>
+        <i class="fas fa-chevron-right" style="color: var(--text-secondary); opacity: 0.5; margin-left: auto;"></i>
+    `;
+    
+    // Click handler with optimization
+    div.addEventListener('click', () => {
+        // Haptic feedback
+        if ('vibrate' in navigator) {
+            navigator.vibrate(10);
+        }
+        
+        // Visual feedback
+        div.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            div.style.transform = '';
+            openMatterModal(molecule);
+        }, 100);
+    }, { passive: true });
+    
+    return div;
+}
+
+/**
+ * Initialize tooltips for new batch (Optimized)
+ */
+function initTooltipsForBatch() {
+    if (typeof tippy === 'undefined') return;
+    
+    // Only init tooltips for new elements without tooltips
+    const newElements = document.querySelectorAll('.molecule-item[data-tippy-content]:not([data-tippy-root])');
+    
+    if (newElements.length > 0) {
+        tippy(newElements, {
             arrow: true,
             animation: 'scale',
             theme: 'dark',
-            delay: [200, 0]
+            delay: [200, 0],
+            touch: ['hold', 500] // Better mobile experience
         });
     }
-    
-    // Refresh AOS
-    if (typeof AOS !== 'undefined') {
-        AOS.refresh();
-    }
-    
-    console.log(`✅ Rendered ${filteredItems.length} molecules`);
 }
 
 /**
@@ -150,3 +267,25 @@ function highlightMatch(text, query) {
     const regex = new RegExp(`(${query})`, 'gi');
     return text.replace(regex, '<mark style="background: var(--accent-blue); color: white; padding: 2px 4px; border-radius: 3px;">$1</mark>');
 }
+
+/**
+ * Cleanup function (call when switching pages)
+ */
+function cleanupMoleculesList() {
+    if (scrollObserver) {
+        scrollObserver.disconnect();
+        scrollObserver = null;
+    }
+    
+    displayedMolecules = [];
+    allFilteredMolecules = [];
+    currentBatch = 0;
+    isRendering = false;
+    
+    console.log('🧹 Molecules list cleaned up');
+}
+
+// Make cleanup available globally
+window.cleanupMoleculesList = cleanupMoleculesList;
+
+console.log('✅ Optimized molecules list module loaded with virtual scrolling');
