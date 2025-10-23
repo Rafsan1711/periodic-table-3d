@@ -1,6 +1,8 @@
 /**
- * App Initialization Module - COMPLETE FIXED
- * Fixes all initialization and missing function errors
+ * App Initialization Module - OPTIMIZED
+ * ✅ Service Worker support
+ * ✅ Performance monitoring
+ * ✅ Memory management
  */
 
 // Show loader
@@ -26,7 +28,7 @@ function hideLoader() {
 }
 
 /**
- * FIXED: Show notification toast (was missing)
+ * Show notification toast
  */
 function showNotification(message, type = 'info') {
     const toast = document.createElement('div');
@@ -64,7 +66,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Make it globally available
+// Make globally available
 window.showNotification = showNotification;
 
 // Check authentication
@@ -77,11 +79,119 @@ function checkAuth() {
     });
 }
 
+/**
+ * Register Service Worker
+ */
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('✅ Service Worker registered:', registration.scope);
+                    
+                    // Check for updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        console.log('🔄 Service Worker update found');
+                        
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                console.log('✨ New version available! Reload to update.');
+                                showNotification('New version available! Refresh to update.', 'info');
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('❌ Service Worker registration failed:', error);
+                });
+        });
+    } else {
+        console.warn('⚠️ Service Worker not supported in this browser');
+    }
+}
+
+/**
+ * Monitor performance
+ */
+function monitorPerformance() {
+    if ('performance' in window && 'PerformanceObserver' in window) {
+        // Monitor long tasks
+        try {
+            const observer = new PerformanceObserver((list) => {
+                for (const entry of list.getEntries()) {
+                    if (entry.duration > 50) {
+                        console.warn('⚠️ Long task detected:', entry.duration.toFixed(2), 'ms');
+                    }
+                }
+            });
+            observer.observe({ entryTypes: ['longtask'] });
+        } catch (e) {
+            // Long task API not supported
+        }
+        
+        // Log page load metrics
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const perfData = performance.getEntriesByType('navigation')[0];
+                if (perfData) {
+                    console.log('📊 Performance Metrics:');
+                    console.log('  DOM Content Loaded:', (perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart).toFixed(2), 'ms');
+                    console.log('  Load Complete:', (perfData.loadEventEnd - perfData.loadEventStart).toFixed(2), 'ms');
+                    console.log('  Total Load Time:', (perfData.loadEventEnd - perfData.fetchStart).toFixed(2), 'ms');
+                }
+            }, 0);
+        });
+    }
+}
+
+/**
+ * Memory management - cleanup on page hide
+ */
+function setupMemoryManagement() {
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            console.log('🧹 Page hidden - cleaning up...');
+            
+            // Cleanup molecules list
+            if (typeof cleanupMoleculesList === 'function') {
+                cleanupMoleculesList();
+            }
+            
+            // Cleanup 3D viewers
+            if (typeof cleanupMatter3D === 'function') {
+                cleanupMatter3D();
+            }
+            
+            // Optional: Clear Three.js cache if memory is low
+            if (performance && performance.memory) {
+                const usedMemory = performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit;
+                if (usedMemory > 0.9) {
+                    console.log('⚠️ High memory usage detected, clearing cache...');
+                    if (typeof clearThreeJSCache === 'function') {
+                        clearThreeJSCache('geometries'); // Only clear geometries, keep materials
+                    }
+                }
+            }
+        }
+    });
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
     showLoader();
     
     try {
+        // Register Service Worker first
+        registerServiceWorker();
+        
+        // Setup performance monitoring
+        monitorPerformance();
+        
+        // Setup memory management
+        setupMemoryManagement();
+        
+        // Check authentication
         const user = await checkAuth();
         
         if (user) {
@@ -89,9 +199,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            
-            // CRITICAL FIX: Don't initialize modules here
-            // Let auth-handler.js handle it
             
         } else {
             console.log('ℹ️ No user authenticated, showing login screen');
@@ -103,7 +210,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         addClickEffects();
         initKeyboardShortcuts();
         
-        console.log('✅ Interactive Periodic Table with Community App Initialized');
+        console.log('✅ Interactive Periodic Table Initialized');
+        
+        // Log cache stats if available
+        if (typeof getCacheStats === 'function') {
+            setTimeout(() => {
+                const stats = getCacheStats();
+                console.log('📦 Three.js Cache:', stats);
+            }, 2000);
+        }
         
     } catch (error) {
         console.error('❌ Error initializing app:', error);
@@ -120,7 +235,8 @@ function initTooltips() {
             theme: 'dark',
             delay: [200, 0],
             duration: [200, 150],
-            inertia: true
+            inertia: true,
+            touch: ['hold', 500] // Better mobile experience
         });
     }
 }
@@ -270,11 +386,7 @@ function initKeyboardShortcuts() {
         }
     });
     
-    console.log('⌨️ Keyboard shortcuts enabled:');
-    console.log('  ESC - Close modals');
-    console.log('  Ctrl/Cmd + K - Focus search');
-    console.log('  1/2/3/4 - Switch between pages');
-    console.log('  Ctrl/Cmd + N - Create new post');
+    console.log('⌨️ Keyboard shortcuts enabled');
 }
 
 function addSmoothScroll() {
@@ -329,7 +441,7 @@ window.addEventListener('online', () => {
 
 window.addEventListener('offline', () => {
     console.log('🔵 Connection lost');
-    showNotification('Connection lost', 'error');
+    showNotification('Working offline', 'info');
 });
 
 window.addEventListener('error', (e) => {
@@ -340,6 +452,6 @@ window.addEventListener('unhandledrejection', (e) => {
     console.error('❌ Unhandled promise rejection:', e.reason);
 });
 
-console.log('%c⚛️ Interactive Periodic Table with Community', 'font-size: 24px; font-weight: bold; color: #58a6ff;');
-console.log('%cBuilt with Three.js, GSAP, Firebase, and modern web technologies', 'color: #8b949e;');
-console.log('%c🧪 Explore elements, molecules, reactions, and join the community!', 'color: #7ce38b;');
+console.log('%c⚛️ Interactive Periodic Table', 'font-size: 24px; font-weight: bold; color: #58a6ff;');
+console.log('%cOptimized with Service Worker & Caching', 'color: #8b949e;');
+console.log('%c🧪 Explore elements, molecules, reactions!', 'color: #7ce38b;');
