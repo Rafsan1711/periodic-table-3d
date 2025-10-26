@@ -1,0 +1,190 @@
+/**
+ * Forum Mobile Fixes - Proper Alignment
+ */
+
+/* Fix topic filter buttons text alignment */
+@media (max-width: 768px) {
+    .topic-filter-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        gap: 4px;
+    }
+
+    .forum-filters {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 10px 0;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .forum-filters::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Fix post card elements overlap */
+    .forum-post-card {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .post-header {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .post-author-pic {
+        width: 42px;
+        height: 42px;
+    }
+
+    .post-meta {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .topic-badge {
+        white-space: nowrap;
+    }
+
+    /* Fix equation display overflow */
+    .equation-display {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 12px;
+    }
+
+    .reactant-chip,
+    .product-chip {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Fix create post modal */
+    .create-post-modal .modal-body {
+        padding: 15px;
+    }
+
+    .editor-toolbar {
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 8px;
+    }
+
+    .editor-btn {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+    }
+
+    #post-content {
+        min-height: 150px;
+        padding: 12px;
+    }
+
+    /* Fix chemistry options layout */
+    .chemistry-options {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .chemistry-option {
+        padding: 24px 16px;
+    }
+
+    .chemistry-option i {
+        font-size: 2.5rem;
+    }
+
+    .chemistry-option h3 {
+        font-size: 1.1rem;
+    }
+
+    /* Fix notification modal */
+    .notification-item {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .notif-user-pic {
+        width: 42px;
+        height: 42px;
+    }
+
+    .notif-text {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    /* Fix inline selector */
+    .inline-selector {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 400px;
+        max-height: 70vh;
+        margin: 0;
+    }
+
+    /* Fix molecule picker */
+    .molecule-picker-list {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 10px;
+    }
+
+    .molecule-picker-item {
+        padding: 12px;
+    }
+
+    .molecule-picker-item .molecule-badge {
+        padding: 6px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Smooth scrolling for all scrollable areas */
+.forum-filters,
+.equation-display,
+.reactant-list,
+.molecule-picker-list,
+.comments-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary) transparent;
+}
+
+.forum-filters::-webkit-scrollbar,
+.equation-display::-webkit-scrollbar,
+.reactant-list::-webkit-scrollbar,
+.molecule-picker-list::-webkit-scrollbar,
+.comments-list::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+}
+
+.forum-filters::-webkit-scrollbar-thumb,
+.equation-display::-webkit-scrollbar-thumb,
+.reactant-list::-webkit-scrollbar-thumb,
+.molecule-picker-list::-webkit-scrollbar-thumb,
+.comments-list::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 2px;
+}
+
+/* Prevent text selection during swipe */
+.modal-content {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.modal-body,
+.modal-body * {
+    -webkit-user-select: text;
+    user-select: text;
+}
