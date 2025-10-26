@@ -56,11 +56,47 @@
 /* 18. Scrollbar & Tippy */
 @import url('scrollbar-tippy.css');
 
-/* 19. Responsive Design */
+/* 19. Forum Mobile Fixes (NEW) */
+@import url('forum-mobile-fix.css');
+
+/* 20. Responsive Design */
 @import url('responsive.css');
 
-/* 20. Utility Classes */
+/* 21. Utility Classes */
 @import url('utility.css');
+
+/* ============================================
+   MOBILE PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* Reduce motion for low-end devices */
+.reduce-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+}
+
+/* Hardware acceleration for smooth scrolling */
+.modal-content,
+.forum-post-card,
+.molecule-item,
+.element {
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+/* Optimize scroll performance */
+* {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Prevent layout shifts */
+.periodic-table,
+.molecules-list,
+.forum-feed {
+    contain: layout style paint;
+}
 
 /* ============================================
    END OF IMPORTS
