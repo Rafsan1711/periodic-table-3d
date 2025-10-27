@@ -97,11 +97,14 @@
 
     <!-- Main App Container -->
     <div class="container-fluid px-2 px-md-4" id="main-app" style="display: none;">
-        <!-- Notification Bell -->
-        <div id="notification-bell" class="notification-bell" title="Notifications">
-            🔔
-            <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
-        </div>
+       <!-- NOTIFICATION IN HEADER (NEW) -->
+    <div class="notification-header-wrapper">
+        <button class="notification-bell-button" onclick="openNotificationModal()" id="notification-bell-btn">
+            <i class="fas fa-bell"></i>
+            <span class="notification-count-text" id="notification-count-text">0 new</span>
+            <span id="notification-badge-header" class="notification-badge" style="display: none;">0</span>
+        </button>
+    </div>
         
         <!-- Header -->
         <div class="header text-center" data-aos="fade-down">
@@ -600,5 +603,6 @@
     </script>
 </body>
     </html>
+
 
 
