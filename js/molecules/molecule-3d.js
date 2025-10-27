@@ -1,9 +1,10 @@
 /**
- * Molecule 3D Visualization Module
- * Creates 3D molecular models using Three.js
+ * Molecule 3D Visualization Module - FIXED
+ * Proper cleanup to prevent infinite errors
  */
 
 let matterScene, matterCamera, matterRenderer, matterGroup;
+let matterAnimationId = null; // Track animation frame
 
 /**
  * Creates a 3D visualization of a molecule
@@ -11,6 +12,11 @@ let matterScene, matterCamera, matterRenderer, matterGroup;
  */
 function create3DMolecule(molecule) {
     const container = document.getElementById('matterViewer');
+    if (!container) return;
+    
+    // Stop previous animation
+    stopMatterAnimation();
+    
     container.innerHTML = '';
     
     matterScene = new THREE.Scene();
@@ -106,19 +112,88 @@ function create3DMolecule(molecule) {
     matterScene.add(dl);
     matterScene.add(new THREE.PointLight(0xBBBBFF, 0.4, 0));
 
-    // Animation
-    function animateM() {
-        requestAnimationFrame(animateM);
-        matterGroup.rotation.y += 0.005;
-        matterRenderer.render(matterScene, matterCamera);
-    }
+    // Start animation
     animateM();
 
     // Handle resize
-    window.addEventListener('resize', () => {
-        if (!matterRenderer) return;
+    const resizeHandler = () => {
+        if (!matterRenderer || !matterCamera) return;
         matterCamera.aspect = container.clientWidth / container.clientHeight;
         matterCamera.updateProjectionMatrix();
         matterRenderer.setSize(container.clientWidth, container.clientHeight);
-    }, { passive: true });
+    };
+    
+    window.addEventListener('resize', resizeHandler, { passive: true });
 }
+
+/**
+ * FIXED: Animation loop with proper null checks
+ */
+function animateM() {
+    // Critical null checks
+    if (!matterRenderer || !matterScene || !matterCamera || !matterGroup) {
+        stopMatterAnimation();
+        return;
+    }
+    
+    matterAnimationId = requestAnimationFrame(animateM);
+    
+    try {
+        matterGroup.rotation.y += 0.005;
+        matterRenderer.render(matterScene, matterCamera);
+    } catch (error) {
+        console.warn('Matter animation error:', error);
+        stopMatterAnimation();
+    }
+}
+
+/**
+ * FIXED: Proper animation stop
+ */
+function stopMatterAnimation() {
+    if (matterAnimationId) {
+        cancelAnimationFrame(matterAnimationId);
+        matterAnimationId = null;
+    }
+}
+
+/**
+ * FIXED: Complete cleanup
+ */
+function cleanupMatterViewer() {
+    // Stop animation first
+    stopMatterAnimation();
+    
+    // Dispose Three.js objects
+    if (matterGroup) {
+        matterGroup.traverse(obj => {
+            if (obj.geometry) {
+                obj.geometry.dispose();
+            }
+            if (obj.material) {
+                if (Array.isArray(obj.material)) {
+                    obj.material.forEach(m => m.dispose());
+                } else {
+                    obj.material.dispose();
+                }
+            }
+        });
+        matterGroup = null;
+    }
+    
+    if (matterScene) {
+        matterScene = null;
+    }
+    
+    if (matterCamera) {
+        matterCamera = null;
+    }
+    
+    if (matterRenderer) {
+        matterRenderer.dispose();
+        matterRenderer = null;
+    }
+}
+
+// Export cleanup function
+window.cleanupMatterViewer = cleanupMatterViewer;
