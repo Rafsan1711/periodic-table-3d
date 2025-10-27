@@ -1,6 +1,6 @@
 /**
- * Modal Swipe Handler - FIXED
- * Proper touch handling to prevent accidental closes
+ * Modal Swipe Handler - PROPERLY FIXED
+ * Scroll works, swipe only from header
  */
 
 class ModalSwipeHandler {
@@ -15,6 +15,7 @@ class ModalSwipeHandler {
         this.currentY = 0;
         this.isDragging = false;
         this.isScrolling = false;
+        this.touchStartTarget = null;
 
         this.setupTouchHandlers();
     }
@@ -22,26 +23,32 @@ class ModalSwipeHandler {
     setupTouchHandlers() {
         // Touch start
         this.modalContent.addEventListener('touchstart', (e) => {
-            // Only track if touch starts from top area (header)
-            const target = e.target;
-            const header = this.modal.querySelector('.modal-header');
-            
-            // If touching scrollable content, don't track swipe
-            const scrollableArea = target.closest('.atom-info, .wiki-content, .modal-body, .molecules-list, .reactant-list, .forum-feed, .comments-list');
-            
-            if (scrollableArea) {
-                this.isScrolling = true;
-                return;
-            }
-
-            // Only allow swipe from header
-            if (!header?.contains(target)) {
-                return;
-            }
-
+            this.touchStartTarget = e.target;
             this.startY = e.touches[0].clientY;
             this.isDragging = false;
             this.isScrolling = false;
+            
+            // Check if touching scrollable area
+            const scrollableAreas = [
+                '.atom-info', '.wiki-content', '.modal-body', 
+                '.molecules-list', '.reactant-list', '.forum-feed', 
+                '.comments-list', '.atom-viewer', '#matterViewer',
+                '.post-content', '.notification-list'
+            ];
+            
+            for (const selector of scrollableAreas) {
+                if (e.target.closest(selector)) {
+                    this.isScrolling = true;
+                    return;
+                }
+            }
+            
+            // Only allow swipe from header
+            const header = this.modal.querySelector('.modal-header');
+            if (!header?.contains(this.touchStartTarget)) {
+                this.isScrolling = true;
+                return;
+            }
         }, { passive: true });
 
         // Touch move
@@ -51,11 +58,10 @@ class ModalSwipeHandler {
             this.currentY = e.touches[0].clientY;
             const diff = this.currentY - this.startY;
 
-            // Only allow downward swipe
-            if (diff > 10) {
+            // Only allow downward swipe from header
+            if (diff > 5 && !this.isScrolling) {
                 this.isDragging = true;
                 
-                // Apply transform (max 200px)
                 const translateY = Math.min(diff, 200);
                 this.modalContent.style.transform = `translateY(${translateY}px)`;
                 this.modalContent.style.transition = 'none';
@@ -71,7 +77,7 @@ class ModalSwipeHandler {
 
             const diff = this.currentY - this.startY;
 
-            // Close if swiped down more than 100px
+            // Close if swiped down > 100px
             if (this.isDragging && diff > 100) {
                 this.closeModal();
             } else {
@@ -83,6 +89,7 @@ class ModalSwipeHandler {
             this.isDragging = false;
             this.startY = 0;
             this.currentY = 0;
+            this.touchStartTarget = null;
         }, { passive: true });
     }
 
@@ -119,7 +126,7 @@ function initModalSwipeHandlers() {
         new ModalSwipeHandler(modalId);
     });
 
-    console.log('✅ Modal swipe handlers initialized');
+    console.log('✅ Modal swipe handlers initialized (FIXED)');
 }
 
 // Auto-initialize
