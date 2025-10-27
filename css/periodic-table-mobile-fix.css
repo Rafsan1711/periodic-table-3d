@@ -1,0 +1,60 @@
+/**
+ * Periodic Table Mobile Scroll Fix
+ * Enable horizontal scrolling on mobile
+ */
+
+@media (max-width: 768px) {
+    .periodic-table-wrapper {
+        overflow-x: auto !important;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        /* Force scroll behavior */
+        overscroll-behavior-x: contain;
+    }
+    
+    .periodic-table {
+        min-width: 900px; /* Force horizontal scroll */
+        width: max-content;
+    }
+    
+    /* Smooth scrollbar */
+    .periodic-table-wrapper::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    .periodic-table-wrapper::-webkit-scrollbar-track {
+        background: var(--bg-tertiary);
+        border-radius: 3px;
+    }
+    
+    .periodic-table-wrapper::-webkit-scrollbar-thumb {
+        background: var(--accent-blue);
+        border-radius: 3px;
+    }
+    
+    .periodic-table-wrapper::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-purple);
+    }
+    
+    /* Series scroll */
+    .series-elements {
+        min-width: 600px;
+        width: max-content;
+    }
+    
+    .lanthanide-series,
+    .actinide-series {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 480px) {
+    .periodic-table {
+        min-width: 750px;
+    }
+    
+    .series-elements {
+        min-width: 500px;
+    }
+}
