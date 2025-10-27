@@ -1,0 +1,137 @@
+/**
+ * Mobile Smooth Animations - 100% PC-like Performance
+ * Hardware acceleration + optimized transitions
+ */
+
+/* Global hardware acceleration */
+@media (max-width: 768px) {
+    .element,
+    .molecule-item,
+    .modal-content,
+    .forum-post-card {
+        transform: translateZ(0);
+        will-change: transform;
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+    
+    /* Element click - butter smooth */
+    .element {
+        transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    box-shadow 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    .element:active {
+        transform: translateY(-2px) translateZ(0) scale(1.05);
+        transition-duration: 0.1s;
+    }
+    
+    /* Modal entrance - smooth as butter */
+    .modal {
+        transition: opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    visibility 0.2s;
+    }
+    
+    .modal.active .modal-content {
+        animation: modalEnterMobile 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    
+    @keyframes modalEnterMobile {
+        from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95) translateZ(0);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1) translateZ(0);
+        }
+    }
+    
+    /* Molecule item - instant response */
+    .molecule-item {
+        transition: transform 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    box-shadow 0.12s;
+    }
+    
+    .molecule-item:active {
+        transform: translateY(-3px) translateZ(0) scale(0.98);
+    }
+    
+    /* Forum post cards */
+    .forum-post-card {
+        transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    border-color 0.15s;
+    }
+    
+    .forum-post-card:active {
+        transform: translateY(-2px) translateZ(0) scale(0.99);
+    }
+    
+    /* Disable problematic animations */
+    .element:hover,
+    .molecule-item:hover,
+    .forum-post-card:hover {
+        /* Disable hover on touch devices */
+        transform: none;
+    }
+    
+    /* Touch feedback - instant */
+    .element.element-clicked,
+    .molecule-item.molecule-clicked {
+        transform: scale(0.95) translateZ(0);
+        transition-duration: 0.08s;
+    }
+    
+    /* Remove lag from modals */
+    .modal-body {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        /* GPU acceleration for scrolling */
+        transform: translateZ(0);
+    }
+    
+    /* Optimize 3D viewer */
+    .atom-viewer,
+    #matterViewer {
+        transform: translateZ(0);
+        will-change: contents;
+    }
+    
+    /* Optimize buttons */
+    button,
+    .toggle-btn,
+    .post-action-btn {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    background 0.1s;
+    }
+    
+    button:active,
+    .toggle-btn:active {
+        transform: scale(0.96) translateZ(0);
+    }
+    
+    /* Remove transitions on scroll */
+    .scrolling * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Optimize for very low-end devices */
+@media (max-width: 768px) and (max-resolution: 150dpi) {
+    * {
+        animation-duration: 0.2s !important;
+        transition-duration: 0.2s !important;
+    }
+}
+
+/* Add scrolling class on scroll */
+@media (max-width: 768px) {
+    body.scrolling .element,
+    body.scrolling .molecule-item,
+    body.scrolling .forum-post-card {
+        pointer-events: none;
+    }
+}
