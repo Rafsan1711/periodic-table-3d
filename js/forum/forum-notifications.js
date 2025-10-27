@@ -1,6 +1,6 @@
 /**
- * Forum Notifications Module - COMPLETE
- * FEATURE 6: Detailed notifications with user actions (like "Username Right👍 3hrs ago")
+ * Forum Notifications Module - COMPLETE UPDATED
+ * FEATURE 6: Detailed notifications with header position
  */
 
 let notificationsRef = null;
@@ -39,17 +39,27 @@ function initNotifications() {
 }
 
 /**
- * Update notification badge
+ * UPDATED: Update notification badge in header
  */
 function updateNotificationBadge() {
-    const badge = document.getElementById('notification-badge');
-    if (!badge) return;
+    const badge = document.getElementById('notification-badge-header');
+    const countText = document.getElementById('notification-count-text');
     
-    if (unreadCount > 0) {
-        badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
-        badge.style.display = 'block';
-    } else {
-        badge.style.display = 'none';
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+    
+    if (countText) {
+        if (unreadCount > 0) {
+            countText.textContent = `${unreadCount} new`;
+        } else {
+            countText.textContent = 'No new';
+        }
     }
 }
 
@@ -95,7 +105,7 @@ async function loadNotifications() {
 
 /**
  * FEATURE 6: Create detailed notification element
- * Format: "Username Right👍 3hrs ago"
+ * Format: "Username Action👍 3hrs ago"
  */
 function createNotificationElement(notif) {
     const div = document.createElement('div');
@@ -340,9 +350,11 @@ function getTimeAgo(timestamp) {
     return new Date(timestamp).toLocaleDateString();
 }
 
-// Setup notification bell click handler
+/**
+ * UPDATED: Setup notification bell click handler in header
+ */
 document.addEventListener('DOMContentLoaded', () => {
-    const bell = document.getElementById('notification-bell');
+    const bell = document.getElementById('notification-bell-btn');
     if (bell) {
         bell.addEventListener('click', openNotificationModal);
     }
@@ -355,4 +367,4 @@ window.initNotifications = initNotifications;
 window.sendNotification = sendNotification;
 window.markAllAsRead = markAllAsRead;
 
-console.log('✅ Forum notifications module loaded (COMPLETE with Feature 6)');
+console.log('✅ Forum notifications module loaded (COMPLETE with header position)');
