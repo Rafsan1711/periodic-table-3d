@@ -1,6 +1,5 @@
 /**
- * Authentication Handler - FIXED
- * Properly initializes all modules after login
+ * Authentication Handler - WITH PREMIUM LOADER
  */
 
 const authScreen = document.getElementById('auth-screen');
@@ -57,6 +56,9 @@ signupForm.addEventListener('submit', async function(e) {
         return;
     }
     
+    // SHOW LOADER
+    showGlobalLoader('Creating account...');
+    
     try {
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         
@@ -78,6 +80,8 @@ signupForm.addEventListener('submit', async function(e) {
         }
     } catch(err) {
         errorDiv.textContent = err.message.replace('Firebase:', '').replace(/\(auth.*\)/, '');
+    } finally {
+        hideGlobalLoader();
     }
 });
 
@@ -88,6 +92,9 @@ loginForm.addEventListener('submit', async function(e) {
     const errorDiv = document.getElementById('login-error');
     errorDiv.textContent = '';
     
+    // SHOW LOADER
+    showGlobalLoader('Signing in...');
+    
     try {
         const cred = await auth.signInWithEmailAndPassword(email, password);
         
@@ -96,10 +103,13 @@ loginForm.addEventListener('submit', async function(e) {
             loginForm.style.display = 'none';
             verifyEmailNotice.style.display = 'block';
             await auth.signOut();
+            hideGlobalLoader();
             return;
         }
     } catch(err) {
         errorDiv.textContent = err.message.replace('Firebase:', '').replace(/\(auth.*\)/, '');
+    } finally {
+        hideGlobalLoader();
     }
 });
 
@@ -116,17 +126,22 @@ resetForm.addEventListener('submit', async function(e) {
         return;
     }
     
+    showGlobalLoader('Sending reset link...');
+    
     try {
         await auth.sendPasswordResetEmail(email);
         successDiv.textContent = 'A reset link has been sent to your email.';
     } catch(err) {
         errorDiv.textContent = err.message.replace('Firebase:', '').replace(/\(auth.*\)/, '');
+    } finally {
+        hideGlobalLoader();
     }
 });
 
 if (resendVerificationBtn) {
     resendVerificationBtn.onclick = async function() {
         if (auth.currentUser) {
+            showGlobalLoader('Sending verification email...');
             try {
                 await auth.currentUser.sendEmailVerification();
                 resendVerificationBtn.textContent = "Sent!";
@@ -135,29 +150,36 @@ if (resendVerificationBtn) {
                 }, 3000);
             } catch (err) {
                 resendVerificationBtn.textContent = "Error!";
+            } finally {
+                hideGlobalLoader();
             }
         }
     };
 }
 
 function signInWithGoogle() {
+    showGlobalLoader('Signing in with Google...');
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).catch(err => {
         console.error('Google sign in error:', err);
         alert('Failed to sign in with Google');
+        hideGlobalLoader();
     });
 }
 
 function signOut() {
+    showGlobalLoader('Signing out...');
     auth.signOut().then(() => {
         console.log('User signed out');
+        hideGlobalLoader();
     }).catch(err => {
         console.error('Sign out error:', err);
+        hideGlobalLoader();
     });
 }
 
 /**
- * CRITICAL FIX: Auth State Observer - Properly initialize modules
+ * Auth State Observer - WITH LOADER
  */
 auth.onAuthStateChanged(async user => {
     if (user) {
@@ -174,9 +196,13 @@ auth.onAuthStateChanged(async user => {
         authScreen.style.display = 'none';
         mainApp.style.display = 'block';
         
-        // CRITICAL FIX: Initialize all modules in correct order
+        // SHOW LOADER DURING INITIALIZATION
+        showGlobalLoader('Initializing app...');
+        
         console.log('Initializing app for user:', currentAuthUser.displayName);
         await initializeApp();
+        
+        hideGlobalLoader();
         
     } else {
         currentAuthUser = null;
@@ -188,7 +214,7 @@ auth.onAuthStateChanged(async user => {
 });
 
 /**
- * FIXED: Initialize app properly
+ * Initialize app with loader for each module
  */
 async function initializeApp() {
     try {
@@ -246,6 +272,7 @@ async function initializeApp() {
         
     } catch (error) {
         console.error('❌ Error initializing modules:', error);
+        hideGlobalLoader();
     }
 }
 
@@ -256,4 +283,4 @@ function delay(ms) {
 window.signInWithGoogle = signInWithGoogle;
 window.signOut = signOut;
 
-console.log('✅ Auth handler loaded');
+console.log('✅ Auth handler loaded (WITH LOADER)');
