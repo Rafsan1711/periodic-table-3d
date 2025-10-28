@@ -1,9 +1,7 @@
 /**
- * App Initialization Module - COMPLETE FIXED
- * Fixes all initialization and missing function errors
+ * App Initialization Module - WITH PREMIUM LOADER
  */
 
-// Show loader
 function showLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) {
@@ -12,7 +10,6 @@ function showLoader() {
     }
 }
 
-// Hide loader
 function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) {
@@ -26,7 +23,7 @@ function hideLoader() {
 }
 
 /**
- * FIXED: Show notification toast (was missing)
+ * Show notification toast
  */
 function showNotification(message, type = 'info') {
     const toast = document.createElement('div');
@@ -64,10 +61,8 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Make it globally available
 window.showNotification = showNotification;
 
-// Check authentication
 function checkAuth() {
     return new Promise((resolve) => {
         const unsubscribe = firebase.auth().onAuthStateChanged(user => {
@@ -89,10 +84,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            
-            // CRITICAL FIX: Don't initialize modules here
-            // Let auth-handler.js handle it
-            
         } else {
             console.log('ℹ️ No user authenticated, showing login screen');
             document.getElementById('main-app').style.display = 'none';
