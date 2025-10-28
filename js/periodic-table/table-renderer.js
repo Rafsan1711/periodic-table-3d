@@ -1,14 +1,10 @@
 /**
- * Periodic Table Renderer Module (ENHANCED - Mobile Optimized)
- * Handles rendering of the periodic table grid and series
+ * Periodic Table Renderer Module (FIXED - Click Loader)
  */
 
 let isMobile = false;
 let isTablet = false;
 
-/**
- * Detect device type
- */
 function detectDevice() {
     const width = window.innerWidth;
     isMobile = width <= 768;
@@ -16,9 +12,6 @@ function detectDevice() {
     return { isMobile, isTablet };
 }
 
-/**
- * Initializes and renders the complete periodic table
- */
 function initPeriodicTable() {
     const table = document.getElementById('periodicTable');
     const lanthanideElements = document.getElementById('lanthanideElements');
@@ -48,7 +41,6 @@ function initPeriodicTable() {
                 table.appendChild(elementDiv);
                 renderedCount++;
                 
-                // Add stagger animation
                 elementDiv.style.animationDelay = `${renderedCount * 0.01}s`;
             } else {
                 const emptyDiv = document.createElement('div');
@@ -60,7 +52,7 @@ function initPeriodicTable() {
         }
     }
     
-    // Create lanthanide series (elements 57-71)
+    // Create lanthanide series
     for (let i = 57; i <= 71; i++) {
         const element = elementsData.find(el => el.number === i);
         if (element) {
@@ -70,7 +62,7 @@ function initPeriodicTable() {
         }
     }
     
-    // Create actinide series (elements 89-103)
+    // Create actinide series
     for (let i = 89; i <= 103; i++) {
         const element = elementsData.find(el => el.number === i);
         if (element) {
@@ -80,12 +72,10 @@ function initPeriodicTable() {
         }
     }
     
-    // Add fade-in animation
     addTableAnimation();
     
     console.log(`✅ Periodic table rendered with ${renderedCount} elements`);
     
-    // Re-render on window resize
     let resizeTimeout;
     window.addEventListener('optimizedResize', () => {
         clearTimeout(resizeTimeout);
@@ -96,16 +86,12 @@ function initPeriodicTable() {
     }, { passive: true });
 }
 
-/**
- * Add animation to table
- */
 function addTableAnimation() {
     const elements = document.querySelectorAll('.element');
     elements.forEach(el => {
         el.classList.add('fade-in-element');
     });
     
-    // Add CSS if not exists
     if (!document.getElementById('table-animations')) {
         const style = document.createElement('style');
         style.id = 'table-animations';
@@ -140,9 +126,6 @@ function addTableAnimation() {
     }
 }
 
-/**
- * Update table layout based on device
- */
 function updateTableLayout() {
     const table = document.getElementById('periodicTable');
     if (!table) return;
@@ -156,12 +139,6 @@ function updateTableLayout() {
     }
 }
 
-/**
- * Finds element by grid position
- * @param {number} row - Grid row (1-7)
- * @param {number} col - Grid column (1-18)
- * @returns {Object|null} Element data or null
- */
 function findElementByPosition(row, col) {
     return elementsData.find(element => {
         const pos = elementPositions[element.number];
@@ -169,11 +146,6 @@ function findElementByPosition(row, col) {
     });
 }
 
-/**
- * Creates HTML element for a single periodic table cell
- * @param {Object} element - Element data
- * @returns {HTMLElement} Element div
- */
 function createElementDiv(element) {
     const div = document.createElement('div');
     div.className = `element ${element.category}`;
@@ -183,7 +155,6 @@ function createElementDiv(element) {
     div.setAttribute('data-category', element.category);
     div.setAttribute('title', element.name);
     
-    // Add tooltip data
     div.setAttribute('data-tippy-content', `
         <strong>${element.name}</strong><br>
         Symbol: ${element.symbol}<br>
@@ -191,7 +162,6 @@ function createElementDiv(element) {
         Weight: ${element.weight} u
     `);
     
-    // Determine if weight should be shown (only on larger screens)
     const showWeight = !isMobile;
     
     div.innerHTML = `
@@ -200,24 +170,33 @@ function createElementDiv(element) {
         <span class="number">${element.number}</span>
     `;
     
-    // Add click handler with haptic feedback
+    // FIXED: Add click handler with loader
     div.addEventListener('click', (e) => {
         e.preventDefault();
         
-        // Haptic feedback on mobile
+        // Haptic feedback
         if ('vibrate' in navigator) {
             navigator.vibrate(10);
         }
         
-        // Visual feedback
+        // Visual feedback with loader
         div.classList.add('element-clicked');
-        setTimeout(() => div.classList.remove('element-clicked'), 300);
+        div.classList.add('loading'); // Show loader
         
-        // Open modal
-        openElementModal(element);
+        setTimeout(() => {
+            div.classList.remove('element-clicked');
+            
+            // Open modal
+            openElementModal(element);
+            
+            // Remove loader after modal opens
+            setTimeout(() => {
+                div.classList.remove('loading');
+            }, 500);
+        }, 100);
     });
     
-    // Add long-press for mobile info
+    // Mobile long-press info
     if (isMobile) {
         let pressTimer;
         div.addEventListener('touchstart', (e) => {
@@ -241,11 +220,7 @@ function createElementDiv(element) {
     return div;
 }
 
-/**
- * Show quick info tooltip on long press (mobile)
- */
 function showQuickInfo(element, touch) {
-    // Remove existing quick info
     const existing = document.querySelector('.quick-info');
     if (existing) existing.remove();
     
@@ -277,7 +252,6 @@ function showQuickInfo(element, touch) {
     
     document.body.appendChild(quickInfo);
     
-    // Remove after 3 seconds
     setTimeout(() => {
         if (quickInfo.parentNode) {
             quickInfo.style.opacity = '0';
@@ -285,7 +259,6 @@ function showQuickInfo(element, touch) {
         }
     }, 3000);
     
-    // Add CSS for animation
     if (!document.getElementById('quick-info-styles')) {
         const style = document.createElement('style');
         style.id = 'quick-info-styles';
@@ -332,9 +305,6 @@ function showQuickInfo(element, touch) {
     }
 }
 
-/**
- * Format category name for display
- */
 function formatCategoryName(category) {
     const categoryMap = {
         'nonmetal': 'Non Metal',
@@ -352,9 +322,6 @@ function formatCategoryName(category) {
     return categoryMap[category] || category;
 }
 
-/**
- * Highlight elements by category
- */
 function highlightCategory(category) {
     const elements = document.querySelectorAll('.element');
     elements.forEach(el => {
@@ -366,9 +333,6 @@ function highlightCategory(category) {
     });
 }
 
-/**
- * Clear category highlights
- */
 function clearHighlights() {
     const elements = document.querySelectorAll('.element');
     elements.forEach(el => {
@@ -377,7 +341,6 @@ function clearHighlights() {
     });
 }
 
-// Add legend item click handlers for highlighting
 document.addEventListener('DOMContentLoaded', () => {
     const legendItems = document.querySelectorAll('.legend-item');
     legendItems.forEach(item => {
