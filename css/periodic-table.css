@@ -1,28 +1,23 @@
 .periodic-table-wrapper {
     overflow-x: auto;
-    overflow-y: visible;
     margin-bottom: 2rem;
     border-radius: var(--radius-lg);
     background: var(--bg-secondary);
     padding: 1rem;
     border: 1px solid var(--border-primary);
-    /* CRITICAL FIX: Force horizontal scroll */
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
 }
 
 .periodic-table {
     display: grid;
-    grid-template-columns: repeat(18, 1fr);
+    grid-template-columns: repeat(19, 1fr);
     gap: 2px;
-    min-width: 900px;
+    min-width: 320px;
     margin: 0 auto;
-    width: max-content;
 }
 
 .element {
     aspect-ratio: 1;
-    min-width: 48px; /* FIXED: Same size as series */
+    min-width: 28px;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-primary);
     border-radius: 6px;
@@ -34,7 +29,7 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
 }
 
 .element::before {
@@ -72,33 +67,6 @@
     animation: pulse-border 2s infinite;
 }
 
-/* FIXED: Loading state for element */
-.element.loading::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(88, 166, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.element.loading::before {
-    content: '';
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(88, 166, 255, 0.3);
-    border-top-color: var(--accent-blue);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    z-index: 100;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
 .element-header {
     position: absolute;
     top: 2px;
@@ -109,7 +77,7 @@
 }
 
 .element .symbol {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-primary);
     margin: 4px 0 1px 0;
@@ -117,13 +85,12 @@
 }
 
 .element .number {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     color: var(--text-secondary);
     font-weight: 500;
     z-index: 1;
 }
 
-/* Element Categories */
 .nonmetal { background: linear-gradient(135deg, #1a365d, #2a4a6b); border-color: #3182ce; }
 .nonmetal .symbol { color: #63b3ed; }
 
@@ -157,7 +124,6 @@
 .unknown { background: linear-gradient(135deg, #1a202c, #2d3748); border-color: #4a5568; }
 .unknown .symbol { color: #a0aec0; }
 
-/* Series Elements */
 .lanthanide-series, .actinide-series {
     margin-top: 1rem;
     padding: 1rem;
@@ -165,7 +131,6 @@
     border-radius: var(--radius-md);
     border: 1px solid var(--border-primary);
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
 }
 
 .series-title {
@@ -184,7 +149,7 @@
     display: grid;
     grid-template-columns: repeat(15, 1fr);
     gap: 2px;
-    min-width: 700px; /* FIXED: Proper scroll width */
+    min-width: 450px;
 }
 
 @keyframes pulse-border {
@@ -193,65 +158,5 @@
     }
     50% {
         box-shadow: 0 0 0 10px rgba(88, 166, 255, 0);
-    }
-}
-
-/* Mobile Optimizations */
-@media (max-width: 768px) {
-    .periodic-table-wrapper {
-        padding: 0.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .periodic-table {
-        gap: 1px;
-        min-width: 800px; /* Still scrollable */
-    }
-    
-    .element {
-        min-width: 40px;
-        border-radius: 4px;
-    }
-    
-    .element .symbol {
-        font-size: 0.9rem;
-        margin: 2px 0;
-    }
-    
-    .element .number {
-        font-size: 0.55rem;
-    }
-    
-    .element-header {
-        font-size: 0.45rem;
-        top: 1px;
-        left: 1px;
-    }
-    
-    .series-elements {
-        min-width: 650px;
-    }
-}
-
-@media (max-width: 480px) {
-    .periodic-table {
-        min-width: 750px;
-    }
-    
-    .element {
-        min-width: 38px;
-        border-radius: 3px;
-    }
-    
-    .element .symbol {
-        font-size: 0.85rem;
-    }
-    
-    .element .number {
-        font-size: 0.5rem;
-    }
-    
-    .series-elements {
-        min-width: 600px;
     }
 }
