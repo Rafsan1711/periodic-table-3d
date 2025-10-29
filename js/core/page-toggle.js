@@ -1,6 +1,5 @@
 /**
- * Page Toggle Module - COMPLETE FIXED
- * Properly shows/hides pages and renders content
+ * Page Toggle Module - WITH THREE.JS CLEANUP
  */
 
 function initPageToggle() {
@@ -9,26 +8,21 @@ function initPageToggle() {
     const toggleReactions = document.getElementById('toggleReactions');
     const toggleCommunity = document.getElementById('toggleCommunity');
     
-    // FIXED: Get correct page elements
-    const periodicPage = document.querySelector('.periodic-table-wrapper')?.parentElement || document.getElementById('periodic-page');
-    const moleculesPage = document.getElementById('moleculesPage');
-    const reactionsPage = document.getElementById('reactionsPage');
-    const communityPage = document.getElementById('communityPage');
-    
-    // Also get individual periodic table elements
     const periodicTableWrapper = document.querySelector('.periodic-table-wrapper');
     const legend = document.querySelector('.legend');
     const seriesRows = document.querySelector('.periodic-table-wrapper')?.parentElement?.querySelector('.row.g-3.mt-3');
     
+    const moleculesPage = document.getElementById('moleculesPage');
+    const reactionsPage = document.getElementById('reactionsPage');
+    const communityPage = document.getElementById('communityPage');
+    
     console.log('🔄 Initializing page toggle...');
     
     function hideAllPages() {
-        // Hide periodic table elements
         if (periodicTableWrapper) periodicTableWrapper.style.display = 'none';
         if (legend) legend.style.display = 'none';
         if (seriesRows) seriesRows.style.display = 'none';
         
-        // Hide other pages
         if (moleculesPage) {
             moleculesPage.style.display = 'none';
             moleculesPage.setAttribute('aria-hidden', 'true');
@@ -40,6 +34,11 @@ function initPageToggle() {
         if (communityPage) {
             communityPage.style.display = 'none';
             communityPage.setAttribute('aria-hidden', 'true');
+            
+            // CRITICAL: Cleanup Three.js when leaving community page
+            if (typeof cleanupAllThreeJSContexts === 'function') {
+                cleanupAllThreeJSContexts();
+            }
         }
     }
     
@@ -57,7 +56,6 @@ function initPageToggle() {
             hideAllPages();
             updateButtonStates(togglePeriodic);
             
-            // Show periodic table elements
             if (periodicTableWrapper) {
                 periodicTableWrapper.style.display = 'block';
                 console.log('✅ Periodic table shown');
@@ -83,11 +81,9 @@ function initPageToggle() {
                 moleculesPage.setAttribute('aria-hidden', 'false');
                 console.log('✅ Molecules page shown');
                 
-                // FIXED: Render molecules list properly
                 setTimeout(() => {
                     const moleculesList = document.getElementById('moleculesList');
                     if (moleculesList && typeof renderMoleculesList === 'function') {
-                        // Always render to ensure content shows
                         console.log('🔄 Rendering molecules list...');
                         renderMoleculesList();
                     }
@@ -112,8 +108,11 @@ function initPageToggle() {
                 reactionsPage.setAttribute('aria-hidden', 'false');
                 console.log('✅ Reactions page shown');
                 
-                // FIXED: Initialize theatre properly
+                // FIXED: Cleanup old theatre and init new one
                 setTimeout(() => {
+                    if (typeof cleanupTheatre === 'function') {
+                        cleanupTheatre();
+                    }
                     if (typeof theatreRenderer === 'undefined' || !theatreRenderer) {
                         console.log('🎬 Initializing theatre...');
                         if (typeof initTheatre === 'function') {
@@ -187,7 +186,6 @@ function showCommunityPage() {
     if (btn) btn.click();
 }
 
-// Don't auto-initialize - let auth-handler do it
 window.initPageToggle = initPageToggle;
 window.showPeriodicPage = showPeriodicPage;
 window.showMoleculesPage = showMoleculesPage;
