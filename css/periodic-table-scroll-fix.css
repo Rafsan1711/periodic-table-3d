@@ -1,0 +1,97 @@
+/**
+ * Periodic Table Scroll Fix - COMPLETE
+ * Force horizontal scrolling on mobile
+ */
+
+@media (max-width: 768px) {
+    /* Force wrapper to scroll */
+    .periodic-table-wrapper {
+        overflow-x: scroll !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior-x: contain;
+        padding: 1rem 0.5rem;
+        /* CRITICAL: Remove any max-width constraints */
+        max-width: none !important;
+        width: 100vw !important;
+        margin: 0 -1rem; /* Compensate container padding */
+    }
+    
+    /* Force table to be wider than screen */
+    .periodic-table {
+        min-width: 1000px !important;
+        width: 1000px !important;
+        display: grid !important;
+        grid-template-columns: repeat(19, 1fr) !important;
+        gap: 2px;
+        padding: 0 0.5rem;
+    }
+    
+    /* Element sizing */
+    .element {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+    }
+    
+    /* Visible scrollbar for better UX */
+    .periodic-table-wrapper::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .periodic-table-wrapper::-webkit-scrollbar-track {
+        background: var(--bg-tertiary);
+        border-radius: 4px;
+    }
+    
+    .periodic-table-wrapper::-webkit-scrollbar-thumb {
+        background: var(--accent-blue);
+        border-radius: 4px;
+    }
+    
+    .periodic-table-wrapper::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-purple);
+    }
+    
+    /* Series tables */
+    .lanthanide-series,
+    .actinide-series {
+        overflow-x: scroll !important;
+        -webkit-overflow-scrolling: touch !important;
+        margin: 1rem -1rem;
+        padding: 1rem 0.5rem;
+    }
+    
+    .series-elements {
+        min-width: 800px !important;
+        width: 800px !important;
+        display: grid !important;
+        grid-template-columns: repeat(15, 1fr) !important;
+        gap: 2px;
+    }
+}
+
+@media (max-width: 480px) {
+    .periodic-table {
+        min-width: 900px !important;
+        width: 900px !important;
+    }
+    
+    .element {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+    }
+    
+    .series-elements {
+        min-width: 700px !important;
+        width: 700px !important;
+    }
+}
+
+/* Remove conflicting styles */
+@media (max-width: 768px) {
+    .container-fluid {
+        overflow-x: visible !important;
+    }
+}
