@@ -1,6 +1,6 @@
 /**
- * Modal Swipe Handler - PROPERLY FIXED
- * Scroll works, swipe only from header
+ * Modal Swipe Handler - COMPLETELY FIXED
+ * Works for both element and molecule modals
  */
 
 class ModalSwipeHandler {
@@ -16,6 +16,7 @@ class ModalSwipeHandler {
         this.isDragging = false;
         this.isScrolling = false;
         this.touchStartTarget = null;
+        this.scrollableElement = null;
 
         this.setupTouchHandlers();
     }
@@ -28,16 +29,27 @@ class ModalSwipeHandler {
             this.isDragging = false;
             this.isScrolling = false;
             
-            // Check if touching scrollable area
-            const scrollableAreas = [
-                '.atom-info', '.wiki-content', '.modal-body', 
-                '.molecules-list', '.reactant-list', '.forum-feed', 
-                '.comments-list', '.atom-viewer', '#matterViewer',
-                '.post-content', '.notification-list'
+            // Find if touching scrollable area
+            const scrollableSelectors = [
+                '.atom-info', 
+                '.wiki-content', 
+                '.modal-body', 
+                '.molecules-list', 
+                '.reactant-list', 
+                '.forum-feed', 
+                '.comments-list', 
+                '.atom-viewer', 
+                '#matterViewer',
+                '#atomViewer',
+                '.post-content', 
+                '.notification-list',
+                '.reactivity-chart-container'
             ];
             
-            for (const selector of scrollableAreas) {
-                if (e.target.closest(selector)) {
+            for (const selector of scrollableSelectors) {
+                const element = e.target.closest(selector);
+                if (element) {
+                    this.scrollableElement = element;
                     this.isScrolling = true;
                     return;
                 }
@@ -53,7 +65,10 @@ class ModalSwipeHandler {
 
         // Touch move
         this.modalContent.addEventListener('touchmove', (e) => {
-            if (this.isScrolling) return;
+            if (this.isScrolling) {
+                // Allow scrolling
+                return;
+            }
 
             this.currentY = e.touches[0].clientY;
             const diff = this.currentY - this.startY;
@@ -72,6 +87,7 @@ class ModalSwipeHandler {
         this.modalContent.addEventListener('touchend', () => {
             if (this.isScrolling) {
                 this.isScrolling = false;
+                this.scrollableElement = null;
                 return;
             }
 
@@ -90,6 +106,7 @@ class ModalSwipeHandler {
             this.startY = 0;
             this.currentY = 0;
             this.touchStartTarget = null;
+            this.scrollableElement = null;
         }, { passive: true });
     }
 
@@ -126,7 +143,7 @@ function initModalSwipeHandlers() {
         new ModalSwipeHandler(modalId);
     });
 
-    console.log('✅ Modal swipe handlers initialized (FIXED)');
+    console.log('✅ Modal swipe handlers initialized (COMPLETELY FIXED)');
 }
 
 // Auto-initialize
