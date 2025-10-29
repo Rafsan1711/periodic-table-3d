@@ -1,65 +1,165 @@
+/* ============================================
+   PREMIUM NOTIFICATION SYSTEM
+   ============================================ */
+
 .notification-bell {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    font-size: 1.8rem;
+    top: 80px;
+    right: 30px;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #1e3a8a, #5b21b6);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
     cursor: pointer;
     z-index: 1000;
-    transition: transform 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 24px rgba(88, 166, 255, 0.3), 0 0 0 0 rgba(88, 166, 255, 0.4);
     user-select: none;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    animation: bellFloat 3s ease-in-out infinite;
+}
+
+.notification-bell::before {
+    content: '🔔';
+    font-size: 1.8rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    animation: bellRing 2s ease-in-out infinite;
+}
+
+@keyframes bellFloat {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes bellRing {
+    0%, 90%, 100% {
+        transform: rotate(0deg);
+    }
+    92% {
+        transform: rotate(-15deg);
+    }
+    94% {
+        transform: rotate(15deg);
+    }
+    96% {
+        transform: rotate(-15deg);
+    }
+    98% {
+        transform: rotate(15deg);
+    }
 }
 
 .notification-bell:hover {
-    transform: scale(1.1);
+    transform: scale(1.1) rotate(12deg);
+    box-shadow: 0 6px 20px rgba(88, 166, 255, 0.6);
+}
+
+.notification-bell:active {
+    transform: scale(0.95);
 }
 
 .notification-badge {
     position: absolute;
-    top: -8px;
-    right: -8px;
-    background: var(--accent-red);
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, var(--accent-red), var(--accent-orange));
     color: white;
     font-size: 0.7rem;
     font-weight: 700;
-    padding: 3px 6px;
-    border-radius: 10px;
-    min-width: 20px;
+    padding: 4px 7px;
+    border-radius: 12px;
+    min-width: 22px;
     text-align: center;
+    box-shadow: 0 2px 8px rgba(255, 123, 114, 0.5);
+    border: 2px solid var(--bg-primary);
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Modal Styles */
+#notification-modal .modal-content {
+    max-width: 500px;
 }
 
 #notification-modal .modal-body {
     max-height: 70vh;
     overflow-y: auto;
+    padding: 1.5rem;
 }
 
+#notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Notification Item */
 .notification-item {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 15px;
-    background: var(--bg-tertiary);
+    gap: 14px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.05), rgba(188, 140, 255, 0.05));
     border: 1px solid var(--border-primary);
-    border-radius: 10px;
-    margin-bottom: 10px;
+    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    overflow: hidden;
+}
+
+.notification-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.05));
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .notification-item:hover {
-    background: var(--bg-primary);
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(188, 140, 255, 0.1));
     border-color: var(--accent-blue);
     transform: translateX(4px);
 }
 
-.notification-item.unread {
-    border-left: 4px solid var(--accent-blue);
-    background: rgba(88, 166, 255, 0.05);
+.notification-item:hover::before {
+    opacity: 1;
 }
 
-.notif-icon {
-    font-size: 1.8rem;
+.notification-item.unread {
+    border-left: 4px solid var(--accent-blue);
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(188, 140, 255, 0.08));
+    box-shadow: 0 2px 8px rgba(88, 166, 255, 0.15);
+}
+
+.notif-user-pic {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 3px solid var(--accent-blue);
+    object-fit: cover;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(88, 166, 255, 0.3);
 }
 
 .notif-content {
@@ -69,44 +169,40 @@
 
 .notif-text {
     color: var(--text-primary);
-    line-height: 1.5;
-    margin-bottom: 5px;
-}
-
-.notif-text strong {
-    font-weight: 700;
-    color: var(--accent-blue);
-}
-
-.notif-post-title {
-    color: var(--text-secondary);
-    font-style: italic;
-    font-size: 0.9rem;
-    margin-top: 4px;
-    padding: 4px 8px;
-    background: var(--bg-primary);
-    border-radius: 4px;
-    border-left: 2px solid var(--accent-blue);
-}
-
-.notif-time {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
 }
 
 .notif-username {
     color: var(--accent-blue);
     font-weight: 700;
+    font-size: 1rem;
 }
 
 .notif-action {
     color: var(--text-secondary);
-    margin-left: 4px;
+    margin-left: 6px;
+    font-weight: 500;
 }
 
 .notif-emoji {
-    font-size: 1.1rem;
-    margin-left: 4px;
+    font-size: 1.2rem;
+    margin: 0 4px;
+    display: inline-block;
+    animation: emojiPop 0.5s ease;
+}
+
+@keyframes emojiPop {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 .notif-time-inline {
@@ -114,82 +210,202 @@
     font-size: 0.85rem;
     margin-left: 8px;
     opacity: 0.7;
+    font-weight: 500;
 }
 
-.notif-user-pic {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 2px solid var(--accent-blue);
-    object-fit: cover;
-    flex-shrink: 0;
+.notif-post-title {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.9rem;
+    margin-top: 6px;
+    padding: 8px 12px;
+    background: rgba(88, 166, 255, 0.08);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent-blue);
+    line-height: 1.4;
 }
 
 .unread-dot {
-    width: 10px;
-    height: 10px;
-    background: var(--accent-blue);
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     border-radius: 50%;
     flex-shrink: 0;
+    box-shadow: 0 0 8px var(--accent-blue);
+    animation: dotPulse 2s ease-in-out infinite;
 }
 
+@keyframes dotPulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.2);
+    }
+}
+
+/* Toast Notification */
 .notification-toast-popup {
     position: fixed;
-    top: 80px;
+    bottom: 30px;
     right: 30px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--accent-blue);
-    border-radius: 12px;
-    padding: 12px 16px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+    border: 2px solid var(--accent-blue);
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
-    gap: 12px;
-    transform: translateX(400px);
-    transition: transform 0.3s ease;
+    gap: 14px;
+    transform: translateX(450px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 9999;
     cursor: pointer;
-    max-width: 350px;
+    max-width: 380px;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.notification-toast-popup::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent, rgba(88, 166, 255, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .notification-toast-popup.show {
     transform: translateX(0);
+    animation: slideInBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideInBounce {
+    0% {
+        transform: translateX(450px);
+        opacity: 0;
+    }
+    60% {
+        transform: translateX(-20px);
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 .notification-toast-popup:hover {
     border-color: var(--accent-purple);
-    transform: translateX(-4px) scale(1.02);
+    transform: translateX(-8px) scale(1.02);
+    box-shadow: 0 16px 40px rgba(88, 166, 255, 0.4);
+}
+
+.notification-toast-popup:hover::before {
+    opacity: 1;
 }
 
 .toast-user-pic {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    border: 2px solid var(--accent-blue);
+    border: 3px solid var(--accent-blue);
     object-fit: cover;
+    box-shadow: 0 2px 8px rgba(88, 166, 255, 0.4);
 }
 
 .toast-content {
     flex: 1;
     color: var(--text-primary);
-    font-size: 0.9rem;
-    line-height: 1.4;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    font-weight: 500;
 }
 
 .toast-content strong {
     color: var(--accent-blue);
     font-weight: 700;
+    font-size: 1rem;
 }
 
+/* Empty State */
+#notification-list:empty::after {
+    content: '';
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+/* Mobile Responsiveness */
 @media (max-width: 768px) {
+    .notification-bell {
+        top: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+    }
+    
+    .notification-badge {
+        top: -4px;
+        right: -4px;
+        font-size: 0.65rem;
+        padding: 3px 6px;
+        min-width: 20px;
+    }
+    
     .notification-toast-popup {
         right: 15px;
         left: 15px;
+        bottom: 20px;
         max-width: none;
+        padding: 14px 16px;
+    }
+    
+    .toast-user-pic {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .toast-content {
+        font-size: 0.9rem;
     }
     
     .notif-user-pic {
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
+    }
+    
+    .notification-item {
+        padding: 14px;
+        gap: 12px;
+    }
+    
+    .notif-text {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .notification-bell {
+        width: 42px;
+        height: 42px;
+        font-size: 1.2rem;
+    }
+    
+    .notification-item {
+        padding: 12px;
+    }
+    
+    .notif-post-title {
+        font-size: 0.85rem;
+        padding: 6px 10px;
     }
 }
