@@ -545,34 +545,54 @@
         </div>
     </div>
 
+<!-- COMPLETE SCRIPT SECTION - Copy this before </body> -->
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Data Files -->
     <script src="js/data/elements-data.js"></script>
     <script src="js/data/molecules-data.js"></script>
     <script src="js/data/reactions-data.js"></script>
     <script src="js/data/reactivity-data.js"></script>
+    
+    <!-- Utility Files -->
     <script src="js/utils/search-utils.js"></script>
     <script src="js/utils/wiki-loader.js"></script>
-     <script src="js/utils/mobile-performance.js"></script>
+    <script src="js/utils/mobile-performance.js"></script>
     <script src="js/utils/modal-swipe-handler.js"></script>
+    <script src="js/utils/element-loader.js"></script>
+    <script src="js/utils/global-loader.js"></script>
+    
+    <!-- Periodic Table Files -->
     <script src="js/periodic-table/table-renderer.js"></script>
     <script src="js/periodic-table/atom-visualization.js"></script>
     <script src="js/periodic-table/reactivity-chart.js"></script>
     <script src="js/periodic-table/element-modal.js"></script>
+    
+    <!-- Molecules Files -->
     <script src="js/molecules/molecules-search.js"></script>
     <script src="js/molecules/molecules-list.js"></script>
     <script src="js/molecules/molecule-3d.js"></script>
     <script src="js/molecules/molecule-2d.js"></script>
     <script src="js/molecules/molecule-modal.js"></script>
+    
+    <!-- Reactions Files -->
     <script src="js/reactions/reactions-builder.js"></script>
     <script src="js/reactions/reactant-selector.js"></script>
     <script src="js/reactions/reaction-animator.js"></script>
     
+    <!-- Auth Files -->
     <script src="js/auth/firebase-config.js"></script>
     <script src="js/auth/auth-handler.js"></script>
+    
+    <!-- Forum Files -->
     <script src="js/forum/forum-main.js"></script>
     <script src="js/forum/forum-create-post.js"></script>
     <script src="js/forum/forum-notifications.js"></script>
+    <script src="js/forum/forum-like-fix.js"></script>
+    <script src="js/forum/forum-post-animation-fix.js"></script>
+    
+    <!-- Core Files -->
     <script src="js/core/page-toggle.js"></script>
     <script src="js/core/app-init.js"></script>
     
@@ -599,10 +619,18 @@
                 theme: 'dark',
                 delay: [200, 0]
             });
+            
+            // Initialize mobile optimizations
+            if (window.mobilePerf) {
+                window.mobilePerf.optimizeForDevice();
+            }
         });
     </script>
 </body>
+</html>
+</body>
     </html>
+
 
 
 
