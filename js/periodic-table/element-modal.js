@@ -1,16 +1,19 @@
 /**
- * Element Modal Module (ENHANCED with Reactivity Chart)
- * Manages the element details modal window
+ * Element Modal Module - WITH LOADER
  */
 
 let modalOpenTimestamp = 0;
 
 /**
- * Opens modal with element details
- * @param {Object} element - Element data
+ * Opens modal with element details + loader
  */
 function openElementModal(element) {
     console.log('🔬 Opening modal for:', element.name);
+    
+    // Show loader immediately
+    if (typeof showElementLoader === 'function') {
+        showElementLoader(element.name);
+    }
     
     modalOpenTimestamp = Date.now();
     
@@ -19,6 +22,7 @@ function openElementModal(element) {
     
     if (!modal || !modalTitle) {
         console.error('Modal elements not found');
+        if (typeof hideElementLoader === 'function') hideElementLoader();
         return;
     }
     
@@ -56,6 +60,13 @@ function openElementModal(element) {
     // Create 3D atom visualization with delay
     setTimeout(() => {
         create3DAtom(element);
+        
+        // Hide loader after 3D is rendered
+        setTimeout(() => {
+            if (typeof hideElementLoader === 'function') {
+                hideElementLoader();
+            }
+        }, 500);
     }, 150);
     
     // Update atom info
@@ -64,13 +75,10 @@ function openElementModal(element) {
     // Load Wikipedia info
     loadWikipediaInfo(element.name, 'wikiContent');
     
-    // Create reactivity chart (NEW)
+    // Create reactivity chart
     setTimeout(() => {
         createReactivityChart(element);
     }, 300);
-    
-    // Add swipe to close on mobile
-    addSwipeToClose(modal);
     
     // Haptic feedback
     if ('vibrate' in navigator) {
@@ -139,8 +147,7 @@ function closeModal() {
 }
 
 /**
- * Updates the atom information panel (UPDATED with chart section)
- * @param {Object} element - Element data
+ * Updates the atom information panel
  */
 function updateAtomInfo(element) {
     const shells = calculateElectronShells(element.number);
@@ -181,7 +188,6 @@ function updateAtomInfo(element) {
             </div>
         </div>
         
-        <!-- NEW: Reactivity Chart Section -->
         <div class="info-section reactivity-section" data-aos="fade-left" data-aos-delay="300" style="grid-column: 1/-1;">
             <h3><i class="fas fa-chart-line me-2"></i>Chemical Reactivity Pattern</h3>
             <div id="reactivityChart" class="reactivity-chart-container"></div>
@@ -195,8 +201,6 @@ function updateAtomInfo(element) {
 
 /**
  * Formats category name for display
- * @param {string} category - Category key
- * @returns {string} Formatted category name
  */
 function formatCategory(category) {
     const categoryMap = {
@@ -213,45 +217,6 @@ function formatCategory(category) {
         'unknown': 'Unknown'
     };
     return categoryMap[category] || category;
-}
-
-/**
- * Add swipe to close functionality for mobile
- */
-function addSwipeToClose(modal) {
-    let touchStartY = 0;
-    let touchEndY = 0;
-    
-    const modalContent = modal.querySelector('.modal-content');
-    if (!modalContent) return;
-    
-    modalContent.addEventListener('touchstart', (e) => {
-        touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-    
-    modalContent.addEventListener('touchmove', (e) => {
-        touchEndY = e.touches[0].clientY;
-        const diff = touchEndY - touchStartY;
-        
-        if (diff > 0 && diff < 200) {
-            modalContent.style.transform = `translateY(${diff}px)`;
-            modalContent.style.transition = 'none';
-        }
-    }, { passive: true });
-    
-    modalContent.addEventListener('touchend', () => {
-        const diff = touchEndY - touchStartY;
-        
-        if (diff > 100) {
-            closeModal();
-        } else {
-            modalContent.style.transform = '';
-            modalContent.style.transition = 'transform 0.3s ease';
-        }
-        
-        touchStartY = 0;
-        touchEndY = 0;
-    }, { passive: true });
 }
 
 // Event listeners for modal
@@ -295,4 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
     
     console.log('✅ Element modal initialized');
-        });
+});
+
+window.openElementModal = openElementModal;
+window.closeModal = closeModal;
