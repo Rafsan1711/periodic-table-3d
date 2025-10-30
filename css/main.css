@@ -47,8 +47,8 @@
 /* 15. Create Post Modal */
 @import url('create-post.css');
 
-/* 16. Notifications */
-@import url('notifications.css');
+/* 16. Notifications - MODERN DESIGN */
+@import url('notifications-modern.css');
 
 /* 17. Authentication */
 @import url('auth.css');
@@ -56,13 +56,19 @@
 /* 18. Scrollbar & Tippy */
 @import url('scrollbar-tippy.css');
 
-/* 19. Forum Mobile Fixes (NEW) */
+/* 19. Forum Mobile Fixes */
 @import url('forum-mobile-fix.css');
 
-/* 20. Responsive Design */
+/* 20. NEW: Mobile Performance Optimizations */
+@import url('periodic-table-scroll-fix.css');
+@import url('mobile-smooth-animations.css');
+@import url('element-loader.css');
+@import url('global-loader.css');
+
+/* 21. Responsive Design */
 @import url('responsive.css');
 
-/* 21. Utility Classes */
+/* 22. Utility Classes */
 @import url('utility.css');
 
 /* ============================================
