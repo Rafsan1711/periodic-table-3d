@@ -6,10 +6,15 @@
 let matterModalOpenTimestamp = 0;
 
 /**
- * Opens modal with molecule details
+ * Opens modal with molecule details + loader
  */
 function openMatterModal(molecule) {
     console.log('🧬 Opening molecule modal:', molecule.name);
+    
+    // Show loader immediately
+    if (typeof showMoleculeLoader === 'function') {
+        showMoleculeLoader(molecule.name);
+    }
     
     matterModalOpenTimestamp = Date.now();
     
@@ -18,6 +23,7 @@ function openMatterModal(molecule) {
     
     if (!modal || !modalTitle) {
         console.error('Matter modal elements not found');
+        if (typeof hideMoleculeLoader === 'function') hideMoleculeLoader();
         return;
     }
     
@@ -71,6 +77,13 @@ function openMatterModal(molecule) {
     // Create 3D molecule with delay
     setTimeout(() => {
         create3DMolecule(molecule);
+        
+        // Hide loader after render
+        setTimeout(() => {
+            if (typeof hideMoleculeLoader === 'function') {
+                hideMoleculeLoader();
+            }
+        }, 500);
     }, 150);
     
     // Draw 2D structure
