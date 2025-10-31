@@ -1,5 +1,5 @@
 /**
- * Periodic Table Renderer Module (ENHANCED - Mobile Optimized)
+ * Periodic Table Renderer Module (ENHANCED - Mobile Optimized + Legend Fix)
  * Handles rendering of the periodic table grid and series
  */
 
@@ -33,8 +33,8 @@ function initPeriodicTable() {
     
     // Clear existing content
     table.innerHTML = '';
-    lanthanideElements.innerHTML = '';
-    actinideElements.innerHTML = '';
+    if (lanthanideElements) lanthanideElements.innerHTML = '';
+    if (actinideElements) actinideElements.innerHTML = '';
     
     // Create main periodic table (7 rows x 18 columns)
     let renderedCount = 0;
@@ -61,27 +61,46 @@ function initPeriodicTable() {
     }
     
     // Create lanthanide series (elements 57-71)
-    for (let i = 57; i <= 71; i++) {
-        const element = elementsData.find(el => el.number === i);
-        if (element) {
-            const elementDiv = createElementDiv(element);
-            elementDiv.style.animationDelay = `${(i - 57) * 0.02}s`;
-            lanthanideElements.appendChild(elementDiv);
+    if (lanthanideElements) {
+        for (let i = 57; i <= 71; i++) {
+            const element = elementsData.find(el => el.number === i);
+            if (element) {
+                const elementDiv = createElementDiv(element);
+                elementDiv.style.animationDelay = `${(i - 57) * 0.02}s`;
+                lanthanideElements.appendChild(elementDiv);
+            }
         }
     }
     
     // Create actinide series (elements 89-103)
-    for (let i = 89; i <= 103; i++) {
-        const element = elementsData.find(el => el.number === i);
-        if (element) {
-            const elementDiv = createElementDiv(element);
-            elementDiv.style.animationDelay = `${(i - 89) * 0.02}s`;
-            actinideElements.appendChild(elementDiv);
+    if (actinideElements) {
+        for (let i = 89; i <= 103; i++) {
+            const element = elementsData.find(el => el.number === i);
+            if (element) {
+                const elementDiv = createElementDiv(element);
+                elementDiv.style.animationDelay = `${(i - 89) * 0.02}s`;
+                actinideElements.appendChild(elementDiv);
+            }
         }
     }
     
     // Add fade-in animation
     addTableAnimation();
+    
+    // FIXED: Add data-category to legend items for highlighting
+    setTimeout(() => {
+        const legendItems = document.querySelectorAll('.legend-item');
+        legendItems.forEach(item => {
+            const legendColor = item.querySelector('.legend-color');
+            if (legendColor) {
+                const colorClass = legendColor.className.split(' ').find(cls => cls !== 'legend-color');
+                if (colorClass) {
+                    item.setAttribute('data-category', colorClass);
+                }
+            }
+        });
+        console.log('✅ Legend items configured for highlighting');
+    }, 100);
     
     console.log(`✅ Periodic table rendered with ${renderedCount} elements`);
     
@@ -180,7 +199,7 @@ function createElementDiv(element) {
     div.setAttribute('data-number', element.number);
     div.setAttribute('data-symbol', element.symbol);
     div.setAttribute('data-weight', element.weight);
-    div.setAttribute('data-category', element.category);
+    div.setAttribute('data-category', element.category); // IMPORTANT: For legend highlighting
     div.setAttribute('title', element.name);
     
     // Add tooltip data
@@ -377,25 +396,10 @@ function clearHighlights() {
     });
 }
 
-// Add legend item click handlers for highlighting
-document.addEventListener('DOMContentLoaded', () => {
-    const legendItems = document.querySelectorAll('.legend-item');
-    legendItems.forEach(item => {
-        const colorDiv = item.querySelector('.legend-color');
-        if (colorDiv) {
-            const category = Array.from(colorDiv.classList).find(c => c !== 'legend-color');
-            if (category) {
-                item.addEventListener('click', () => {
-                    if (item.classList.contains('active')) {
-                        item.classList.remove('active');
-                        clearHighlights();
-                    } else {
-                        legendItems.forEach(i => i.classList.remove('active'));
-                        item.classList.add('active');
-                        highlightCategory(category);
-                    }
-                });
-            }
-        }
-    });
-});
+// REMOVED: Old legend click handlers (now handled by legend-highlight.js)
+// The new system properly handles background clicks to clear highlights
+
+// Export functions
+window.initPeriodicTable = initPeriodicTable;
+window.highlightCategory = highlightCategory;
+window.clearHighlights = clearHighlights;
