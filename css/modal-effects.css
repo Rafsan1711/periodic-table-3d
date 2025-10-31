@@ -1,0 +1,118 @@
+/**
+ * Modal Effects - Restore Previous Animations
+ */
+
+/* Close button - 90 degree rotation on hover */
+.close-btn {
+    background: var(--bg-tertiary);
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    background: var(--accent-red);
+    color: white;
+    transform: rotate(90deg) scale(1.1);
+    box-shadow: 0 4px 12px rgba(255, 123, 114, 0.4);
+}
+
+.close-btn:active {
+    transform: rotate(90deg) scale(0.95);
+}
+
+/* Element hover effects */
+.element {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.element:hover {
+    transform: translateY(-4px) scale(1.08);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-blue);
+    z-index: 10;
+}
+
+.element:active {
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* Molecule item effects */
+.molecule-item {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.molecule-item:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-blue);
+}
+
+.molecule-item:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+/* Forum post card effects */
+.forum-post-card {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.forum-post-card:hover {
+    border-color: var(--accent-blue);
+    box-shadow: 0 4px 16px rgba(88, 166, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Button effects */
+button:not(.close-btn) {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Toggle button effects */
+.toggle-btn {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.toggle-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.toggle-btn.active {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    color: white;
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+}
+
+/* Mobile: Reduce effects for performance */
+@media (max-width: 768px) {
+    .element:hover {
+        transform: translateY(-2px) scale(1.04);
+    }
+    
+    .molecule-item:hover {
+        transform: translateY(-2px) scale(1.01);
+    }
+    
+    .forum-post-card:hover {
+        transform: translateY(-1px);
+    }
+}
