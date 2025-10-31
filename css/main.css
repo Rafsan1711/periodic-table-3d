@@ -16,7 +16,21 @@
 
 /* 5. Legend */
 @import url('legend.css');
+/* After line 19, add: */
+@import url('modal-effects.css');
+@import url('legend-highlight.css');
 
+/* Complete import section 20-21: */
+/* 20. NEW: Mobile Performance Optimizations */
+@import url('periodic-table-scroll-fix.css');
+@import url('mobile-smooth-animations.css');
+@import url('element-loader.css');
+@import url('global-loader.css');
+@import url('modal-effects.css');
+@import url('legend-highlight.css');
+
+/* 21. Responsive Design */
+@import url('responsive.css');
 /* 6. Periodic Table */
 @import url('periodic-table.css');
 
