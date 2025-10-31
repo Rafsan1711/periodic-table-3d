@@ -1,15 +1,15 @@
 /**
- * Element Click Loader - Beautiful & Minimal
+ * Element Click Loader - FIXED (Smooth Rotation)
  */
 
-/* Loader overlay for clicked element */
+/* Loader overlay - CENTER POSITION */
 .element-loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(13, 17, 23, 0.9);
+    background: rgba(13, 17, 23, 0.95);
     backdrop-filter: blur(8px);
     z-index: 9999;
     display: flex;
@@ -23,95 +23,133 @@
     to { opacity: 1; }
 }
 
-/* Beautiful atom loader */
+/* Atom loader - SMOOTH ROTATION */
 .element-loader {
     position: relative;
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
 }
 
 .element-loader-nucleus {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    box-shadow: 0 0 20px var(--accent-blue);
+    box-shadow: 0 0 30px var(--accent-blue);
     animation: nucleus-pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes nucleus-pulse {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-50%, -50%) scale(1.2); }
+    0%, 100% { 
+        transform: translate(-50%, -50%) scale(1);
+        box-shadow: 0 0 30px var(--accent-blue);
+    }
+    50% { 
+        transform: translate(-50%, -50%) scale(1.2);
+        box-shadow: 0 0 40px var(--accent-blue);
+    }
 }
 
 .element-loader-orbit {
     position: absolute;
     top: 50%;
     left: 50%;
-    border: 2px solid rgba(88, 166, 255, 0.3);
+    border: 2px solid rgba(88, 166, 255, 0.4);
     border-radius: 50%;
     transform: translate(-50%, -50%);
+    animation: orbit-rotate 2s linear infinite;
 }
 
 .element-loader-orbit:nth-child(2) {
-    width: 40px;
-    height: 40px;
-    animation: orbit-rotate 1.5s linear infinite;
+    width: 50px;
+    height: 50px;
+    animation-duration: 2s;
 }
 
 .element-loader-orbit:nth-child(3) {
-    width: 60px;
-    height: 60px;
-    animation: orbit-rotate 2s linear infinite reverse;
+    width: 70px;
+    height: 70px;
+    animation-duration: 3s;
+    animation-direction: reverse;
 }
 
 .element-loader-orbit:nth-child(4) {
-    width: 80px;
-    height: 80px;
-    animation: orbit-rotate 2.5s linear infinite;
+    width: 90px;
+    height: 90px;
+    animation-duration: 4s;
 }
 
+/* FIXED: Smooth continuous rotation */
 @keyframes orbit-rotate {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to { transform: translate(-50%, -50%) rotate(360deg); }
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 .element-loader-electron {
     position: absolute;
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     background: var(--accent-green);
     border-radius: 50%;
-    top: 0;
+    top: -4px;
     left: 50%;
-    transform: translateX(-50%);
-    box-shadow: 0 0 10px var(--accent-green);
+    margin-left: -4px;
+    box-shadow: 0 0 12px var(--accent-green);
 }
 
 /* Loading text */
 .element-loader-text {
-    margin-top: 100px;
+    margin-top: 120px;
     color: var(--text-primary);
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
     text-align: center;
     animation: text-fade 1.5s ease-in-out infinite;
 }
 
 @keyframes text-fade {
-    0%, 100% { opacity: 0.5; }
+    0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
 }
 
 /* Smooth exit */
 .element-loading-overlay.fade-out {
-    animation: fadeOutLoader 0.2s ease forwards;
+    animation: fadeOutLoader 0.3s ease forwards;
 }
 
 @keyframes fadeOutLoader {
     to { opacity: 0; }
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+    .element-loader {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .element-loader-orbit:nth-child(2) {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .element-loader-orbit:nth-child(3) {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .element-loader-orbit:nth-child(4) {
+        width: 72px;
+        height: 72px;
+    }
+    
+    .element-loader-text {
+        margin-top: 100px;
+        font-size: 1rem;
+    }
 }
