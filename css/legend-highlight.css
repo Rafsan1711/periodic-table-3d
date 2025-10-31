@@ -1,0 +1,121 @@
+/**
+ * Legend Highlight CSS - Visual States
+ */
+
+/* Legend item active state */
+.legend-item {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    user-select: none;
+}
+
+.legend-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent-blue);
+}
+
+.legend-item:active {
+    transform: translateY(0);
+}
+
+/* Active legend item (clicked) */
+.legend-item.legend-active {
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.2), rgba(188, 140, 255, 0.2));
+    border-color: var(--accent-blue);
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+    transform: translateY(-2px) scale(1.05);
+}
+
+.legend-item.legend-active::before {
+    content: '✓';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--accent-blue);
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(88, 166, 255, 0.5);
+}
+
+/* Element highlighted state */
+.element.element-highlighted {
+    animation: element-highlight 0.5s ease;
+    box-shadow: 0 0 20px rgba(88, 166, 255, 0.6) !important;
+    border-color: var(--accent-blue) !important;
+    transform: scale(1.1);
+    z-index: 100;
+}
+
+@keyframes element-highlight {
+    0%, 100% { 
+        box-shadow: 0 0 20px rgba(88, 166, 255, 0.6);
+    }
+    50% { 
+        box-shadow: 0 0 30px rgba(88, 166, 255, 0.9);
+    }
+}
+
+/* Element dimmed state */
+.element.element-dimmed {
+    opacity: 0.3;
+    filter: grayscale(0.5);
+    transform: scale(0.95);
+    transition: all 0.3s ease;
+}
+
+/* FIXED: Prevent dimming on background click */
+.element.element-dimmed:hover {
+    opacity: 0.5;
+    transform: scale(0.98);
+}
+
+/* Clear visual indication */
+.legend {
+    position: relative;
+}
+
+.legend::after {
+    content: 'Click category to filter, click outside to clear';
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+}
+
+.legend:hover::after {
+    opacity: 1;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .legend-item.legend-active {
+        transform: translateY(-1px) scale(1.03);
+    }
+    
+    .element.element-highlighted {
+        transform: scale(1.08);
+    }
+    
+    .element.element-dimmed {
+        opacity: 0.25;
+        transform: scale(0.96);
+    }
+    
+    .legend::after {
+        display: none;
+    }
+}
