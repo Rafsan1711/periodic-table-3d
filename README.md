@@ -10,7 +10,7 @@
 An advanced web-based chemistry learning platform built with cutting-edge technologies including **Three.js**, **D3.js**, **GSAP**, **Firebase**, and modern web standards. Features comprehensive visualizations of **118 elements**, **100+ molecules**, **30+ chemical reactions**, real-time **community discussions**, **interactive reactivity charts**, and seamless **user authentication** - all designed to revolutionize chemistry education.
 
 ![Platform Screenshot](123.png)
-
+![Platform Screenshot](1234.png)
 ---
 
 ## 🌟 Key Features Overview
