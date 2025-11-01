@@ -97,14 +97,9 @@
 
     <!-- Main App Container -->
     <div class="container-fluid px-2 px-md-4" id="main-app" style="display: none;">
-        <!-- Notification Bell -->
-        <div id="notification-bell" class="notification-bell" title="Notifications">
-            🔔
-            <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
-        </div>
-        
         <!-- Header -->
         <div class="header text-center" data-aos="fade-down">
+            <!-- FIXED: Page Toggle with Notification Button -->
             <div class="page-toggle mb-4">
                 <div class="toggle-options">
                     <button id="togglePeriodic" class="toggle-btn active" data-tippy-content="Explore 118 Elements">
@@ -126,6 +121,11 @@
                         <i class="fas fa-users me-2"></i>
                         <span class="d-none d-sm-inline">Community</span>
                         <span class="d-inline d-sm-none">Forum</span>
+                    </button>
+                    <!-- FIXED: Notification Button Moved Here -->
+                    <button id="notification-bell" class="toggle-btn notification-bell-btn" data-tippy-content="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
                     </button>
                 </div>
             </div>
@@ -274,6 +274,7 @@
                     <input type="text" id="forum-search" placeholder="🔍 Search discussions..." />
                 </div>
                 
+                <!-- FIXED: Topic Filters with Better Width -->
                 <div class="forum-filters">
                     <button class="topic-filter-btn active" data-topic="all">🌐 All Topics</button>
                     <button class="topic-filter-btn" data-topic="elements">⚛️ Elements</button>
@@ -359,7 +360,7 @@
         </div>
     </div>
 
-    <!-- Reactant Selector Modal -->
+    <!-- FIXED: Reactant Selector Modal (Proper Search) -->
     <div class="modal" id="reactantModal">
         <div class="modal-content reactant-modal-content">
             <div class="modal-header">
@@ -490,7 +491,7 @@
         </div>
     </div>
 
-    <!-- Reaction Builder Modal for Post -->
+    <!-- FIXED: Reaction Builder Modal with Proper Search -->
     <div class="modal" id="post-reaction-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -597,5 +598,4 @@
         });
     </script>
 </body>
-    </html>
-
+</html>
