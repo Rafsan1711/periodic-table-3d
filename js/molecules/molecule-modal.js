@@ -1,16 +1,15 @@
 /**
- * Molecule Modal Module - MOBILE OPTIMIZED
- * Fixed scroll vs swipe conflict
+ * Molecule Modal Module - FIXED
+ * Proper cleanup to prevent memory leaks and errors
  */
 
 let matterModalOpenTimestamp = 0;
-let touchStartY = 0;
-let touchCurrentY = 0;
-let isScrolling = false;
-let modalContent = null;
 
+/**
+ * Opens modal with molecule details
+ */
 function openMatterModal(molecule) {
-    console.log('ðŸ§¬ Opening molecule modal:', molecule.name);
+    console.log('🧬 Opening molecule modal:', molecule.name);
     
     matterModalOpenTimestamp = Date.now();
     
@@ -25,8 +24,9 @@ function openMatterModal(molecule) {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
-    modalTitle.innerHTML = `<i class="fas fa-flask me-2"></i>${molecule.name} â€" ${molecule.formula}`;
+    modalTitle.innerHTML = `<i class="fas fa-flask me-2"></i>${molecule.name} — ${molecule.formula}`;
 
+    // Show loaders
     const matterViewer = document.getElementById('matterViewer');
     if (matterViewer) {
         matterViewer.innerHTML = `
@@ -39,6 +39,7 @@ function openMatterModal(molecule) {
         `;
     }
     
+    // Update info
     const matterInfo = document.getElementById('matterInfo');
     if (matterInfo) {
         matterInfo.innerHTML = `
@@ -64,25 +65,40 @@ function openMatterModal(molecule) {
         `;
     }
 
+    // Load Wikipedia
     loadMatterWiki(molecule.wikiTitle);
     
-    setTimeout(() => create3DMolecule(molecule), 150);
-    setTimeout(() => draw2DMolecule(molecule), 300);
+    // Create 3D molecule with delay
+    setTimeout(() => {
+        create3DMolecule(molecule);
+    }, 150);
     
-    // FIXED: Better touch handling
-    addImprovedMatterSwipeToClose(modal);
+    // Draw 2D structure
+    setTimeout(() => {
+        draw2DMolecule(molecule);
+    }, 300);
     
-    if ('vibrate' in navigator) navigator.vibrate(10);
+    // Haptic feedback
+    if ('vibrate' in navigator) {
+        navigator.vibrate(10);
+    }
     
+    // Refresh AOS
     if (typeof AOS !== 'undefined') {
         setTimeout(() => AOS.refresh(), 100);
     }
 }
 
+/**
+ * FIXED: Closes the molecule modal with proper cleanup
+ */
 function closeMatterModal() {
-    if (Date.now() - matterModalOpenTimestamp < 300) return;
+    // Prevent rapid close
+    if (Date.now() - matterModalOpenTimestamp < 300) {
+        return;
+    }
     
-    console.log('âŒ Closing molecule modal');
+    console.log('❌ Closing molecule modal');
     
     const modal = document.getElementById('matterModal');
     if (!modal) return;
@@ -90,105 +106,23 @@ function closeMatterModal() {
     modal.classList.remove('active');
     document.body.style.overflow = '';
     
-    setTimeout(() => {
-        if (matterRenderer) {
-            const c = document.getElementById('matterViewer');
-            if (c && c.contains(matterRenderer.domElement)) {
-                c.removeChild(matterRenderer.domElement);
-            }
-            try { 
-                matterRenderer.dispose(); 
-            } catch (e) {
-                console.warn('Matter renderer disposal warning:', e);
-            }
-            matterRenderer = null;
-        }
-        if (matterScene) {
-            matterScene.traverse(o => {
-                if (o.geometry) o.geometry.dispose();
-                if (o.material) {
-                    if (Array.isArray(o.material)) {
-                        o.material.forEach(m => m.dispose());
-                    } else {
-                        o.material.dispose();
-                    }
-                }
-            });
-            matterScene = null;
-        }
-        matterCamera = null;
-        matterGroup = null;
-    }, 300);
+    // CRITICAL: Cleanup Three.js immediately
+    if (typeof cleanupMatterViewer === 'function') {
+        cleanupMatterViewer();
+    }
     
-    if ('vibrate' in navigator) navigator.vibrate(5);
+    // Haptic feedback
+    if ('vibrate' in navigator) {
+        navigator.vibrate(5);
+    }
 }
 
-/**
- * IMPROVED: Swipe to close with scroll detection
- */
-function addImprovedMatterSwipeToClose(modal) {
-    modalContent = modal.querySelector('.modal-body');
-    if (!modalContent) return;
-    
-    let startY = 0;
-    let startScrollTop = 0;
-    let isDragging = false;
-    
-    modalContent.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        startScrollTop = modalContent.scrollTop;
-        isDragging = false;
-        isScrolling = false;
-    }, { passive: true });
-    
-    modalContent.addEventListener('touchmove', (e) => {
-        const currentY = e.touches[0].clientY;
-        const diffY = currentY - startY;
-        const currentScrollTop = modalContent.scrollTop;
-        
-        // Detect if user is scrolling content
-        if (Math.abs(currentScrollTop - startScrollTop) > 5) {
-            isScrolling = true;
-            return;
-        }
-        
-        // Only allow swipe-down when at top of scroll
-        if (currentScrollTop === 0 && diffY > 0 && !isScrolling) {
-            isDragging = true;
-            
-            // Apply transform for visual feedback
-            if (diffY < 200) {
-                modal.querySelector('.modal-content').style.transform = `translateY(${diffY}px)`;
-                modal.querySelector('.modal-content').style.transition = 'none';
-            }
-        }
-    }, { passive: true });
-    
-    modalContent.addEventListener('touchend', (e) => {
-        const endY = e.changedTouches[0].clientY;
-        const diffY = endY - startY;
-        
-        const modalContentEl = modal.querySelector('.modal-content');
-        
-        // Close if dragged down more than 100px and at top
-        if (isDragging && diffY > 100 && modalContent.scrollTop === 0) {
-            closeMatterModal();
-        } else {
-            // Reset position
-            modalContentEl.style.transform = '';
-            modalContentEl.style.transition = 'transform 0.3s ease';
-        }
-        
-        isDragging = false;
-        isScrolling = false;
-    }, { passive: true });
-}
-
-// Event listeners
+// Event listeners for molecule modal
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('matterModal');
     const closeBtn = document.getElementById('closeMatterModal');
     
+    // Close button
     if (closeBtn) {
         closeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -196,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Outside click
     if (modal) {
         modal.addEventListener('click', (e) => {
             if (e.target.id === 'matterModal') {
@@ -204,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // ESC key
     document.addEventListener('keydown', (e) => { 
         if (e.key === 'Escape') {
             const matterModal = document.getElementById('matterModal');
@@ -213,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    // Window resize
     window.addEventListener('optimizedResize', () => {
         if (matterRenderer && matterCamera) {
             const container = document.getElementById('matterViewer');
@@ -224,5 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: true });
     
-    console.log('âœ… Molecule modal initialized');
+    console.log('✅ Molecule modal initialized');
 });
+
+window.closeMatterModal = closeMatterModal;
+window.openMatterModal = openMatterModal;
