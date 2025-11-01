@@ -1,3 +1,5 @@
+/* Forum Main Styles - MOBILE OPTIMIZED */
+
 .forum-container {
     max-width: 800px;
     margin: 0 auto;
@@ -51,9 +53,22 @@
     margin-bottom: 20px;
     overflow-x: auto;
     padding-bottom: 10px;
+    /* FIXED: Better scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.forum-filters::-webkit-scrollbar {
+    height: 4px;
+}
+
+.forum-filters::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 4px;
 }
 
 .topic-filter-btn {
+    /* FIXED: Better text alignment */
     padding: 8px 16px;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-primary);
@@ -64,6 +79,10 @@
     cursor: pointer;
     transition: all 0.3s ease;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px; /* FIXED: Space for emoji */
 }
 
 .topic-filter-btn:hover {
@@ -132,16 +151,21 @@
     border-radius: 50%;
     border: 2px solid var(--accent-blue);
     object-fit: cover;
+    flex-shrink: 0; /* FIXED: Prevent squishing */
 }
 
 .post-author-info {
     flex: 1;
+    min-width: 0; /* FIXED: Prevent overflow */
 }
 
 .post-author-name {
     font-weight: 700;
     font-size: 1rem;
     color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .post-meta {
@@ -149,6 +173,7 @@
     align-items: center;
     gap: 10px;
     font-size: 0.85rem;
+    flex-wrap: wrap; /* FIXED: Wrap on small screens */
 }
 
 .post-time {
@@ -176,12 +201,14 @@
     color: var(--text-primary);
     margin-bottom: 10px;
     line-height: 1.4;
+    word-wrap: break-word; /* FIXED: Long words */
 }
 
 .post-description {
     color: var(--text-secondary);
     line-height: 1.6;
     margin-bottom: 10px;
+    word-wrap: break-word;
 }
 
 .post-description.collapsed {
@@ -212,6 +239,7 @@
     margin-top: 15px;
     padding-top: 15px;
     border-top: 1px solid var(--border-primary);
+    flex-wrap: wrap; /* FIXED: Mobile wrap */
 }
 
 .post-action-btn {
@@ -241,4 +269,44 @@
 
 .post-action-btn i {
     font-size: 1rem;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .forum-container {
+        padding: 15px;
+    }
+    
+    .forum-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .forum-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .create-post-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .topic-filter-btn {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+    }
+    
+    .forum-post-card {
+        padding: 15px;
+    }
+    
+    .post-title {
+        font-size: 1.1rem;
+    }
+    
+    .post-author-pic {
+        width: 40px;
+        height: 40px;
+    }
 }
