@@ -1,13 +1,12 @@
 /**
- * Element Modal Module (ENHANCED with Reactivity Chart)
- * Manages the element details modal window
+ * Element Modal Module (FIXED - No swipe close glitch)
+ * Same fix as molecule modal
  */
 
 let modalOpenTimestamp = 0;
 
 /**
  * Opens modal with element details
- * @param {Object} element - Element data
  */
 function openElementModal(element) {
     console.log('🔬 Opening modal for:', element.name);
@@ -64,13 +63,13 @@ function openElementModal(element) {
     // Load Wikipedia info
     loadWikipediaInfo(element.name, 'wikiContent');
     
-    // Create reactivity chart (NEW)
+    // Create reactivity chart
     setTimeout(() => {
         createReactivityChart(element);
     }, 300);
     
-    // Add swipe to close on mobile
-    addSwipeToClose(modal);
+    // FIXED: Add proper swipe to close (no scroll conflict)
+    addElementSwipeToClose(modal);
     
     // Haptic feedback
     if ('vibrate' in navigator) {
@@ -139,8 +138,7 @@ function closeModal() {
 }
 
 /**
- * Updates the atom information panel (UPDATED with chart section)
- * @param {Object} element - Element data
+ * Updates the atom information panel
  */
 function updateAtomInfo(element) {
     const shells = calculateElectronShells(element.number);
@@ -181,7 +179,6 @@ function updateAtomInfo(element) {
             </div>
         </div>
         
-        <!-- NEW: Reactivity Chart Section -->
         <div class="info-section reactivity-section" data-aos="fade-left" data-aos-delay="300" style="grid-column: 1/-1;">
             <h3><i class="fas fa-chart-line me-2"></i>Chemical Reactivity Pattern</h3>
             <div id="reactivityChart" class="reactivity-chart-container"></div>
@@ -195,8 +192,6 @@ function updateAtomInfo(element) {
 
 /**
  * Formats category name for display
- * @param {string} category - Category key
- * @returns {string} Formatted category name
  */
 function formatCategory(category) {
     const categoryMap = {
@@ -216,33 +211,47 @@ function formatCategory(category) {
 }
 
 /**
- * Add swipe to close functionality for mobile
+ * FIXED: Add swipe to close (no conflict with scroll)
  */
-function addSwipeToClose(modal) {
+function addElementSwipeToClose(modal) {
     let touchStartY = 0;
     let touchEndY = 0;
+    let touchStartX = 0;
+    let isVerticalSwipe = false;
     
     const modalContent = modal.querySelector('.modal-content');
     if (!modalContent) return;
     
     modalContent.addEventListener('touchstart', (e) => {
         touchStartY = e.touches[0].clientY;
+        touchStartX = e.touches[0].clientX;
+        isVerticalSwipe = false;
     }, { passive: true });
     
     modalContent.addEventListener('touchmove', (e) => {
         touchEndY = e.touches[0].clientY;
-        const diff = touchEndY - touchStartY;
+        const touchEndX = e.touches[0].clientX;
         
-        if (diff > 0 && diff < 200) {
-            modalContent.style.transform = `translateY(${diff}px)`;
-            modalContent.style.transition = 'none';
+        const diffY = touchEndY - touchStartY;
+        const diffX = touchEndX - touchStartX;
+        
+        // CRITICAL FIX: Only swipe close if at top AND mostly vertical
+        const isAtTop = modalContent.scrollTop === 0;
+        const isMainlyVertical = Math.abs(diffY) > Math.abs(diffX) * 1.5;
+        
+        if (isAtTop && diffY > 0 && isMainlyVertical) {
+            isVerticalSwipe = true;
+            if (diffY < 200) {
+                modalContent.style.transform = `translateY(${diffY}px)`;
+                modalContent.style.transition = 'none';
+            }
         }
     }, { passive: true });
     
     modalContent.addEventListener('touchend', () => {
         const diff = touchEndY - touchStartY;
         
-        if (diff > 100) {
+        if (isVerticalSwipe && diff > 100) {
             closeModal();
         } else {
             modalContent.style.transform = '';
@@ -251,6 +260,8 @@ function addSwipeToClose(modal) {
         
         touchStartY = 0;
         touchEndY = 0;
+        touchStartX = 0;
+        isVerticalSwipe = false;
     }, { passive: true });
 }
 
@@ -294,5 +305,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: true });
     
-    console.log('✅ Element modal initialized');
-        });
+    console.log('✅ Element modal initialized (FIXED)');
+});
