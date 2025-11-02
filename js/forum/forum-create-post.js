@@ -1,12 +1,13 @@
 /**
- * Forum Post Creation Module - PERFECT FLOW
- * Flow: Chemistry → Reaction Builder → [+click] → Selector Modal → [select] → Back to Reaction Builder
+ * Forum Post Creation Module - PERFECT SOLUTION
+ * Modal transforms to selection view on + click
  */
 
 let currentReactionData = null;
 let currentMoleculeData = null;
 let postReactants = [];
 let postReaction = null;
+let isSelectingReactant = false;
 
 function openCreatePostModal() {
     const modal = document.getElementById('create-post-modal');
@@ -91,9 +92,6 @@ function setupEditorToolbar() {
     document.getElementById('btn-chemistry')?.addEventListener('click', openChemistryToolModal);
 }
 
-/**
- * STEP 1: Chemistry button → Opens chemistry tools modal
- */
 function openChemistryToolModal() {
     const modal = document.getElementById('chemistry-tool-modal');
     if (!modal) return;
@@ -106,9 +104,6 @@ function closeChemistryToolModal() {
     modal.classList.remove('active');
 }
 
-/**
- * STEP 2: Select tool → Opens respective modal
- */
 function selectChemistryTool(type) {
     closeChemistryToolModal();
     
@@ -120,32 +115,43 @@ function selectChemistryTool(type) {
 }
 
 /**
- * STEP 3: Reaction Builder Modal opens
+ * PERFECT: Open reaction builder modal
  */
 function openReactionBuilderModal() {
     const modal = document.getElementById('post-reaction-modal');
     if (!modal) return;
     
     modal.classList.add('active');
-    renderPostEquationBuilder();
+    postReactants = [];
+    postReaction = null;
+    isSelectingReactant = false;
+    
+    renderReactionBuilderView();
 }
 
 function closeReactionBuilderModal() {
     const modal = document.getElementById('post-reaction-modal');
     if (!modal) return;
     modal.classList.remove('active');
+    isSelectingReactant = false;
 }
 
 /**
- * Render equation builder with + button
+ * PERFECT: Render builder view (equation display)
  */
-function renderPostEquationBuilder() {
+function renderReactionBuilderView() {
     const container = document.getElementById('post-reaction-builder');
     if (!container) return;
     
     const reactBtn = document.getElementById('post-react-btn');
     
+    // Main equation builder view
     container.innerHTML = `
+        <div style="text-align:center;margin-bottom:20px;color:var(--text-secondary);">
+            <i class="fas fa-flask" style="font-size:3rem;color:var(--accent-blue);margin-bottom:12px;"></i>
+            <p style="font-weight:600;font-size:1.1rem;margin:0;">Build Your Chemical Equation</p>
+            <p style="font-size:0.9rem;margin-top:6px;opacity:0.8;">Click + to add reactants</p>
+        </div>
         <div class="equation-display" id="post-equation-display"></div>
     `;
     
@@ -153,7 +159,9 @@ function renderPostEquationBuilder() {
     
     if (postReactants.length === 0) {
         equationDisplay.innerHTML = `
-            <button class="add-reactant-btn" onclick="openReactantSelectorFromBuilder()">+</button>
+            <button class="add-reactant-btn" onclick="switchToSelectionView()" style="width:60px;height:60px;font-size:2rem;">
+                <i class="fas fa-plus"></i>
+            </button>
         `;
         if (reactBtn) {
             reactBtn.disabled = true;
@@ -184,12 +192,12 @@ function renderPostEquationBuilder() {
             const addBtn = document.createElement('button');
             addBtn.className = 'add-reactant-btn';
             addBtn.textContent = '+';
-            addBtn.onclick = openReactantSelectorFromBuilder;
+            addBtn.onclick = switchToSelectionView;
             equationDisplay.appendChild(addBtn);
             
             if (reactBtn) {
                 reactBtn.disabled = false;
-                reactBtn.innerHTML = `<i class="fas fa-fire me-2"></i>React! → (${reaction.name || 'Unknown'})`;
+                reactBtn.innerHTML = `<i class="fas fa-fire me-2"></i>Add to Post (${reaction.name || 'Reaction'})`;
                 reactBtn.onclick = () => performPostReaction(reaction);
             }
         } else {
@@ -213,53 +221,91 @@ function renderPostEquationBuilder() {
             const addBtn = document.createElement('button');
             addBtn.className = 'add-reactant-btn';
             addBtn.textContent = '+';
-            addBtn.onclick = openReactantSelectorFromBuilder;
+            addBtn.onclick = switchToSelectionView;
             equationDisplay.appendChild(addBtn);
             
             if (reactBtn) {
                 reactBtn.disabled = true;
-                reactBtn.textContent = 'No Reaction Found ❌';
+                reactBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> No Valid Reaction';
             }
         }
     }
 }
 
 /**
- * STEP 4: + button clicked → Open Reactant Selector Modal
- * Reaction Builder stays open in background
+ * PERFECT: Switch to selection view (modal transforms)
  */
-function openReactantSelectorFromBuilder() {
-    console.log('+ clicked: Opening reactant selector modal...');
+function switchToSelectionView() {
+    isSelectingReactant = true;
+    const container = document.getElementById('post-reaction-builder');
+    if (!container) return;
     
-    const selectorModal = document.getElementById('reactantModal');
-    if (!selectorModal) {
-        console.error('Reactant modal not found!');
-        return;
-    }
+    // Transform modal content to selection view
+    container.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <h4 style="margin:0;color:var(--text-primary);font-weight:700;">
+                <i class="fas fa-atom me-2"></i>Select Reactant
+            </h4>
+            <button onclick="switchToBuilderView()" class="close-btn" style="width:36px;height:36px;background:var(--bg-tertiary);border:1px solid var(--border-primary);color:var(--text-secondary);">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+        </div>
+        
+        <div class="input-group mb-3">
+            <span class="input-group-text" style="background:var(--bg-tertiary);border:1px solid var(--border-primary);color:var(--accent-blue);">
+                <i class="fas fa-search"></i>
+            </span>
+            <input type="search" id="reactant-selection-search" class="form-control" placeholder="Search atoms or molecules..." 
+                style="background:var(--bg-tertiary);border:1px solid var(--border-primary);color:var(--text-primary);" />
+        </div>
+        
+        <div id="reactant-selection-list" class="reactant-list" style="max-height:350px;overflow-y:auto;"></div>
+    `;
     
-    // Open selector modal (Reaction Builder stays in background)
-    selectorModal.classList.add('active');
-    
-    // Clear and focus search
-    const searchInput = document.getElementById('reactantSearch');
-    if (searchInput) {
-        searchInput.value = '';
-        setTimeout(() => searchInput.focus(), 100);
+    // Hide react button during selection
+    const reactBtn = document.getElementById('post-react-btn');
+    if (reactBtn) {
+        reactBtn.style.display = 'none';
     }
     
     // Render list
-    renderReactantSelectorList('');
+    renderReactantSelectionList('');
+    
+    // Setup search
+    const searchInput = document.getElementById('reactant-selection-search');
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            renderReactantSelectionList(e.target.value);
+        }, 200);
+    });
+    
+    // Focus search
+    setTimeout(() => searchInput.focus(), 100);
 }
 
 /**
- * STEP 5: Render reactant list with search
+ * PERFECT: Switch back to builder view
  */
-function renderReactantSelectorList(query = '') {
-    const listEl = document.getElementById('reactantList');
-    if (!listEl) {
-        console.error('Reactant list element not found!');
-        return;
+function switchToBuilderView() {
+    isSelectingReactant = false;
+    
+    // Show react button again
+    const reactBtn = document.getElementById('post-react-btn');
+    if (reactBtn) {
+        reactBtn.style.display = 'block';
     }
+    
+    renderReactionBuilderView();
+}
+
+/**
+ * PERFECT: Render reactant selection list
+ */
+function renderReactantSelectionList(query = '') {
+    const listEl = document.getElementById('reactant-selection-list');
+    if (!listEl) return;
     
     listEl.innerHTML = '';
     
@@ -270,7 +316,8 @@ function renderReactantSelectorList(query = '') {
         allItems.push({
             name: element.name,
             formula: element.symbol,
-            type: 'atom'
+            type: 'atom',
+            category: element.category
         });
     });
     
@@ -300,11 +347,17 @@ function renderReactantSelectorList(query = '') {
         const div = document.createElement('div');
         div.className = 'reactant-item';
         div.innerHTML = `
-            <span class="reactant-item-name">${item.name}</span>
-            <span class="reactant-item-formula">${item.formula}</span>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:50px;height:50px;border-radius:8px;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1.1rem;flex-shrink:0;">
+                    ${item.formula}
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:600;color:var(--text-primary);margin-bottom:2px;">${item.name}</div>
+                    <div style="font-size:0.85rem;color:var(--text-secondary);">${item.type === 'atom' ? 'Element' : 'Molecule'}</div>
+                </div>
+            </div>
         `;
         
-        // STEP 6: When item clicked → Add to reactants & go back
         div.onclick = () => {
             addPostReactantAndReturn(item.formula);
         };
@@ -313,46 +366,36 @@ function renderReactantSelectorList(query = '') {
     });
     
     if (items.length === 0) {
-        listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);">No results found</div>';
+        listEl.innerHTML = `
+            <div style="padding:60px 20px;text-align:center;color:var(--text-secondary);">
+                <i class="fas fa-search" style="font-size:3rem;opacity:0.3;margin-bottom:16px;"></i>
+                <p style="font-weight:600;font-size:1.1rem;margin:0;">No results found</p>
+                <p style="font-size:0.9rem;margin-top:8px;opacity:0.7;">Try a different search term</p>
+            </div>
+        `;
     }
 }
 
 /**
- * STEP 7: Add reactant and return to Reaction Builder
+ * PERFECT: Add reactant and switch back to builder
  */
 function addPostReactantAndReturn(formula) {
-    console.log('Reactant selected:', formula);
-    
-    // Add to list
     if (!postReactants.includes(formula)) {
         postReactants.push(formula);
     }
     
-    // Close selector modal
-    const selectorModal = document.getElementById('reactantModal');
-    if (selectorModal) {
-        selectorModal.classList.remove('active');
+    // Haptic feedback
+    if ('vibrate' in navigator) {
+        navigator.vibrate(10);
     }
     
-    // Refresh Reaction Builder (which is still open)
-    setTimeout(() => {
-        renderPostEquationBuilder();
-    }, 100);
-}
-
-/**
- * Close selector modal without adding
- */
-function closeReactantSelectorModal() {
-    const selectorModal = document.getElementById('reactantModal');
-    if (selectorModal) {
-        selectorModal.classList.remove('active');
-    }
+    // Switch back to builder view
+    switchToBuilderView();
 }
 
 function removePostReactant(formula) {
     postReactants = postReactants.filter(r => r !== formula);
-    renderPostEquationBuilder();
+    renderReactionBuilderView();
 }
 
 function performPostReaction(reaction) {
@@ -395,9 +438,6 @@ function removeReactionEmbed() {
     if (preview) preview.remove();
 }
 
-/**
- * Molecule Picker
- */
 function openMoleculePickerModal() {
     const modal = document.getElementById('post-molecule-modal');
     if (!modal) return;
@@ -603,36 +643,6 @@ function formatReactionEquation(reactionData) {
     return equation;
 }
 
-// Setup search handler for reactant modal
-document.addEventListener('DOMContentLoaded', () => {
-    const reactantSearch = document.getElementById('reactantSearch');
-    if (reactantSearch) {
-        let searchTimeout;
-        reactantSearch.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                renderReactantSelectorList(e.target.value);
-            }, 200);
-        });
-    }
-    
-    // Close button handler
-    const closeReactantBtn = document.getElementById('closeReactantModal');
-    if (closeReactantBtn) {
-        closeReactantBtn.addEventListener('click', closeReactantSelectorModal);
-    }
-    
-    // Outside click handler
-    const reactantModal = document.getElementById('reactantModal');
-    if (reactantModal) {
-        reactantModal.addEventListener('click', (e) => {
-            if (e.target.id === 'reactantModal') {
-                closeReactantSelectorModal();
-            }
-        });
-    }
-});
-
 // Global functions
 window.openCreatePostModal = openCreatePostModal;
 window.closeCreatePostModal = closeCreatePostModal;
@@ -643,9 +653,8 @@ window.removeReactionEmbed = removeReactionEmbed;
 window.closeMoleculePickerModal = closeMoleculePickerModal;
 window.removeMoleculeEmbed = removeMoleculeEmbed;
 window.submitForumPost = submitForumPost;
-window.openReactantSelectorFromBuilder = openReactantSelectorFromBuilder;
-window.closeReactantSelectorModal = closeReactantSelectorModal;
-window.addPostReactantAndReturn = addPostReactantAndReturn;
+window.switchToSelectionView = switchToSelectionView;
+window.switchToBuilderView = switchToBuilderView;
 window.removePostReactant = removePostReactant;
 
-console.log('✅ Forum create post module loaded (PERFECT FLOW)');
+console.log('✅ Forum create post module loaded (PERFECT - Modal Transform)');
