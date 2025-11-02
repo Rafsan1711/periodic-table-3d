@@ -1,11 +1,13 @@
 /**
- * Forum Post Creation Module - COMPLETE WITH INLINE SELECTOR FIXED
+ * Forum Post Creation Module - PERFECT UX FIX
+ * FIXED: + button closes reaction modal, opens selector modal, then returns back
  */
 
 let currentReactionData = null;
 let currentMoleculeData = null;
 let postReactants = [];
 let postReaction = null;
+let isReturningToReactionBuilder = false; // Track if we should return
 
 function openCreatePostModal() {
     const modal = document.getElementById('create-post-modal');
@@ -119,6 +121,7 @@ function openReactionBuilderModal() {
     modal.classList.add('active');
     postReactants = [];
     postReaction = null;
+    isReturningToReactionBuilder = false;
     
     renderPostEquationBuilder();
 }
@@ -130,7 +133,7 @@ function closeReactionBuilderModal() {
 }
 
 /**
- * FIXED: Render equation builder with inline selector
+ * Render equation builder
  */
 function renderPostEquationBuilder() {
     const container = document.getElementById('post-reaction-builder');
@@ -146,7 +149,7 @@ function renderPostEquationBuilder() {
     
     if (postReactants.length === 0) {
         equationDisplay.innerHTML = `
-            <button class="add-reactant-btn" onclick="openPostReactantSelector()">+</button>
+            <button class="add-reactant-btn" onclick="openPostReactantSelectorModal()">+</button>
         `;
         if (reactBtn) {
             reactBtn.disabled = true;
@@ -177,7 +180,7 @@ function renderPostEquationBuilder() {
             const addBtn = document.createElement('button');
             addBtn.className = 'add-reactant-btn';
             addBtn.textContent = '+';
-            addBtn.onclick = openPostReactantSelector;
+            addBtn.onclick = openPostReactantSelectorModal;
             equationDisplay.appendChild(addBtn);
             
             if (reactBtn) {
@@ -206,7 +209,7 @@ function renderPostEquationBuilder() {
             const addBtn = document.createElement('button');
             addBtn.className = 'add-reactant-btn';
             addBtn.textContent = '+';
-            addBtn.onclick = openPostReactantSelector;
+            addBtn.onclick = openPostReactantSelectorModal;
             equationDisplay.appendChild(addBtn);
             
             if (reactBtn) {
@@ -218,45 +221,55 @@ function renderPostEquationBuilder() {
 }
 
 /**
- * FIXED: Open inline reactant selector
+ * PERFECT FIX: Modal switch - close reaction builder, open selector
  */
-function openPostReactantSelector() {
-    // Remove any existing selector
-    const existingSelector = document.getElementById('inline-selector');
-    if (existingSelector) {
-        existingSelector.remove();
+function openPostReactantSelectorModal() {
+    console.log('Opening reactant selector - switching modals...');
+    
+    // Mark that we should return to reaction builder
+    isReturningToReactionBuilder = true;
+    
+    // STEP 1: Close reaction builder modal
+    const reactionModal = document.getElementById('post-reaction-modal');
+    if (reactionModal) {
+        reactionModal.classList.remove('active');
     }
     
-    const selectorHTML = `
-        <div class="inline-selector" id="inline-selector">
-            <div class="inline-selector-header">
-                <h4>Select Reactant</h4>
-                <button onclick="closeInlineSelector()" class="close-btn" style="background:var(--accent-red);color:white;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;">×</button>
-            </div>
-            <input type="text" id="inline-search" placeholder="Search atoms or molecules..." class="form-control mb-2" style="width:100%;padding:10px;background:var(--bg-tertiary);border:1px solid var(--border-primary);border-radius:8px;color:var(--text-primary);margin-bottom:10px;" />
-            <div class="reactant-list" id="inline-reactant-list" style="max-height:300px;overflow-y:auto;"></div>
-        </div>
-    `;
-    
-    const container = document.getElementById('post-reaction-builder');
-    container.insertAdjacentHTML('afterend', selectorHTML);
-    
-    renderInlineReactantList();
-    
-    document.getElementById('inline-search')?.addEventListener('input', (e) => {
-        renderInlineReactantList(e.target.value);
-    });
+    // STEP 2: Open reactant selector modal after small delay
+    setTimeout(() => {
+        const selectorModal = document.getElementById('reactantModal');
+        if (!selectorModal) {
+            console.error('Reactant modal not found!');
+            return;
+        }
+        
+        selectorModal.classList.add('active');
+        
+        // Clear and focus search
+        const searchInput = document.getElementById('reactantSearch');
+        if (searchInput) {
+            searchInput.value = '';
+            setTimeout(() => searchInput.focus(), 100);
+        }
+        
+        // Render list
+        renderPostReactantList('');
+    }, 150); // Small delay for smooth transition
 }
 
 /**
- * FIXED: Render inline reactant list with virtual scrolling
+ * Render reactant list with search in modal
  */
-function renderInlineReactantList(query = '') {
-    const listEl = document.getElementById('inline-reactant-list');
-    if (!listEl) return;
+function renderPostReactantList(query = '') {
+    const listEl = document.getElementById('reactantList');
+    if (!listEl) {
+        console.error('Reactant list element not found!');
+        return;
+    }
     
     listEl.innerHTML = '';
     
+    // Combine atoms and molecules
     const allItems = [];
     
     elementsData.forEach(element => {
@@ -285,31 +298,22 @@ function renderInlineReactantList(query = '') {
         );
     }
     
+    // Sort by name
+    items.sort((a, b) => a.name.localeCompare(b.name));
+    
     // Limit to first 50 for performance
     items.slice(0, 50).forEach(item => {
         const div = document.createElement('div');
         div.className = 'reactant-item';
-        div.style.cssText = 'padding:12px;background:var(--bg-tertiary);border:1px solid var(--border-primary);border-radius:8px;cursor:pointer;transition:all 0.2s ease;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;';
         div.innerHTML = `
-            <span style="font-weight:600;color:var(--text-primary);">${item.name}</span>
-            <span style="color:var(--accent-blue);font-weight:500;">${item.formula}</span>
+            <span class="reactant-item-name">${item.name}</span>
+            <span class="reactant-item-formula">${item.formula}</span>
         `;
+        
         div.onclick = () => {
             addPostReactant(item.formula);
-            closeInlineSelector();
+            closePostReactantSelectorModalAndReturn(); // FIXED: Return to builder
         };
-        
-        div.addEventListener('mouseenter', () => {
-            div.style.background = 'var(--bg-primary)';
-            div.style.borderColor = 'var(--accent-blue)';
-            div.style.transform = 'translateX(4px)';
-        });
-        
-        div.addEventListener('mouseleave', () => {
-            div.style.background = 'var(--bg-tertiary)';
-            div.style.borderColor = 'var(--border-primary)';
-            div.style.transform = 'translateX(0)';
-        });
         
         listEl.appendChild(div);
     });
@@ -319,16 +323,43 @@ function renderInlineReactantList(query = '') {
     }
 }
 
-function closeInlineSelector() {
-    const selector = document.getElementById('inline-selector');
-    if (selector) selector.remove();
+/**
+ * PERFECT FIX: Close selector and return to reaction builder
+ */
+function closePostReactantSelectorModalAndReturn() {
+    const selectorModal = document.getElementById('reactantModal');
+    if (selectorModal) {
+        selectorModal.classList.remove('active');
+    }
+    
+    // If we should return to reaction builder, open it
+    if (isReturningToReactionBuilder) {
+        setTimeout(() => {
+            const reactionModal = document.getElementById('post-reaction-modal');
+            if (reactionModal) {
+                reactionModal.classList.add('active');
+                renderPostEquationBuilder(); // Refresh with new reactant
+            }
+            isReturningToReactionBuilder = false;
+        }, 150);
+    }
+}
+
+/**
+ * Close selector without returning (for X button)
+ */
+function closePostReactantSelectorModal() {
+    isReturningToReactionBuilder = false; // Don't return
+    const selectorModal = document.getElementById('reactantModal');
+    if (selectorModal) {
+        selectorModal.classList.remove('active');
+    }
 }
 
 function addPostReactant(formula) {
     if (!postReactants.includes(formula)) {
         postReactants.push(formula);
     }
-    renderPostEquationBuilder();
 }
 
 function removePostReactant(formula) {
@@ -376,9 +407,6 @@ function removeReactionEmbed() {
     if (preview) preview.remove();
 }
 
-/**
- * FIXED: Open Molecule Picker with Search
- */
 function openMoleculePickerModal() {
     const modal = document.getElementById('post-molecule-modal');
     if (!modal) return;
@@ -393,14 +421,10 @@ function closeMoleculePickerModal() {
     modal.classList.remove('active');
 }
 
-/**
- * FIXED: Render molecule picker with search bar
- */
 function renderMoleculePicker() {
     const list = document.getElementById('molecule-picker-list');
     if (!list) return;
     
-    // Create search bar
     const searchHTML = `
         <div style="margin-bottom:15px;position:sticky;top:0;background:var(--bg-secondary);padding:10px 0;z-index:10;">
             <input type="text" id="molecule-picker-search" placeholder="🔍 Search molecules..." 
@@ -412,10 +436,8 @@ function renderMoleculePicker() {
     
     const itemsContainer = document.getElementById('molecule-picker-items');
     
-    // Render all molecules initially
     renderMoleculePickerItems(moleculesData, itemsContainer);
     
-    // Add search functionality
     const searchInput = document.getElementById('molecule-picker-search');
     let searchTimeout;
     
@@ -437,7 +459,6 @@ function renderMoleculePicker() {
 function renderMoleculePickerItems(molecules, container) {
     container.innerHTML = '';
     
-    // Limit to first 50 for performance
     molecules.slice(0, 50).forEach(molecule => {
         const item = document.createElement('div');
         item.className = 'molecule-picker-item';
@@ -591,6 +612,39 @@ function formatReactionEquation(reactionData) {
     return equation;
 }
 
+// Setup search handler for reactant modal
+document.addEventListener('DOMContentLoaded', () => {
+    const reactantSearch = document.getElementById('reactantSearch');
+    if (reactantSearch) {
+        let searchTimeout;
+        reactantSearch.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                renderPostReactantList(e.target.value);
+            }, 200);
+        });
+    }
+    
+    // Close modal handlers
+    const closeReactantBtn = document.getElementById('closeReactantModal');
+    if (closeReactantBtn) {
+        closeReactantBtn.addEventListener('click', () => {
+            isReturningToReactionBuilder = false; // Don't return when clicking X
+            closePostReactantSelectorModal();
+        });
+    }
+    
+    const reactantModal = document.getElementById('reactantModal');
+    if (reactantModal) {
+        reactantModal.addEventListener('click', (e) => {
+            if (e.target.id === 'reactantModal') {
+                isReturningToReactionBuilder = false; // Don't return on outside click
+                closePostReactantSelectorModal();
+            }
+        });
+    }
+});
+
 // Global functions
 window.openCreatePostModal = openCreatePostModal;
 window.closeCreatePostModal = closeCreatePostModal;
@@ -601,9 +655,10 @@ window.removeReactionEmbed = removeReactionEmbed;
 window.closeMoleculePickerModal = closeMoleculePickerModal;
 window.removeMoleculeEmbed = removeMoleculeEmbed;
 window.submitForumPost = submitForumPost;
-window.openPostReactantSelector = openPostReactantSelector;
+window.openPostReactantSelectorModal = openPostReactantSelectorModal;
+window.closePostReactantSelectorModal = closePostReactantSelectorModal;
+window.closePostReactantSelectorModalAndReturn = closePostReactantSelectorModalAndReturn;
 window.addPostReactant = addPostReactant;
 window.removePostReactant = removePostReactant;
-window.closeInlineSelector = closeInlineSelector;
 
-console.log('✅ Forum create post module loaded (COMPLETE WITH FIXES)');
+console.log('✅ Forum create post module loaded (PERFECT MODAL SWITCH)');
