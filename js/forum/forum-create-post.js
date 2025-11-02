@@ -1,13 +1,12 @@
 /**
- * Forum Post Creation Module - PERFECT UX FIX
- * FIXED: + button closes reaction modal, opens selector modal, then returns back
+ * Forum Post Creation Module - PERFECT FLOW
+ * Flow: Chemistry → Reaction Builder → [+click] → Selector Modal → [select] → Back to Reaction Builder
  */
 
 let currentReactionData = null;
 let currentMoleculeData = null;
 let postReactants = [];
 let postReaction = null;
-let isReturningToReactionBuilder = false; // Track if we should return
 
 function openCreatePostModal() {
     const modal = document.getElementById('create-post-modal');
@@ -92,6 +91,9 @@ function setupEditorToolbar() {
     document.getElementById('btn-chemistry')?.addEventListener('click', openChemistryToolModal);
 }
 
+/**
+ * STEP 1: Chemistry button → Opens chemistry tools modal
+ */
 function openChemistryToolModal() {
     const modal = document.getElementById('chemistry-tool-modal');
     if (!modal) return;
@@ -104,6 +106,9 @@ function closeChemistryToolModal() {
     modal.classList.remove('active');
 }
 
+/**
+ * STEP 2: Select tool → Opens respective modal
+ */
 function selectChemistryTool(type) {
     closeChemistryToolModal();
     
@@ -114,15 +119,14 @@ function selectChemistryTool(type) {
     }
 }
 
+/**
+ * STEP 3: Reaction Builder Modal opens
+ */
 function openReactionBuilderModal() {
     const modal = document.getElementById('post-reaction-modal');
     if (!modal) return;
     
     modal.classList.add('active');
-    postReactants = [];
-    postReaction = null;
-    isReturningToReactionBuilder = false;
-    
     renderPostEquationBuilder();
 }
 
@@ -133,7 +137,7 @@ function closeReactionBuilderModal() {
 }
 
 /**
- * Render equation builder
+ * Render equation builder with + button
  */
 function renderPostEquationBuilder() {
     const container = document.getElementById('post-reaction-builder');
@@ -149,7 +153,7 @@ function renderPostEquationBuilder() {
     
     if (postReactants.length === 0) {
         equationDisplay.innerHTML = `
-            <button class="add-reactant-btn" onclick="openPostReactantSelectorModal()">+</button>
+            <button class="add-reactant-btn" onclick="openReactantSelectorFromBuilder()">+</button>
         `;
         if (reactBtn) {
             reactBtn.disabled = true;
@@ -180,7 +184,7 @@ function renderPostEquationBuilder() {
             const addBtn = document.createElement('button');
             addBtn.className = 'add-reactant-btn';
             addBtn.textContent = '+';
-            addBtn.onclick = openPostReactantSelectorModal;
+            addBtn.onclick = openReactantSelectorFromBuilder;
             equationDisplay.appendChild(addBtn);
             
             if (reactBtn) {
@@ -209,7 +213,7 @@ function renderPostEquationBuilder() {
             const addBtn = document.createElement('button');
             addBtn.className = 'add-reactant-btn';
             addBtn.textContent = '+';
-            addBtn.onclick = openPostReactantSelectorModal;
+            addBtn.onclick = openReactantSelectorFromBuilder;
             equationDisplay.appendChild(addBtn);
             
             if (reactBtn) {
@@ -221,46 +225,36 @@ function renderPostEquationBuilder() {
 }
 
 /**
- * PERFECT FIX: Modal switch - close reaction builder, open selector
+ * STEP 4: + button clicked → Open Reactant Selector Modal
+ * Reaction Builder stays open in background
  */
-function openPostReactantSelectorModal() {
-    console.log('Opening reactant selector - switching modals...');
+function openReactantSelectorFromBuilder() {
+    console.log('+ clicked: Opening reactant selector modal...');
     
-    // Mark that we should return to reaction builder
-    isReturningToReactionBuilder = true;
-    
-    // STEP 1: Close reaction builder modal
-    const reactionModal = document.getElementById('post-reaction-modal');
-    if (reactionModal) {
-        reactionModal.classList.remove('active');
+    const selectorModal = document.getElementById('reactantModal');
+    if (!selectorModal) {
+        console.error('Reactant modal not found!');
+        return;
     }
     
-    // STEP 2: Open reactant selector modal after small delay
-    setTimeout(() => {
-        const selectorModal = document.getElementById('reactantModal');
-        if (!selectorModal) {
-            console.error('Reactant modal not found!');
-            return;
-        }
-        
-        selectorModal.classList.add('active');
-        
-        // Clear and focus search
-        const searchInput = document.getElementById('reactantSearch');
-        if (searchInput) {
-            searchInput.value = '';
-            setTimeout(() => searchInput.focus(), 100);
-        }
-        
-        // Render list
-        renderPostReactantList('');
-    }, 150); // Small delay for smooth transition
+    // Open selector modal (Reaction Builder stays in background)
+    selectorModal.classList.add('active');
+    
+    // Clear and focus search
+    const searchInput = document.getElementById('reactantSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        setTimeout(() => searchInput.focus(), 100);
+    }
+    
+    // Render list
+    renderReactantSelectorList('');
 }
 
 /**
- * Render reactant list with search in modal
+ * STEP 5: Render reactant list with search
  */
-function renderPostReactantList(query = '') {
+function renderReactantSelectorList(query = '') {
     const listEl = document.getElementById('reactantList');
     if (!listEl) {
         console.error('Reactant list element not found!');
@@ -310,9 +304,9 @@ function renderPostReactantList(query = '') {
             <span class="reactant-item-formula">${item.formula}</span>
         `;
         
+        // STEP 6: When item clicked → Add to reactants & go back
         div.onclick = () => {
-            addPostReactant(item.formula);
-            closePostReactantSelectorModalAndReturn(); // FIXED: Return to builder
+            addPostReactantAndReturn(item.formula);
         };
         
         listEl.appendChild(div);
@@ -324,41 +318,35 @@ function renderPostReactantList(query = '') {
 }
 
 /**
- * PERFECT FIX: Close selector and return to reaction builder
+ * STEP 7: Add reactant and return to Reaction Builder
  */
-function closePostReactantSelectorModalAndReturn() {
+function addPostReactantAndReturn(formula) {
+    console.log('Reactant selected:', formula);
+    
+    // Add to list
+    if (!postReactants.includes(formula)) {
+        postReactants.push(formula);
+    }
+    
+    // Close selector modal
     const selectorModal = document.getElementById('reactantModal');
     if (selectorModal) {
         selectorModal.classList.remove('active');
     }
     
-    // If we should return to reaction builder, open it
-    if (isReturningToReactionBuilder) {
-        setTimeout(() => {
-            const reactionModal = document.getElementById('post-reaction-modal');
-            if (reactionModal) {
-                reactionModal.classList.add('active');
-                renderPostEquationBuilder(); // Refresh with new reactant
-            }
-            isReturningToReactionBuilder = false;
-        }, 150);
-    }
+    // Refresh Reaction Builder (which is still open)
+    setTimeout(() => {
+        renderPostEquationBuilder();
+    }, 100);
 }
 
 /**
- * Close selector without returning (for X button)
+ * Close selector modal without adding
  */
-function closePostReactantSelectorModal() {
-    isReturningToReactionBuilder = false; // Don't return
+function closeReactantSelectorModal() {
     const selectorModal = document.getElementById('reactantModal');
     if (selectorModal) {
         selectorModal.classList.remove('active');
-    }
-}
-
-function addPostReactant(formula) {
-    if (!postReactants.includes(formula)) {
-        postReactants.push(formula);
     }
 }
 
@@ -407,6 +395,9 @@ function removeReactionEmbed() {
     if (preview) preview.remove();
 }
 
+/**
+ * Molecule Picker
+ */
 function openMoleculePickerModal() {
     const modal = document.getElementById('post-molecule-modal');
     if (!modal) return;
@@ -620,26 +611,23 @@ document.addEventListener('DOMContentLoaded', () => {
         reactantSearch.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
-                renderPostReactantList(e.target.value);
+                renderReactantSelectorList(e.target.value);
             }, 200);
         });
     }
     
-    // Close modal handlers
+    // Close button handler
     const closeReactantBtn = document.getElementById('closeReactantModal');
     if (closeReactantBtn) {
-        closeReactantBtn.addEventListener('click', () => {
-            isReturningToReactionBuilder = false; // Don't return when clicking X
-            closePostReactantSelectorModal();
-        });
+        closeReactantBtn.addEventListener('click', closeReactantSelectorModal);
     }
     
+    // Outside click handler
     const reactantModal = document.getElementById('reactantModal');
     if (reactantModal) {
         reactantModal.addEventListener('click', (e) => {
             if (e.target.id === 'reactantModal') {
-                isReturningToReactionBuilder = false; // Don't return on outside click
-                closePostReactantSelectorModal();
+                closeReactantSelectorModal();
             }
         });
     }
@@ -655,10 +643,9 @@ window.removeReactionEmbed = removeReactionEmbed;
 window.closeMoleculePickerModal = closeMoleculePickerModal;
 window.removeMoleculeEmbed = removeMoleculeEmbed;
 window.submitForumPost = submitForumPost;
-window.openPostReactantSelectorModal = openPostReactantSelectorModal;
-window.closePostReactantSelectorModal = closePostReactantSelectorModal;
-window.closePostReactantSelectorModalAndReturn = closePostReactantSelectorModalAndReturn;
-window.addPostReactant = addPostReactant;
+window.openReactantSelectorFromBuilder = openReactantSelectorFromBuilder;
+window.closeReactantSelectorModal = closeReactantSelectorModal;
+window.addPostReactantAndReturn = addPostReactantAndReturn;
 window.removePostReactant = removePostReactant;
 
-console.log('✅ Forum create post module loaded (PERFECT MODAL SWITCH)');
+console.log('✅ Forum create post module loaded (PERFECT FLOW)');
