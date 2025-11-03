@@ -84,7 +84,7 @@ async function downloadApp(platform) {
     
     // Get APK URL from Firebase
     try {
-        const apkSnapshot = await db.ref('app/periodic-table-3d_v1.0.0.apk').once('value');
+        const apkSnapshot = await db.ref('assets/periodic-table-3d_v1.0.0.apk').once('value');
         const APK_URL = apkSnapshot.val();
         
         if (!APK_URL) {
