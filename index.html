@@ -24,14 +24,14 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
     <style>
-        /* Top Action Buttons Styles */
+        /* Top Action Buttons - Fixed Position */
         .top-action-buttons {
             position: fixed;
             top: 20px;
             right: 20px;
             display: flex;
             gap: 12px;
-            z-index: 1000;
+            z-index: 999;
         }
         
         .action-icon-btn {
@@ -44,25 +44,31 @@
             font-size: 1.4rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             position: relative;
+            text-decoration: none;
         }
         
         .download-btn {
             background: linear-gradient(135deg, #7ce38b, #58a6ff);
-            color: white;
-            text-decoration: none;
+            color: white !important;
             border: 2px solid rgba(255, 255, 255, 0.2);
         }
         
         .download-btn:hover {
             transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 6px 20px rgba(124, 227, 139, 0.5);
+            box-shadow: 0 6px 20px rgba(124, 227, 139, 0.6);
         }
         
         .notification-bell {
             background: var(--bg-secondary);
             border: 2px solid var(--border-primary);
+            color: var(--text-primary);
+        }
+        
+        .notification-bell:hover {
+            transform: translateY(-3px) scale(1.05);
+            border-color: var(--accent-blue);
         }
         
         @media (max-width: 768px) {
@@ -154,7 +160,7 @@
 
     <!-- Main App Container -->
     <div class="container-fluid px-2 px-md-4" id="main-app" style="display: none;">
-        <!-- Top Right Action Buttons -->
+        <!-- Top Right Action Buttons (FIXED POSITION) -->
         <div class="top-action-buttons">
             <!-- Download Button -->
             <a href="https://download-periodic-table-3d.netlify.app" target="_blank" class="action-icon-btn download-btn" title="Download App">
@@ -170,6 +176,7 @@
         
         <!-- Header -->
         <div class="header text-center" data-aos="fade-down">
+            <!-- Page Toggle -->
             <div class="page-toggle mb-4">
                 <div class="toggle-options">
                     <button id="togglePeriodic" class="toggle-btn active" data-tippy-content="Explore 118 Elements">
@@ -200,9 +207,6 @@
             </h1>
             <p class="lead">Explore the building blocks of matter with stunning 3D visualizations</p>
         </div>
-        
-        <!-- Rest of your existing content... -->
-        <!-- (Keeping all existing sections unchanged) -->
         
         <!-- Legend -->
         <div class="legend" data-aos="fade-up">
@@ -342,9 +346,8 @@
                     <input type="text" id="forum-search" placeholder="🔍 Search discussions..." />
                 </div>
                 
-                <!-- FIXED: Topic Filters with Better Width -->
                 <div class="forum-filters">
-                    <button class="topic-filter-btn active" data-topic="all">🌐 All Topics</button>
+                    <button class="topic-filter-btn active" data-topic="all">🌍 All Topics</button>
                     <button class="topic-filter-btn" data-topic="elements">⚛️ Elements</button>
                     <button class="topic-filter-btn" data-topic="molecules">🧪 Molecules</button>
                     <button class="topic-filter-btn" data-topic="reactions">⚗️ Reactions</button>
@@ -358,6 +361,7 @@
         </div>
     </div>
     
+ 
     <!-- Element Modal -->
     <div class="modal" id="elementModal">
         <div class="modal-content">
@@ -610,10 +614,6 @@
             </div>
         </div>
     </div>
-
-    
-    
-    <!-- All your existing modals and scripts -->
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
