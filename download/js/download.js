@@ -1,9 +1,9 @@
 /**
- * Download Page Script
- * Handles downloads and Firebase tracking
+ * Download Page Script - Real-Time Firebase Integration
+ * All data is fetched from Firebase Realtime Database
  */
 
-// Firebase Configuration (same as your main app)
+// Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBW6jjj-SYrPBBoP7HtDFZrh1IfchI8XMg",
     authDomain: "periodic-table-4f7de.firebaseapp.com",
@@ -21,43 +21,43 @@ if (!firebase.apps.length) {
 
 const db = firebase.database();
 
-// APK Download URL (তোমার actual APK এর link দিবে)
-const APK_URL = 'https://example.com/periodic-table-3d.apk'; // এটা পরে update করবে
-
 /**
- * Load download statistics from Firebase
+ * Load ALL statistics from Firebase in real-time
  */
-async function loadDownloadStats() {
+async function loadAllStats() {
     try {
-        const snapshot = await db.ref('downloads/total').once('value');
-        const total = snapshot.val() || 0;
-        
-        // Animate counter
-        animateCounter('totalDownloads', 0, total, 2000);
+        // Load total downloads
+        db.ref('downloads/total').on('value', (snapshot) => {
+            const total = snapshot.val() || 0;
+            document.getElementById('totalDownloads').textContent = formatNumber(total);
+        });
+
+        // Load average rating
+        db.ref('ratings').once('value', (snapshot) => {
+            const ratings = snapshot.val();
+            if (ratings) {
+                const ratingArray = Object.values(ratings);
+                const avgRating = ratingArray.reduce((a, b) => a + b, 0) / ratingArray.length;
+                document.getElementById('avgRating').textContent = avgRating.toFixed(1);
+            } else {
+                // No ratings yet
+                document.getElementById('avgRating').textContent = '—';
+            }
+        });
+
+        // Load total users (real user count from Firebase Authentication or custom counter)
+        db.ref('users/count').on('value', (snapshot) => {
+            const userCount = snapshot.val() || 0;
+            document.getElementById('totalUsers').textContent = formatNumber(userCount);
+        });
+
     } catch (error) {
         console.error('Error loading stats:', error);
-        document.getElementById('totalDownloads').textContent = '10K+';
+        // Show error state
+        document.getElementById('totalDownloads').textContent = '—';
+        document.getElementById('avgRating').textContent = '—';
+        document.getElementById('totalUsers').textContent = '—';
     }
-}
-
-/**
- * Animate counter
- */
-function animateCounter(elementId, start, end, duration) {
-    const element = document.getElementById(elementId);
-    const range = end - start;
-    const increment = range / (duration / 16);
-    let current = start;
-    
-    const timer = setInterval(() => {
-        current += increment;
-        if (current >= end) {
-            element.textContent = formatNumber(end);
-            clearInterval(timer);
-        } else {
-            element.textContent = formatNumber(Math.floor(current));
-        }
-    }, 16);
 }
 
 /**
@@ -82,10 +82,19 @@ async function downloadApp(platform) {
         return;
     }
     
-    // Show download modal
-    showDownloadModal();
-    
+    // Get APK URL from Firebase
     try {
+        const apkSnapshot = await db.ref('app/apk_url').once('value');
+        const APK_URL = apkSnapshot.val();
+        
+        if (!APK_URL) {
+            alert('APK not available yet. Please check back later.');
+            return;
+        }
+        
+        // Show download modal
+        showDownloadModal();
+        
         // Increment download count in Firebase
         await incrementDownloadCount(platform);
         
@@ -133,6 +142,7 @@ async function incrementDownloadCount(platform) {
     updates[`downloads/logs/${timestamp}`] = {
         platform: platform,
         timestamp: timestamp,
+        date: new Date().toISOString(),
         userAgent: navigator.userAgent
     };
     
@@ -323,12 +333,19 @@ function highlightPlatform(platform) {
 }
 
 /**
- * Smooth scroll to section
+ * Track page view
  */
-function scrollToSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    if (section) {
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+async function trackPageView() {
+    try {
+        const timestamp = Date.now();
+        await db.ref(`analytics/pageviews/${timestamp}`).set({
+            timestamp: timestamp,
+            date: new Date().toISOString(),
+            page: 'download',
+            userAgent: navigator.userAgent
+        });
+    } catch (error) {
+        console.error('Error tracking page view:', error);
     }
 }
 
@@ -336,8 +353,11 @@ function scrollToSection(sectionId) {
  * Initialize page
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // Load download statistics
-    loadDownloadStats();
+    // Load all real-time statistics
+    loadAllStats();
+    
+    // Track page view
+    trackPageView();
     
     // Detect and highlight user's platform
     detectPlatform();
@@ -374,9 +394,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    console.log('✅ Download page initialized');
+    console.log('✅ Download page initialized with real-time data');
 });
 
-// Make downloadApp function global
+// Make functions global
 window.downloadApp = downloadApp;
 window.closeDownloadModal = closeDownloadModal;
