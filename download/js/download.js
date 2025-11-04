@@ -147,7 +147,7 @@ async function downloadApp(platform) {
             // Create download link
             const link = document.createElement('a');
             link.href = APK_PATH;
-            link.download = 'periodic-table-3d.apk';
+            link.download = 'periodic-table-3d_v1.0.0.apk';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
