@@ -22,7 +22,7 @@ if (!firebase.apps.length) {
 const db = firebase.database();
 
 // APK Path from assets folder
-const APK_PATH = 'assets/periodic-table-3d.apk';
+const APK_PATH = 'periodic-table-3d_v1.0.0.apk';
 
 /**
  * Load ALL real-time statistics from Firebase
