@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Periodic Table 3D - Mobile & Desktop App</title>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚛️</text></svg>">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/download.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="app-icon">
+                <div class="icon-glow"></div>
+                <i class="fas fa-atom"></i>
+            </div>
+            <h1 class="app-title">Periodic Table 3D</h1>
+            <p class="app-subtitle">Interactive Chemistry Learning Platform</p>
+            <p class="app-description">Explore 118 elements, molecules, and chemical reactions with stunning 3D visualizations</p>
+            
+            <!-- Real-Time Download Stats -->
+            <div class="download-stats">
+                <div class="stat-item">
+                    <i class="fas fa-download"></i>
+                    <span class="stat-value" id="totalDownloads">
+                        <div class="loading-spinner"></div>
+                    </span>
+                    <span class="stat-label">Downloads</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-star"></i>
+                    <span class="stat-value" id="averageRating">
+                        <div class="loading-spinner"></div>
+                    </span>
+                    <span class="stat-label">Rating</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <span class="stat-value" id="activeUsers">
+                        <div class="loading-spinner"></div>
+                    </span>
+                    <span class="stat-label">Active Users</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Download Section -->
+    <div class="download-section">
+        <h2 class="section-title">Download for Your Platform</h2>
+        
+        <div class="platforms-grid">
+            <!-- Android -->
+            <div class="platform-card available" data-platform="android">
+                <div class="platform-icon android">
+                    <i class="fab fa-android"></i>
+                </div>
+                <h3 class="platform-name">Android</h3>
+                <p class="platform-version">Version 1.0.0</p>
+                <p class="platform-size">45 MB</p>
+                <button class="download-btn primary" onclick="downloadApp('android')">
+                    <i class="fas fa-download"></i>
+                    Download APK
+                </button>
+                <div class="platform-badge available-badge">
+                    <i class="fas fa-check-circle"></i> Available Now
+                </div>
+            </div>
+
+            <!-- iOS -->
+            <div class="platform-card coming-soon" data-platform="ios">
+                <div class="platform-icon ios">
+                    <i class="fab fa-apple"></i>
+                </div>
+                <h3 class="platform-name">iOS</h3>
+                <p class="platform-version">Coming Soon</p>
+                <p class="platform-size">~ 50 MB</p>
+                <button class="download-btn disabled" disabled>
+                    <i class="fas fa-clock"></i>
+                    Coming Soon
+                </button>
+                <div class="platform-badge coming-soon-badge">
+                    <i class="fas fa-hourglass-half"></i> In Development
+                </div>
+            </div>
+
+            <!-- Windows -->
+            <div class="platform-card coming-soon" data-platform="windows">
+                <div class="platform-icon windows">
+                    <i class="fab fa-windows"></i>
+                </div>
+                <h3 class="platform-name">Windows</h3>
+                <p class="platform-version">Coming Soon</p>
+                <p class="platform-size">~ 120 MB</p>
+                <button class="download-btn disabled" disabled>
+                    <i class="fas fa-clock"></i>
+                    Coming Soon
+                </button>
+                <div class="platform-badge coming-soon-badge">
+                    <i class="fas fa-hourglass-half"></i> In Development
+                </div>
+            </div>
+
+            <!-- macOS -->
+            <div class="platform-card coming-soon" data-platform="macos">
+                <div class="platform-icon macos">
+                    <i class="fab fa-apple"></i>
+                </div>
+                <h3 class="platform-name">macOS</h3>
+                <p class="platform-version">Coming Soon</p>
+                <p class="platform-size">~ 100 MB</p>
+                <button class="download-btn disabled" disabled>
+                    <i class="fas fa-clock"></i>
+                    Coming Soon
+                </button>
+                <div class="platform-badge coming-soon-badge">
+                    <i class="fas fa-hourglass-half"></i> In Development
+                </div>
+            </div>
+
+            <!-- Linux -->
+            <div class="platform-card coming-soon" data-platform="linux">
+                <div class="platform-icon linux">
+                    <i class="fab fa-linux"></i>
+                </div>
+                <h3 class="platform-name">Linux</h3>
+                <p class="platform-version">Coming Soon</p>
+                <p class="platform-size">~ 90 MB</p>
+                <button class="download-btn disabled" disabled>
+                    <i class="fas fa-clock"></i>
+                    Coming Soon
+                </button>
+                <div class="platform-badge coming-soon-badge">
+                    <i class="fas fa-hourglass-half"></i> In Development
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning Notice -->
+        <div class="notice-box warning">
+            <i class="fas fa-info-circle"></i>
+            <div class="notice-content">
+                <strong>Note:</strong> Currently, only the Android version is available. iOS, Windows, macOS, and Linux versions are under active development and will be released soon.
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="features-section">
+        <h2 class="section-title">Key Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-atom"></i>
+                </div>
+                <h3 class="feature-title">3D Atomic Models</h3>
+                <p class="feature-description">Explore 118 elements with interactive 3D visualizations and electron configurations</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <h3 class="feature-title">Molecular Structures</h3>
+                <p class="feature-description">View 100+ molecules with detailed 3D structures and chemical properties</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <h3 class="feature-title">Chemical Reactions</h3>
+                <p class="feature-description">Witness chemical reactions with stunning 3D animations and balanced equations</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="feature-title">Community Forum</h3>
+                <p class="feature-description">Connect with chemistry enthusiasts and share knowledge</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="feature-title">Reactivity Charts</h3>
+                <p class="feature-description">Understand element reactivity patterns with interactive data visualizations</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3 class="feature-title">Offline Access</h3>
+                <p class="feature-description">Access all features without internet connection</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Requirements -->
+    <div class="requirements-section">
+        <h2 class="section-title">System Requirements</h2>
+        <div class="requirements-grid">
+            <div class="requirement-card">
+                <h3><i class="fab fa-android"></i> Android</h3>
+                <ul>
+                    <li>Android 7.0 or higher</li>
+                    <li>2 GB RAM minimum</li>
+                    <li>100 MB free storage</li>
+                    <li>OpenGL ES 3.0 support</li>
+                </ul>
+            </div>
+
+            <div class="requirement-card">
+                <h3><i class="fab fa-apple"></i> iOS (Coming Soon)</h3>
+                <ul>
+                    <li>iOS 13.0 or higher</li>
+                    <li>iPhone 7 or newer</li>
+                    <li>150 MB free storage</li>
+                    <li>Metal graphics support</li>
+                </ul>
+            </div>
+
+            <div class="requirement-card">
+                <h3><i class="fas fa-desktop"></i> Desktop (Coming Soon)</h3>
+                <ul>
+                    <li>Windows 10/11, macOS 10.15+, Linux</li>
+                    <li>4 GB RAM minimum</li>
+                    <li>200 MB free storage</li>
+                    <li>OpenGL 3.3+ support</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="faq-section">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <i class="fas fa-question-circle"></i>
+                    Is the app free?
+                </div>
+                <div class="faq-answer">
+                    Yes, Periodic Table 3D is completely free with no ads or in-app purchases.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <i class="fas fa-question-circle"></i>
+                    When will iOS version be released?
+                </div>
+                <div class="faq-answer">
+                    We're actively developing the iOS version. Expected release in 2025.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <i class="fas fa-question-circle"></i>
+                    Does it work offline?
+                </div>
+                <div class="faq-answer">
+                    Yes, all core features work offline. Internet is only needed for community features.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <i class="fas fa-question-circle"></i>
+                    How do I install on Android?
+                </div>
+                <div class="faq-answer">
+                    Download the APK, enable "Install from Unknown Sources" in settings, then open the APK file to install.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3><i class="fas fa-atom"></i> Periodic Table 3D</h3>
+                <p>Making chemistry accessible and fun for everyone</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="https://periodic-table-3d.netlify.app" target="_blank">Web App</a>
+                <a href="privacy-policy.html">Privacy Policy</a>
+                <a href="terms-of-service.html">Terms of Service</a>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <a href="mailto:support@periodictable3d.com">support@periodictable3d.com</a>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Periodic Table 3D. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Download Progress Modal -->
+    <div class="modal" id="downloadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-download"></i> Downloading...</h3>
+                <button class="modal-close" onclick="closeDownloadModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <p class="progress-text" id="progressText">Preparing download...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/download.js"></script>
+</body>
+</html>
