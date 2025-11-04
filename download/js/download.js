@@ -1,9 +1,9 @@
 /**
- * Download Page Script - Real-Time Firebase Integration
- * All data is fetched from Firebase Realtime Database
+ * Download Page Script - 100% Real-Time
+ * No fake data, all numbers from Firebase RTDB
  */
 
-// Firebase Configuration
+// Firebase Configuration (same as main app)
 const firebaseConfig = {
     apiKey: "AIzaSyBW6jjj-SYrPBBoP7HtDFZrh1IfchI8XMg",
     authDomain: "periodic-table-4f7de.firebaseapp.com",
@@ -21,43 +21,93 @@ if (!firebase.apps.length) {
 
 const db = firebase.database();
 
+// APK Path from assets folder
+const APK_PATH = 'assets/periodic-table-3d.apk';
+
 /**
- * Load ALL statistics from Firebase in real-time
+ * Load ALL real-time statistics from Firebase
  */
-async function loadAllStats() {
+async function loadRealTimeStats() {
     try {
-        // Load total downloads
+        // Listen to downloads count (real-time)
         db.ref('downloads/total').on('value', (snapshot) => {
             const total = snapshot.val() || 0;
-            document.getElementById('totalDownloads').textContent = formatNumber(total);
+            animateCounter('totalDownloads', total);
         });
-
-        // Load average rating
-        db.ref('ratings').once('value', (snapshot) => {
-            const ratings = snapshot.val();
-            if (ratings) {
-                const ratingArray = Object.values(ratings);
-                const avgRating = ratingArray.reduce((a, b) => a + b, 0) / ratingArray.length;
-                document.getElementById('avgRating').textContent = avgRating.toFixed(1);
-            } else {
-                // No ratings yet
-                document.getElementById('avgRating').textContent = '—';
-            }
+        
+        // Listen to average rating (real-time)
+        db.ref('ratings/average').on('value', (snapshot) => {
+            const avg = snapshot.val() || 0;
+            const ratingEl = document.getElementById('averageRating');
+            ratingEl.textContent = avg > 0 ? avg.toFixed(1) : 'N/A';
         });
-
-        // Load total users (real user count from Firebase Authentication or custom counter)
-        db.ref('users/count').on('value', (snapshot) => {
-            const userCount = snapshot.val() || 0;
-            document.getElementById('totalUsers').textContent = formatNumber(userCount);
+        
+        // Listen to active users count (real-time)
+        db.ref('users/total').on('value', (snapshot) => {
+            const users = snapshot.val() || 0;
+            const usersEl = document.getElementById('activeUsers');
+            usersEl.textContent = formatNumber(users);
         });
-
+        
     } catch (error) {
         console.error('Error loading stats:', error);
         // Show error state
-        document.getElementById('totalDownloads').textContent = '—';
-        document.getElementById('avgRating').textContent = '—';
-        document.getElementById('totalUsers').textContent = '—';
+        document.getElementById('totalDownloads').textContent = 'Error';
+        document.getElementById('averageRating').textContent = 'Error';
+        document.getElementById('activeUsers').textContent = 'Error';
     }
+}
+
+/**
+ * Animate counter with smooth transition
+ */
+function animateCounter(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    const currentText = element.textContent.trim();
+    
+    // Skip if loading spinner is still there
+    if (currentText === '' || element.querySelector('.loading-spinner')) {
+        element.textContent = formatNumber(targetValue);
+        return;
+    }
+    
+    // Parse current value
+    let currentValue = 0;
+    if (currentText !== 'N/A' && currentText !== 'Error') {
+        currentValue = parseFormattedNumber(currentText);
+    }
+    
+    // Animate from current to target
+    const duration = 1000;
+    const steps = 30;
+    const increment = (targetValue - currentValue) / steps;
+    let step = 0;
+    
+    const timer = setInterval(() => {
+        step++;
+        currentValue += increment;
+        
+        if (step >= steps) {
+            element.textContent = formatNumber(targetValue);
+            clearInterval(timer);
+        } else {
+            element.textContent = formatNumber(Math.floor(currentValue));
+        }
+    }, duration / steps);
+}
+
+/**
+ * Parse formatted number (1.5K, 2.3M) back to number
+ */
+function parseFormattedNumber(str) {
+    str = str.toString().toUpperCase();
+    if (str.endsWith('K')) {
+        return parseFloat(str) * 1000;
+    }
+    if (str.endsWith('M')) {
+        return parseFloat(str) * 1000000;
+    }
+    return parseFloat(str) || 0;
 }
 
 /**
@@ -78,23 +128,14 @@ function formatNumber(num) {
  */
 async function downloadApp(platform) {
     if (platform !== 'android') {
-        alert('This platform is coming soon!');
+        showNotification('This platform is coming soon!', 'info');
         return;
     }
     
-    // Get APK URL from Firebase
+    // Show download modal
+    showDownloadModal();
+    
     try {
-        const apkSnapshot = await db.ref('app/periodic-table-3d_v1.0.0.apk').once('value');
-        const APK_URL = apkSnapshot.val();
-        
-        if (!APK_URL) {
-            alert('APK not available yet. Please check back later.');
-            return;
-        }
-        
-        // Show download modal
-        showDownloadModal();
-        
         // Increment download count in Firebase
         await incrementDownloadCount(platform);
         
@@ -103,7 +144,13 @@ async function downloadApp(platform) {
         
         // Start actual download after 2 seconds
         setTimeout(() => {
-            window.location.href = APK_URL;
+            // Create download link
+            const link = document.createElement('a');
+            link.href = APK_PATH;
+            link.download = 'periodic-table-3d.apk';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
             
             // Close modal after download starts
             setTimeout(() => {
@@ -115,39 +162,33 @@ async function downloadApp(platform) {
     } catch (error) {
         console.error('Download error:', error);
         closeDownloadModal();
-        alert('Download failed. Please try again.');
+        showNotification('Download failed. Please try again.', 'error');
     }
 }
 
 /**
- * Increment download count in Firebase RTDB
+ * Increment download count in Firebase RTDB (Real-time)
  */
 async function incrementDownloadCount(platform) {
-    const updates = {};
-    
-    // Increment total downloads
-    const totalRef = db.ref('downloads/total');
-    const totalSnapshot = await totalRef.once('value');
-    const currentTotal = totalSnapshot.val() || 0;
-    updates['downloads/total'] = currentTotal + 1;
-    
-    // Increment platform-specific downloads
-    const platformRef = db.ref(`downloads/platforms/${platform}`);
-    const platformSnapshot = await platformRef.once('value');
-    const currentPlatform = platformSnapshot.val() || 0;
-    updates[`downloads/platforms/${platform}`] = currentPlatform + 1;
-    
-    // Add download log with timestamp
     const timestamp = Date.now();
-    updates[`downloads/logs/${timestamp}`] = {
+    
+    // Use transaction for atomic increment
+    await db.ref('downloads/total').transaction((current) => {
+        return (current || 0) + 1;
+    });
+    
+    // Increment platform-specific count
+    await db.ref(`downloads/platforms/${platform}`).transaction((current) => {
+        return (current || 0) + 1;
+    });
+    
+    // Add download log
+    await db.ref(`downloads/logs/${timestamp}`).set({
         platform: platform,
         timestamp: timestamp,
-        date: new Date().toISOString(),
-        userAgent: navigator.userAgent
-    };
-    
-    // Apply all updates
-    await db.ref().update(updates);
+        userAgent: navigator.userAgent,
+        country: 'Unknown' // You can add geo-location later
+    });
     
     console.log('✅ Download tracked successfully');
 }
@@ -200,7 +241,6 @@ function simulateDownload() {
  * Show thank you message
  */
 function showThankYouMessage() {
-    // Create toast notification
     const toast = document.createElement('div');
     toast.className = 'thank-you-toast';
     toast.innerHTML = `
@@ -283,7 +323,40 @@ function showThankYouMessage() {
 }
 
 /**
- * Detect user's platform
+ * Show notification
+ */
+function showNotification(message, type = 'info') {
+    const colors = {
+        success: 'var(--accent-green)',
+        error: 'var(--accent-red)',
+        info: 'var(--accent-blue)'
+    };
+    
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${colors[type]};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        animation: slideInRight 0.5s ease;
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.5s ease';
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
+}
+
+/**
+ * Detect user's platform and highlight
  */
 function detectPlatform() {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -333,31 +406,11 @@ function highlightPlatform(platform) {
 }
 
 /**
- * Track page view
- */
-async function trackPageView() {
-    try {
-        const timestamp = Date.now();
-        await db.ref(`analytics/pageviews/${timestamp}`).set({
-            timestamp: timestamp,
-            date: new Date().toISOString(),
-            page: 'download',
-            userAgent: navigator.userAgent
-        });
-    } catch (error) {
-        console.error('Error tracking page view:', error);
-    }
-}
-
-/**
  * Initialize page
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // Load all real-time statistics
-    loadAllStats();
-    
-    // Track page view
-    trackPageView();
+    // Load real-time statistics
+    loadRealTimeStats();
     
     // Detect and highlight user's platform
     detectPlatform();
@@ -394,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    console.log('✅ Download page initialized with real-time data');
+    console.log('✅ Download page initialized with real-time stats');
 });
 
 // Make functions global
