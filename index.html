@@ -46,64 +46,215 @@
         </div>
     </div>
 
-    <!-- Auth Screen -->
-    <div id="auth-screen" style="display: none;">
-        <div class="auth-container">
-            <div class="auth-card">
-                <div class="auth-tabs">
-                    <button id="show-signup" class="auth-tab-btn active">Sign Up</button>
-                    <button id="show-login" class="auth-tab-btn">Log In</button>
+    
+<!-- Updated Auth Screen with Email Verification -->
+<div id="auth-screen" style="display: none;">
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Logo/Icon -->
+            <div class="auth-logo">
+                <i class="fas fa-atom"></i>
+                <h2>Periodic Table 3D</h2>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="auth-tabs">
+                <button id="show-signup" class="auth-tab-btn active">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </button>
+                <button id="show-login" class="auth-tab-btn">
+                    <i class="fas fa-sign-in-alt"></i> Log In
+                </button>
+            </div>
+            
+            <!-- Sign Up Form -->
+            <form id="signup-form" class="auth-form">
+                <h3 class="auth-subtitle">Create Your Account</h3>
+                
+                <div class="input-group">
+                    <i class="fas fa-user input-icon"></i>
+                    <input id="signup-name" 
+                           type="text" 
+                           placeholder="Full Name" 
+                           required 
+                           class="auth-input"
+                           minlength="3">
                 </div>
                 
-                <form id="signup-form" class="auth-form">
-                    <h2 class="auth-title">Create Account</h2>
-                    <input id="signup-email" type="email" placeholder="Email" required class="auth-input" autocomplete="email">
-                    <input id="signup-password" type="password" placeholder="Password" required class="auth-input" autocomplete="new-password">
-                    <button type="submit" class="auth-submit-btn">Sign Up</button>
-                    <div id="signup-error" class="auth-error"></div>
-                    <div class="auth-footer">
-                        Already have an account?
-                        <span id="goto-login" class="auth-link">Log In</span>
-                    </div>
-                </form>
-                
-                <form id="login-form" class="auth-form" style="display: none;">
-                    <h2 class="auth-title">Welcome Back</h2>
-                    <input id="login-email" type="email" placeholder="Email" required class="auth-input" autocomplete="email">
-                    <input id="login-password" type="password" placeholder="Password" required class="auth-input" autocomplete="current-password">
-                    <button type="submit" class="auth-submit-btn">Log In</button>
-                    <div id="login-error" class="auth-error"></div>
-                    <div class="auth-footer">
-                        <span>Don't have an account? <span id="goto-signup" class="auth-link">Sign Up</span></span>
-                        <span id="goto-reset" class="auth-link">Forgot password?</span>
-                    </div>
-                </form>
-                
-                <form id="reset-form" class="auth-form" style="display: none;">
-                    <h2 class="auth-title">Reset Password</h2>
-                    <input id="reset-email" type="email" placeholder="Email" required class="auth-input" autocomplete="email">
-                    <button type="submit" class="auth-submit-btn">Send Reset Link</button>
-                    <div id="reset-error" class="auth-error"></div>
-                    <div id="reset-success" class="auth-success"></div>
-                    <div class="auth-footer">
-                        <span id="goto-login2" class="auth-link">Back to login</span>
-                    </div>
-                </form>
-                
-                <div id="verify-email-notice" class="verify-notice" style="display: none;">
-                    Please verify your email address.
-                    <button id="resend-verification" class="resend-btn">Resend Verification Email</button>
+                <div class="input-group">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input id="signup-email" 
+                           type="email" 
+                           placeholder="Email Address" 
+                           required 
+                           class="auth-input"
+                           autocomplete="email">
                 </div>
                 
-                <div class="google-signin-wrapper">
-                    <button id="signin-btn" class="google-signin-btn" onclick="signInWithGoogle()">
-                        <i class="fab fa-google"></i> Sign in with Google
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input id="signup-password" 
+                           type="password" 
+                           placeholder="Password (min 6 characters)" 
+                           required 
+                           class="auth-input"
+                           autocomplete="new-password"
+                           minlength="6">
+                    <i class="fas fa-eye toggle-password" id="toggle-signup-password"></i>
+                </div>
+                
+                <div class="password-strength" id="password-strength">
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="strength-fill"></div>
+                    </div>
+                    <span class="strength-text" id="strength-text">Password strength</span>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="accept-terms" required>
+                    <label for="accept-terms">
+                        I agree to the <a href="terms.html" target="_blank">Terms & Conditions</a>
+                    </label>
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">
+                    <i class="fas fa-rocket"></i> Create Account
+                </button>
+                
+                <div id="signup-error" class="auth-error"></div>
+                
+                <div class="auth-footer">
+                    Already have an account?
+                    <span id="goto-login" class="auth-link">Log In</span>
+                </div>
+            </form>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form" style="display: none;">
+                <h3 class="auth-subtitle">Welcome Back!</h3>
+                
+                <div class="input-group">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input id="login-email" 
+                           type="email" 
+                           placeholder="Email Address" 
+                           required 
+                           class="auth-input"
+                           autocomplete="email">
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input id="login-password" 
+                           type="password" 
+                           placeholder="Password" 
+                           required 
+                           class="auth-input"
+                           autocomplete="current-password">
+                    <i class="fas fa-eye toggle-password" id="toggle-login-password"></i>
+                </div>
+                
+                <div class="remember-forgot">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="remember-me">
+                        <label for="remember-me">Remember me</label>
+                    </div>
+                    <span id="goto-reset" class="auth-link">Forgot password?</span>
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">
+                    <i class="fas fa-sign-in-alt"></i> Log In
+                </button>
+                
+                <div id="login-error" class="auth-error"></div>
+                
+                <div class="auth-footer">
+                    Don't have an account?
+                    <span id="goto-signup" class="auth-link">Sign Up</span>
+                </div>
+            </form>
+            
+            <!-- Reset Password Form -->
+            <form id="reset-form" class="auth-form" style="display: none;">
+                <h3 class="auth-subtitle">Reset Password</h3>
+                <p class="auth-description">Enter your email address and we'll send you a link to reset your password.</p>
+                
+                <div class="input-group">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input id="reset-email" 
+                           type="email" 
+                           placeholder="Email Address" 
+                           required 
+                           class="auth-input"
+                           autocomplete="email">
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">
+                    <i class="fas fa-paper-plane"></i> Send Reset Link
+                </button>
+                
+                <div id="reset-error" class="auth-error"></div>
+                <div id="reset-success" class="auth-success"></div>
+                
+                <div class="auth-footer">
+                    <span id="goto-login2" class="auth-link">
+                        <i class="fas fa-arrow-left"></i> Back to Login
+                    </span>
+                </div>
+            </form>
+            
+            <!-- Email Verification Notice -->
+            <div id="verify-email-notice" class="verify-notice" style="display: none;">
+                <div class="verify-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <h3>Verify Your Email</h3>
+                <p>We've sent a verification email to <strong id="verify-email-address"></strong></p>
+                <p class="verify-instruction">Please check your inbox and click the verification link to activate your account.</p>
+                
+                <div class="verify-actions">
+                    <button id="resend-verification" class="resend-btn">
+                        <i class="fas fa-redo"></i> Resend Email
+                    </button>
+                    <button id="check-verification" class="check-btn">
+                        <i class="fas fa-check-circle"></i> I've Verified
                     </button>
                 </div>
+                
+                <div class="verify-footer">
+                    <span id="goto-login3" class="auth-link">
+                        <i class="fas fa-sign-in-alt"></i> Back to Login
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Divider -->
+            <div class="auth-divider">
+                <span>OR</span>
+            </div>
+            
+            <!-- Google Sign In -->
+            <div class="google-signin-wrapper">
+                <button id="signin-btn" class="google-signin-btn" type="button">
+                    <svg width="20" height="20" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    Continue with Google
+                </button>
             </div>
         </div>
+        
+        <!-- Security Badge -->
+        <div class="security-badge">
+            <i class="fas fa-shield-alt"></i>
+            Your data is encrypted and secure
+        </div>
     </div>
-
+</div>
+    
     <!-- Main App Container -->
     <div class="container-fluid px-2 px-md-4" id="main-app" style="display: none;">
         <!-- Header -->
@@ -613,5 +764,6 @@
     </script>
 </body>
 </html>
+
 
 
