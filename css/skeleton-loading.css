@@ -1,0 +1,188 @@
+/**
+ * YouTube-Style Skeleton Loading Effect
+ * File: css/skeleton-loading.css (NEW FILE)
+ */
+
+/* Skeleton Animation */
+@keyframes skeleton-loading {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--bg-tertiary) 0%,
+        rgba(88, 166, 255, 0.1) 20%,
+        var(--bg-tertiary) 40%,
+        var(--bg-tertiary) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    border-radius: 8px;
+}
+
+/* Skeleton for Molecule Items */
+.molecule-item-skeleton {
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+    border: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 84px;
+}
+
+.molecule-badge-skeleton {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.molecule-meta-skeleton {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.molecule-name-skeleton {
+    height: 18px;
+    width: 70%;
+    border-radius: 4px;
+}
+
+.molecule-formula-skeleton {
+    height: 14px;
+    width: 40%;
+    border-radius: 4px;
+}
+
+/* Skeleton for Forum Posts */
+.forum-post-skeleton {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.post-header-skeleton {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.post-author-pic-skeleton {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.post-author-info-skeleton {
+    flex: 1;
+}
+
+.post-author-name-skeleton {
+    height: 16px;
+    width: 120px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.post-meta-skeleton {
+    height: 12px;
+    width: 80px;
+    border-radius: 4px;
+}
+
+.post-title-skeleton {
+    height: 24px;
+    width: 80%;
+    margin-bottom: 12px;
+    border-radius: 4px;
+}
+
+.post-description-skeleton {
+    height: 14px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.post-description-skeleton:last-of-type {
+    width: 60%;
+}
+
+.post-actions-skeleton {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-primary);
+}
+
+.post-action-btn-skeleton {
+    width: 80px;
+    height: 36px;
+    border-radius: 8px;
+}
+
+/* Grid Layout for Molecules */
+.molecules-skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+/* List Layout for Forum */
+.forum-skeleton-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Fade in animation when real content loads */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.content-loaded {
+    animation: fadeIn 0.4s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .molecules-skeleton-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+    
+    .molecule-item-skeleton {
+        height: 76px;
+        padding: 0.75rem;
+    }
+    
+    .molecule-badge-skeleton {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+@media (max-width: 480px) {
+    .molecules-skeleton-grid {
+        grid-template-columns: 1fr;
+    }
+}
