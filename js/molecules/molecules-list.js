@@ -1,17 +1,50 @@
 /**
- * Molecules List Module - MOBILE OPTIMIZED
- * Virtual scrolling + batch rendering for smooth performance
+ * Molecules List Module with YouTube-Style Skeleton Loading
+ * File: js/molecules/molecules-list.js (REPLACE FULL FILE)
  */
 
 let virtualScrollContainer = null;
 let visibleMolecules = [];
 let allFilteredMolecules = [];
-const ITEMS_PER_BATCH = 20; // Load 20 at a time
+const ITEMS_PER_BATCH = 20;
 let currentBatch = 0;
 let isLoadingMore = false;
 
 /**
- * Renders the molecules list with virtual scrolling
+ * Create skeleton loading items (YouTube style)
+ */
+function createSkeletonItems(count = 12) {
+    const fragment = document.createDocumentFragment();
+    
+    for (let i = 0; i < count; i++) {
+        const skeleton = document.createElement('div');
+        skeleton.className = 'molecule-item-skeleton';
+        skeleton.innerHTML = `
+            <div class="molecule-badge-skeleton skeleton"></div>
+            <div class="molecule-meta-skeleton">
+                <div class="molecule-name-skeleton skeleton"></div>
+                <div class="molecule-formula-skeleton skeleton"></div>
+            </div>
+        `;
+        fragment.appendChild(skeleton);
+    }
+    
+    return fragment;
+}
+
+/**
+ * Show skeleton loading
+ */
+function showSkeletonLoading(container) {
+    container.innerHTML = '';
+    const skeletonGrid = document.createElement('div');
+    skeletonGrid.className = 'molecules-skeleton-grid';
+    skeletonGrid.appendChild(createSkeletonItems(12));
+    container.appendChild(skeletonGrid);
+}
+
+/**
+ * Renders the molecules list with skeleton loading
  */
 function renderMoleculesList(query = '') {
     const moleculesListEl = document.getElementById('moleculesList');
@@ -20,10 +53,21 @@ function renderMoleculesList(query = '') {
         return;
     }
     
-    console.log('ðŸ§ª Rendering molecules list (Virtual Scroll), query:', query);
+    console.log('🧪 Rendering molecules list with skeleton loading, query:', query);
     
-    // Clear previous content
-    moleculesListEl.innerHTML = '';
+    // Show skeleton while loading
+    showSkeletonLoading(moleculesListEl);
+    
+    // Simulate realistic loading delay (remove in production if data loads instantly)
+    setTimeout(() => {
+        loadAndRenderMolecules(query, moleculesListEl);
+    }, 600);
+}
+
+/**
+ * Load and render actual molecules
+ */
+function loadAndRenderMolecules(query, moleculesListEl) {
     currentBatch = 0;
     isLoadingMore = false;
     
@@ -64,6 +108,7 @@ function renderMoleculesList(query = '') {
     }
 
     // Create virtual scroll container
+    moleculesListEl.innerHTML = '';
     virtualScrollContainer = document.createElement('div');
     virtualScrollContainer.className = 'virtual-scroll-container';
     virtualScrollContainer.style.cssText = `
@@ -122,11 +167,11 @@ function loadMoreMolecules() {
 }
 
 /**
- * Create single molecule item (optimized)
+ * Create single molecule item with fade-in animation
  */
 function createMoleculeItem(molecule, index) {
     const div = document.createElement('div');
-    div.className = 'molecule-item';
+    div.className = 'molecule-item content-loaded';
     div.setAttribute('data-aos', 'fade-up');
     div.setAttribute('data-aos-delay', Math.min((index % ITEMS_PER_BATCH) * 30, 300));
     
@@ -191,3 +236,5 @@ function highlightMatch(text, query) {
     const regex = new RegExp(`(${query})`, 'gi');
     return text.replace(regex, '<mark style="background: var(--accent-blue); color: white; padding: 2px 4px; border-radius: 3px;">$1</mark>');
 }
+
+console.log('✅ Molecules list with skeleton loading initialized');
