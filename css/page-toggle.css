@@ -29,6 +29,8 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    position: relative;
+    text-decoration: none;
 }
 
 .toggle-btn:hover {
@@ -45,4 +47,114 @@
 
 .toggle-btn i {
     font-size: 1rem;
+}
+
+/* Download Button Styling */
+.toggle-btn.download-btn {
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    padding: 0.6rem 1rem;
+}
+
+.toggle-btn.download-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(124, 227, 139, 0.5);
+    color: white;
+}
+
+.toggle-btn.download-btn i {
+    font-size: 1.1rem;
+}
+
+/* Notification Bell Button */
+.toggle-btn.notification-bell-btn {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-primary);
+    padding: 0.6rem 1rem;
+}
+
+.toggle-btn.notification-bell-btn:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-primary);
+}
+
+.toggle-btn.notification-bell-btn i {
+    font-size: 1.2rem;
+}
+
+/* Notification Badge */
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--accent-red);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(255, 123, 114, 0.4);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.1);
+        opacity: 0.9;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .toggle-options {
+        gap: 0.4rem;
+        padding: 0.35rem;
+    }
+    
+    .toggle-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .toggle-btn i {
+        font-size: 0.9rem;
+    }
+    
+    .toggle-btn.download-btn,
+    .toggle-btn.notification-bell-btn {
+        padding: 0.5rem 0.7rem;
+    }
+    
+    .toggle-btn.download-btn i,
+    .toggle-btn.notification-bell-btn i {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .toggle-options {
+        gap: 0.3rem;
+        padding: 0.3rem;
+    }
+    
+    .toggle-btn {
+        padding: 0.45rem 0.7rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Show only icons on very small screens */
+    .toggle-btn span {
+        display: none;
+    }
+    
+    .toggle-btn i {
+        margin: 0;
+    }
 }
