@@ -1,7 +1,7 @@
 /**
  * ============================================
- * SECURE AUTHENTICATION HANDLER
- * Email Verification Required Before Account Creation
+ * SECURE AUTHENTICATION HANDLER - FIXED
+ * Email Verification with Auto-Refresh Detection
  * ============================================
  */
 
@@ -28,7 +28,7 @@ const timerCount = document.getElementById('timerCount');
 
 // Global Variables
 let currentAuthUser = null;
-let pendingCredentials = null;
+let verificationCheckInterval = null;
 let resendTimer = null;
 
 /**
@@ -106,7 +106,7 @@ passwordInput?.addEventListener('input', function() {
 });
 
 /**
- * SIGN UP - Step 1: Send Verification Email
+ * SIGN UP - Create Account & Send Verification
  */
 signupForm.addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -134,28 +134,43 @@ signupForm.addEventListener('submit', async function(e) {
     submitBtn.disabled = true;
     
     try {
-        // Store credentials temporarily (will create account after verification)
-        pendingCredentials = { email, password };
+        // Create account
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
         
-        // Send verification email using action code settings
-        const actionCodeSettings = {
-            url: window.location.href, // Return to same page after verification
-            handleCodeInApp: true
-        };
+        // Set display name
+        const username = email.split('@')[0];
+        await user.updateProfile({ displayName: username });
         
-        // Create temporary user to send verification
-        const tempUser = await auth.createUserWithEmailAndPassword(email, password);
+        // Save to database (emailVerified: false initially)
+        await db.ref('users/' + user.uid).set({
+            username: username,
+            email: email,
+            photoURL: '',
+            createdAt: Date.now(),
+            emailVerified: false
+        });
         
         // Send verification email
-        await tempUser.user.sendEmailVerification(actionCodeSettings);
+        await user.sendEmailVerification({
+            url: window.location.origin + window.location.pathname,
+            handleCodeInApp: false
+        });
         
-        // Delete temporary user (will recreate after verification)
-        await tempUser.user.delete();
+        // Store email for verification check
+        window.localStorage.setItem('verificationEmail', email);
+        window.localStorage.setItem('verificationPassword', password);
+        
+        // Sign out until verified
+        await auth.signOut();
         
         // Show verification notice
-        verifyEmailDisplay.textContent = email;
+        if (verifyEmailDisplay) {
+            verifyEmailDisplay.textContent = email;
+        }
         showAuthTab('verify');
         startResendTimer();
+        startVerificationCheck(email, password);
         
     } catch(err) {
         console.error('Signup error:', err);
@@ -174,6 +189,57 @@ signupForm.addEventListener('submit', async function(e) {
         submitBtn.disabled = false;
     }
 });
+
+/**
+ * START VERIFICATION CHECK
+ * Checks every 3 seconds if user verified email
+ */
+function startVerificationCheck(email, password) {
+    if (verificationCheckInterval) {
+        clearInterval(verificationCheckInterval);
+    }
+    
+    console.log('🔍 Starting verification check...');
+    
+    verificationCheckInterval = setInterval(async () => {
+        try {
+            // Try to sign in
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            
+            // Reload user data
+            await userCredential.user.reload();
+            
+            // Check if verified
+            if (userCredential.user.emailVerified) {
+                console.log('✅ Email verified!');
+                clearInterval(verificationCheckInterval);
+                
+                // Update database
+                await db.ref('users/' + userCredential.user.uid).update({
+                    emailVerified: true
+                });
+                
+                // Clear stored credentials
+                window.localStorage.removeItem('verificationEmail');
+                window.localStorage.removeItem('verificationPassword');
+                
+                // Show success screen
+                showAuthTab('success');
+                
+                // Auto-continue after 2 seconds
+                setTimeout(() => {
+                    // Auth state observer will handle navigation
+                }, 2000);
+            } else {
+                // Not verified yet, sign out and keep checking
+                await auth.signOut();
+            }
+        } catch (err) {
+            console.log('Verification check error:', err.code);
+            // Continue checking
+        }
+    }, 3000); // Check every 3 seconds
+}
 
 /**
  * LOGIN - With Email Verification Check
@@ -199,12 +265,23 @@ loginForm.addEventListener('submit', async function(e) {
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         
+        // Reload user to get latest verification status
+        await userCredential.user.reload();
+        
         // Check if email is verified
         if (!userCredential.user.emailVerified) {
             errorDiv.textContent = 'Please verify your email first.';
-            verifyEmailDisplay.textContent = email;
-            pendingCredentials = { email, password };
+            if (verifyEmailDisplay) {
+                verifyEmailDisplay.textContent = email;
+            }
+            
+            // Store credentials
+            window.localStorage.setItem('verificationEmail', email);
+            window.localStorage.setItem('verificationPassword', password);
+            
             showAuthTab('verify');
+            startResendTimer();
+            startVerificationCheck(email, password);
             await auth.signOut();
             return;
         }
@@ -282,29 +359,34 @@ resetForm.addEventListener('submit', async function(e) {
  * RESEND VERIFICATION EMAIL
  */
 resendVerificationBtn?.addEventListener('click', async function() {
-    if (!pendingCredentials) {
+    const email = window.localStorage.getItem('verificationEmail');
+    const password = window.localStorage.getItem('verificationPassword');
+    
+    if (!email || !password) {
         alert('Session expired. Please sign up again.');
         showAuthTab('signup');
         return;
     }
     
-    const { email, password } = pendingCredentials;
-    
     this.disabled = true;
     this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Sending...';
     
     try {
-        // Create temporary user again
-        const tempUser = await auth.createUserWithEmailAndPassword(email, password);
+        // Sign in temporarily
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
         
         // Send verification
-        await tempUser.user.sendEmailVerification();
+        await userCredential.user.sendEmailVerification();
         
-        // Delete temporary user
-        await tempUser.user.delete();
+        // Sign out
+        await auth.signOut();
         
         this.innerHTML = '<i class="fas fa-check"></i> Sent!';
         startResendTimer();
+        
+        setTimeout(() => {
+            this.innerHTML = '<i class="fas fa-redo"></i> Resend Email';
+        }, 2000);
         
     } catch(err) {
         console.error('Resend error:', err);
@@ -321,69 +403,33 @@ resendVerificationBtn?.addEventListener('click', async function() {
  * CHANGE EMAIL BUTTON
  */
 changeEmailBtn?.addEventListener('click', function() {
-    pendingCredentials = null;
+    // Clear stored credentials
+    window.localStorage.removeItem('verificationEmail');
+    window.localStorage.removeItem('verificationPassword');
+    
+    // Stop verification check
+    if (verificationCheckInterval) {
+        clearInterval(verificationCheckInterval);
+    }
+    
     showAuthTab('signup');
 });
 
 /**
- * CONTINUE TO APP BUTTON (After Verification)
+ * CONTINUE TO APP BUTTON (After Verification Success)
  */
 continueToAppBtn?.addEventListener('click', async function() {
-    if (!pendingCredentials) {
-        showAuthTab('login');
-        return;
-    }
-    
-    const { email, password } = pendingCredentials;
-    
-    this.disabled = true;
-    this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Loading...';
-    
-    try {
-        // Create the actual account now
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        
-        // Set display name
-        const username = email.split('@')[0];
-        await userCredential.user.updateProfile({ displayName: username });
-        
-        // Save to database
-        await db.ref('users/' + userCredential.user.uid).set({
-            username: username,
-            email: email,
-            photoURL: userCredential.user.photoURL || '',
-            createdAt: Date.now(),
-            emailVerified: true
-        });
-        
-        // Clear pending credentials
-        pendingCredentials = null;
-        
-        // Auth state observer will handle navigation to app
-        
-    } catch(err) {
-        console.error('Account creation error:', err);
-        
-        if (err.code === 'auth/email-already-in-use') {
-            // Email already exists, just log in
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-            } catch(loginErr) {
-                alert('Error logging in. Please try again.');
-                showAuthTab('login');
-            }
-        } else {
-            alert('Error creating account. Please try again.');
-            this.disabled = false;
-            this.innerHTML = '<i class="fas fa-arrow-right"></i> Continue to Chemistry Lab';
-        }
-    }
+    // Auth state observer will handle navigation
+    // Just close the success screen
+    verificationSuccess.style.display = 'none';
 });
 
 /**
  * RESEND TIMER (60 seconds cooldown)
  */
 function startResendTimer() {
+    if (!verifyTimer || !timerCount || !resendVerificationBtn) return;
+    
     let seconds = 60;
     resendVerificationBtn.disabled = true;
     verifyTimer.style.display = 'block';
@@ -437,6 +483,11 @@ async function signInWithGoogle() {
  * SIGN OUT
  */
 function signOut() {
+    // Stop verification check
+    if (verificationCheckInterval) {
+        clearInterval(verificationCheckInterval);
+    }
+    
     auth.signOut().then(() => {
         console.log('User signed out');
         currentAuthUser = null;
@@ -449,25 +500,6 @@ function signOut() {
 }
 
 /**
- * CHECK IF EMAIL VERIFICATION LINK WAS CLICKED
- */
-function checkEmailVerificationLink() {
-    // Check if user came from email verification link
-    if (auth.isSignInWithEmailLink(window.location.href)) {
-        const email = window.localStorage.getItem('emailForSignIn');
-        
-        if (email) {
-            // Show success screen
-            showAuthTab('success');
-            
-            // Clean up
-            window.localStorage.removeItem('emailForSignIn');
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    }
-}
-
-/**
  * AUTH STATE OBSERVER
  * Handles user login/logout state changes
  */
@@ -475,12 +507,29 @@ auth.onAuthStateChanged(async user => {
     console.log('Auth state changed:', user ? user.email : 'No user');
     
     if (user) {
+        // Reload user to get latest data
+        await user.reload();
+        
         // Check email verification for password users
         if (user.providerData[0]?.providerId === 'password' && !user.emailVerified) {
-            console.log('Email not verified, signing out');
+            console.log('Email not verified, waiting...');
             await auth.signOut();
-            verifyEmailDisplay.textContent = user.email;
-            showAuthTab('verify');
+            
+            // Check if we have stored credentials
+            const storedEmail = window.localStorage.getItem('verificationEmail');
+            if (storedEmail) {
+                if (verifyEmailDisplay) {
+                    verifyEmailDisplay.textContent = storedEmail;
+                }
+                showAuthTab('verify');
+                
+                const storedPassword = window.localStorage.getItem('verificationPassword');
+                if (storedPassword) {
+                    startVerificationCheck(storedEmail, storedPassword);
+                }
+            } else {
+                showAuthTab('login');
+            }
             return;
         }
         
@@ -488,6 +537,15 @@ auth.onAuthStateChanged(async user => {
         currentAuthUser = user;
         if (typeof currentForumUser !== 'undefined') {
             currentForumUser = user;
+        }
+        
+        // Clear stored credentials
+        window.localStorage.removeItem('verificationEmail');
+        window.localStorage.removeItem('verificationPassword');
+        
+        // Stop verification check
+        if (verificationCheckInterval) {
+            clearInterval(verificationCheckInterval);
         }
         
         // Hide auth screen, show main app
@@ -507,7 +565,17 @@ auth.onAuthStateChanged(async user => {
         
         mainApp.style.display = 'none';
         authScreen.style.display = 'flex';
-        showAuthTab('signup');
+        
+        // Check if we should show verification screen
+        const storedEmail = window.localStorage.getItem('verificationEmail');
+        if (storedEmail) {
+            if (verifyEmailDisplay) {
+                verifyEmailDisplay.textContent = storedEmail;
+            }
+            showAuthTab('verify');
+        } else {
+            showAuthTab('signup');
+        }
     }
 });
 
@@ -582,11 +650,17 @@ function delay(ms) {
 }
 
 /**
- * INITIALIZE ON PAGE LOAD
+ * CHECK ON PAGE LOAD
  */
 window.addEventListener('load', () => {
-    // Check if user came from email verification link
-    checkEmailVerificationLink();
+    // Check if there's a stored verification email
+    const storedEmail = window.localStorage.getItem('verificationEmail');
+    const storedPassword = window.localStorage.getItem('verificationPassword');
+    
+    if (storedEmail && storedPassword) {
+        console.log('🔍 Found stored credentials, checking verification...');
+        startVerificationCheck(storedEmail, storedPassword);
+    }
     
     console.log('✅ Auth handler initialized');
 });
