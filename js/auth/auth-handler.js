@@ -1,7 +1,8 @@
 /**
  * ============================================
  * SECURE AUTHENTICATION HANDLER - FIXED
- * Email Verification with Auto-Refresh Detection
+ * ✅ Google Sign In: Uses displayName & photoURL
+ * ✅ Email Verification with Auto-Detection
  * ============================================
  */
 
@@ -138,7 +139,7 @@ signupForm.addEventListener('submit', async function(e) {
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const user = userCredential.user;
         
-        // Set display name
+        // Set display name (from email)
         const username = email.split('@')[0];
         await user.updateProfile({ displayName: username });
         
@@ -146,7 +147,7 @@ signupForm.addEventListener('submit', async function(e) {
         await db.ref('users/' + user.uid).set({
             username: username,
             email: email,
-            photoURL: '',
+            photoURL: '', // No photo for email signup
             createdAt: Date.now(),
             emailVerified: false
         });
@@ -451,30 +452,74 @@ function startResendTimer() {
 }
 
 /**
- * GOOGLE SIGN IN
+ * ✅ GOOGLE SIGN IN - FIXED
+ * Uses Google displayName as username
+ * Uses Google photoURL as profile picture
  */
 async function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     
     try {
         const result = await auth.signInWithPopup(provider);
+        const user = result.user;
         
-        // Save user data if new user
-        const userRef = db.ref('users/' + result.user.uid);
+        console.log('✅ Google Sign In:', user.displayName, user.photoURL);
+        
+        // Get user data
+        const googleUsername = user.displayName || user.email.split('@')[0] || 'User';
+        const googlePhotoURL = user.photoURL || '';
+        
+        // Update Firebase Auth Profile (ensure it's set)
+        await user.updateProfile({
+            displayName: googleUsername,
+            photoURL: googlePhotoURL
+        });
+        
+        // Save to database (check if exists first)
+        const userRef = db.ref('users/' + user.uid);
         const snapshot = await userRef.once('value');
         
+        const userData = {
+            username: googleUsername,
+            email: user.email,
+            photoURL: googlePhotoURL,
+            emailVerified: true
+        };
+        
         if (!snapshot.exists()) {
-            await userRef.set({
-                username: result.user.displayName || 'User',
-                email: result.user.email,
-                photoURL: result.user.photoURL || '',
-                createdAt: Date.now(),
-                emailVerified: true
-            });
+            // New user - create
+            userData.createdAt = Date.now();
+            await userRef.set(userData);
+            console.log('✅ New Google user created:', userData);
+        } else {
+            // Existing user - update (in case they changed profile pic/name)
+            await userRef.update(userData);
+            console.log('✅ Google user updated:', userData);
         }
+        
+        // Update global currentForumUser
+        if (typeof currentForumUser !== 'undefined') {
+            currentForumUser = {
+                uid: user.uid,
+                displayName: googleUsername,
+                photoURL: googlePhotoURL,
+                email: user.email
+            };
+        }
+        
+        console.log('✅ Google Sign In Complete');
         
     } catch(err) {
         console.error('Google sign in error:', err);
+        
+        if (err.code === 'auth/popup-closed-by-user') {
+            // User closed popup, no error message needed
+            return;
+        } else if (err.code === 'auth/cancelled-popup-request') {
+            // Multiple popups, ignore
+            return;
+        }
+        
         alert('Failed to sign in with Google. Please try again.');
     }
 }
@@ -510,7 +555,7 @@ auth.onAuthStateChanged(async user => {
         // Reload user to get latest data
         await user.reload();
         
-        // Check email verification for password users
+        // Check email verification for password users ONLY
         if (user.providerData[0]?.providerId === 'password' && !user.emailVerified) {
             console.log('Email not verified, waiting...');
             await auth.signOut();
@@ -535,8 +580,16 @@ auth.onAuthStateChanged(async user => {
         
         // User is authenticated and verified
         currentAuthUser = user;
+        
+        // ✅ CRITICAL: Set currentForumUser with proper data
         if (typeof currentForumUser !== 'undefined') {
-            currentForumUser = user;
+            currentForumUser = {
+                uid: user.uid,
+                displayName: user.displayName || user.email.split('@')[0] || 'User',
+                photoURL: user.photoURL || '',
+                email: user.email
+            };
+            console.log('✅ currentForumUser set:', currentForumUser);
         }
         
         // Clear stored credentials
