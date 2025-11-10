@@ -1,8 +1,8 @@
 /**
  * ============================================
- * SECURE AUTHENTICATION HANDLER - FIXED
- * ✅ Google Sign In: Uses displayName & photoURL
- * ✅ Email Verification with Auto-Detection
+ * SECURE AUTHENTICATION HANDLER - FINAL FIX
+ * ✅ Reads displayName & photoURL from DATABASE
+ * ✅ Google Profile Picture & Name work correctly
  * ============================================
  */
 
@@ -452,9 +452,8 @@ function startResendTimer() {
 }
 
 /**
- * ✅ GOOGLE SIGN IN - FIXED
- * Uses Google displayName as username
- * Uses Google photoURL as profile picture
+ * ✅ GOOGLE SIGN IN - PERFECT FIX
+ * Uses Google displayName & photoURL correctly
  */
 async function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -463,60 +462,53 @@ async function signInWithGoogle() {
         const result = await auth.signInWithPopup(provider);
         const user = result.user;
         
-        console.log('✅ Google Sign In:', user.displayName, user.photoURL);
+        console.log('✅ Google Sign In - Raw Data:');
+        console.log('  displayName:', user.displayName);
+        console.log('  photoURL:', user.photoURL);
+        console.log('  email:', user.email);
         
-        // Get user data
-        const googleUsername = user.displayName || user.email.split('@')[0] || 'User';
+        // Get ACTUAL Google data
+        const googleDisplayName = user.displayName || user.email.split('@')[0] || 'User';
         const googlePhotoURL = user.photoURL || '';
         
-        // Update Firebase Auth Profile (ensure it's set)
+        console.log('✅ Processed Data:');
+        console.log('  username:', googleDisplayName);
+        console.log('  photoURL:', googlePhotoURL);
+        
+        // Update Firebase Auth Profile
         await user.updateProfile({
-            displayName: googleUsername,
+            displayName: googleDisplayName,
             photoURL: googlePhotoURL
         });
         
-        // Save to database (check if exists first)
+        // Save to database
         const userRef = db.ref('users/' + user.uid);
         const snapshot = await userRef.once('value');
         
         const userData = {
-            username: googleUsername,
+            username: googleDisplayName, // ✅ GOOGLE DISPLAY NAME
             email: user.email,
-            photoURL: googlePhotoURL,
+            photoURL: googlePhotoURL, // ✅ GOOGLE PHOTO URL
             emailVerified: true
         };
         
         if (!snapshot.exists()) {
-            // New user - create
+            // New user
             userData.createdAt = Date.now();
             await userRef.set(userData);
             console.log('✅ New Google user created:', userData);
         } else {
-            // Existing user - update (in case they changed profile pic/name)
+            // Existing user - update
             await userRef.update(userData);
             console.log('✅ Google user updated:', userData);
         }
         
-        // Update global currentForumUser
-        if (typeof currentForumUser !== 'undefined') {
-            currentForumUser = {
-                uid: user.uid,
-                displayName: googleUsername,
-                photoURL: googlePhotoURL,
-                email: user.email
-            };
-        }
-        
-        console.log('✅ Google Sign In Complete');
+        console.log('✅ Google Sign In Complete!');
         
     } catch(err) {
         console.error('Google sign in error:', err);
         
-        if (err.code === 'auth/popup-closed-by-user') {
-            // User closed popup, no error message needed
-            return;
-        } else if (err.code === 'auth/cancelled-popup-request') {
-            // Multiple popups, ignore
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
             return;
         }
         
@@ -545,11 +537,11 @@ function signOut() {
 }
 
 /**
- * AUTH STATE OBSERVER
- * Handles user login/logout state changes
+ * ✅ AUTH STATE OBSERVER - CRITICAL FIX
+ * Reads displayName & photoURL from DATABASE (not Firebase Auth)
  */
 auth.onAuthStateChanged(async user => {
-    console.log('Auth state changed:', user ? user.email : 'No user');
+    console.log('🔐 Auth state changed:', user ? user.email : 'No user');
     
     if (user) {
         // Reload user to get latest data
@@ -557,10 +549,9 @@ auth.onAuthStateChanged(async user => {
         
         // Check email verification for password users ONLY
         if (user.providerData[0]?.providerId === 'password' && !user.emailVerified) {
-            console.log('Email not verified, waiting...');
+            console.log('⚠️ Email not verified, waiting...');
             await auth.signOut();
             
-            // Check if we have stored credentials
             const storedEmail = window.localStorage.getItem('verificationEmail');
             if (storedEmail) {
                 if (verifyEmailDisplay) {
@@ -578,18 +569,53 @@ auth.onAuthStateChanged(async user => {
             return;
         }
         
-        // User is authenticated and verified
-        currentAuthUser = user;
-        
-        // ✅ CRITICAL: Set currentForumUser with proper data
-        if (typeof currentForumUser !== 'undefined') {
-            currentForumUser = {
-                uid: user.uid,
-                displayName: user.displayName || user.email.split('@')[0] || 'User',
-                photoURL: user.photoURL || '',
-                email: user.email
-            };
-            console.log('✅ currentForumUser set:', currentForumUser);
+        // ✅ CRITICAL: Read from DATABASE, not Firebase Auth
+        try {
+            const userRef = db.ref('users/' + user.uid);
+            const snapshot = await userRef.once('value');
+            const userData = snapshot.val();
+            
+            console.log('📦 User data from database:', userData);
+            
+            if (userData) {
+                // ✅ Use DATABASE values (Google displayName & photoURL are here)
+                currentAuthUser = user;
+                
+                if (typeof currentForumUser !== 'undefined') {
+                    currentForumUser = {
+                        uid: user.uid,
+                        displayName: userData.username || user.displayName || user.email.split('@')[0],
+                        photoURL: userData.photoURL || user.photoURL || '',
+                        email: user.email
+                    };
+                    
+                    console.log('✅ currentForumUser set from DATABASE:', currentForumUser);
+                }
+            } else {
+                console.warn('⚠️ No database entry, using Firebase Auth data');
+                currentAuthUser = user;
+                
+                if (typeof currentForumUser !== 'undefined') {
+                    currentForumUser = {
+                        uid: user.uid,
+                        displayName: user.displayName || user.email.split('@')[0],
+                        photoURL: user.photoURL || '',
+                        email: user.email
+                    };
+                }
+            }
+        } catch (dbError) {
+            console.error('❌ Database read error:', dbError);
+            // Fallback to Firebase Auth
+            currentAuthUser = user;
+            if (typeof currentForumUser !== 'undefined') {
+                currentForumUser = {
+                    uid: user.uid,
+                    displayName: user.displayName || user.email.split('@')[0],
+                    photoURL: user.photoURL || '',
+                    email: user.email
+                };
+            }
         }
         
         // Clear stored credentials
@@ -606,7 +632,7 @@ auth.onAuthStateChanged(async user => {
         mainApp.style.display = 'block';
         
         // Initialize app modules
-        console.log('✅ User authenticated:', user.displayName || user.email);
+        console.log('✅ User authenticated:', currentForumUser?.displayName || user.email);
         await initializeApp();
         
     } else {
@@ -619,7 +645,6 @@ auth.onAuthStateChanged(async user => {
         mainApp.style.display = 'none';
         authScreen.style.display = 'flex';
         
-        // Check if we should show verification screen
         const storedEmail = window.localStorage.getItem('verificationEmail');
         if (storedEmail) {
             if (verifyEmailDisplay) {
@@ -634,13 +659,11 @@ auth.onAuthStateChanged(async user => {
 
 /**
  * INITIALIZE APP MODULES
- * Properly load all modules after authentication
  */
 async function initializeApp() {
     try {
         console.log('🚀 Initializing app modules...');
         
-        // 1. Initialize Periodic Table
         if (typeof initPeriodicTable === 'function') {
             console.log('📊 Loading periodic table...');
             initPeriodicTable();
@@ -648,7 +671,6 @@ async function initializeApp() {
         
         await delay(100);
         
-        // 2. Initialize Molecules
         if (typeof renderMoleculesList === 'function') {
             console.log('🧪 Loading molecules...');
             renderMoleculesList();
@@ -659,7 +681,6 @@ async function initializeApp() {
         
         await delay(100);
         
-        // 3. Initialize Reactions
         if (typeof initReactionsBuilder === 'function') {
             console.log('⚗️ Loading reactions...');
             initReactionsBuilder();
@@ -670,7 +691,6 @@ async function initializeApp() {
         
         await delay(100);
         
-        // 4. Initialize Forum
         if (typeof initForum === 'function') {
             console.log('💬 Loading forum...');
             initForum();
@@ -682,13 +702,12 @@ async function initializeApp() {
         
         await delay(100);
         
-        // 5. Initialize Page Toggle (LAST)
         if (typeof initPageToggle === 'function') {
             console.log('📄 Loading page toggle...');
             initPageToggle();
         }
         
-        console.log('✅ All modules loaded successfully!');
+        console.log('✅ All modules loaded!');
         
     } catch (error) {
         console.error('❌ Error initializing modules:', error);
@@ -706,7 +725,6 @@ function delay(ms) {
  * CHECK ON PAGE LOAD
  */
 window.addEventListener('load', () => {
-    // Check if there's a stored verification email
     const storedEmail = window.localStorage.getItem('verificationEmail');
     const storedPassword = window.localStorage.getItem('verificationPassword');
     
@@ -718,7 +736,7 @@ window.addEventListener('load', () => {
     console.log('✅ Auth handler initialized');
 });
 
-// Export functions to window
+// Export functions
 window.signInWithGoogle = signInWithGoogle;
 window.signOut = signOut;
 
