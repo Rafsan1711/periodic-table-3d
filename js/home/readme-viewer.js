@@ -3,7 +3,7 @@
  * Fetches and displays README.md in a modal
  */
 
-const GITHUB_README_URL = 'https://raw.githubusercontent.com/Rafsan1711/periodic-table-3d/main/README.md';
+const GITHUB_README_URL = 'https://raw.githubusercontent.com/Rafsan1711/periodic-table-3d/refs/heads/module/README.md?token=GHSAT0AAAAAADKXNTA7X3UZXSIOLDOPWMUG2ITLCTQ';
 
 const modal = document.getElementById('readme-modal');
 const modalOverlay = document.getElementById('modal-overlay');
