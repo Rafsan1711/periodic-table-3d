@@ -1,8 +1,8 @@
 /**
  * ============================================
- * SECURE AUTHENTICATION HANDLER - FINAL FIX
+ * SECURE AUTHENTICATION HANDLER - WITH ROUTING
  * ✅ Reads displayName & photoURL from DATABASE
- * ✅ Google Profile Picture & Name work correctly
+ * ✅ Home Screen Integration
  * ============================================
  */
 
@@ -33,9 +33,20 @@ let verificationCheckInterval = null;
 let resendTimer = null;
 
 /**
+ * Check if we're on home page or app page
+ */
+function isHomePage() {
+    const path = window.location.pathname;
+    return path === '/' || path === '/index.html' || path.endsWith('/');
+}
+
+/**
  * Show Auth Tab (Signup, Login, Reset)
  */
 function showAuthTab(tab) {
+    // Only show tabs if we have the elements (app page only)
+    if (!signupForm || !loginForm) return;
+    
     // Hide all forms and notices
     signupForm.style.display = 'none';
     loginForm.style.display = 'none';
@@ -77,8 +88,10 @@ gotoSignup?.addEventListener('click', () => showAuthTab('signup'));
 gotoReset?.addEventListener('click', () => showAuthTab('reset'));
 gotoLogin2?.addEventListener('click', () => showAuthTab('login'));
 
-// Initialize with signup tab
-showAuthTab('signup');
+// Initialize with signup tab (if on app page)
+if (!isHomePage()) {
+    showAuthTab('signup');
+}
 
 /**
  * Password Strength Indicator
@@ -107,9 +120,9 @@ passwordInput?.addEventListener('input', function() {
 });
 
 /**
- * SIGN UP - Create Account & Send Verification
+ * SIGN UP
  */
-signupForm.addEventListener('submit', async function(e) {
+signupForm?.addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const email = document.getElementById('signup-email').value.trim();
@@ -119,7 +132,6 @@ signupForm.addEventListener('submit', async function(e) {
     
     errorDiv.textContent = '';
     
-    // Validation
     if (!email || !password) {
         errorDiv.textContent = 'Please enter email and password.';
         return;
@@ -130,42 +142,34 @@ signupForm.addEventListener('submit', async function(e) {
         return;
     }
     
-    // Show loading
     submitBtn.classList.add('loading');
     submitBtn.disabled = true;
     
     try {
-        // Create account
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const user = userCredential.user;
         
-        // Set display name (from email)
         const username = email.split('@')[0];
         await user.updateProfile({ displayName: username });
         
-        // Save to database (emailVerified: false initially)
         await db.ref('users/' + user.uid).set({
             username: username,
             email: email,
-            photoURL: '', // No photo for email signup
+            photoURL: '',
             createdAt: Date.now(),
             emailVerified: false
         });
         
-        // Send verification email
         await user.sendEmailVerification({
-            url: window.location.origin + window.location.pathname,
+            url: window.location.origin + '/app.html',
             handleCodeInApp: false
         });
         
-        // Store email for verification check
         window.localStorage.setItem('verificationEmail', email);
         window.localStorage.setItem('verificationPassword', password);
         
-        // Sign out until verified
         await auth.signOut();
         
-        // Show verification notice
         if (verifyEmailDisplay) {
             verifyEmailDisplay.textContent = email;
         }
@@ -193,7 +197,6 @@ signupForm.addEventListener('submit', async function(e) {
 
 /**
  * START VERIFICATION CHECK
- * Checks every 3 seconds if user verified email
  */
 function startVerificationCheck(email, password) {
     if (verificationCheckInterval) {
@@ -204,48 +207,38 @@ function startVerificationCheck(email, password) {
     
     verificationCheckInterval = setInterval(async () => {
         try {
-            // Try to sign in
             const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            
-            // Reload user data
             await userCredential.user.reload();
             
-            // Check if verified
             if (userCredential.user.emailVerified) {
                 console.log('✅ Email verified!');
                 clearInterval(verificationCheckInterval);
                 
-                // Update database
                 await db.ref('users/' + userCredential.user.uid).update({
                     emailVerified: true
                 });
                 
-                // Clear stored credentials
                 window.localStorage.removeItem('verificationEmail');
                 window.localStorage.removeItem('verificationPassword');
                 
-                // Show success screen
                 showAuthTab('success');
                 
-                // Auto-continue after 2 seconds
                 setTimeout(() => {
                     // Auth state observer will handle navigation
                 }, 2000);
             } else {
-                // Not verified yet, sign out and keep checking
                 await auth.signOut();
             }
         } catch (err) {
             console.log('Verification check error:', err.code);
-            // Continue checking
         }
-    }, 3000); // Check every 3 seconds
+    }, 3000);
 }
 
 /**
- * LOGIN - With Email Verification Check
+ * LOGIN
  */
-loginForm.addEventListener('submit', async function(e) {
+loginForm?.addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const email = document.getElementById('login-email').value.trim();
@@ -265,18 +258,14 @@ loginForm.addEventListener('submit', async function(e) {
     
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        
-        // Reload user to get latest verification status
         await userCredential.user.reload();
         
-        // Check if email is verified
         if (!userCredential.user.emailVerified) {
             errorDiv.textContent = 'Please verify your email first.';
             if (verifyEmailDisplay) {
                 verifyEmailDisplay.textContent = email;
             }
             
-            // Store credentials
             window.localStorage.setItem('verificationEmail', email);
             window.localStorage.setItem('verificationPassword', password);
             
@@ -286,8 +275,6 @@ loginForm.addEventListener('submit', async function(e) {
             await auth.signOut();
             return;
         }
-        
-        // Success - auth state observer will handle navigation
         
     } catch(err) {
         console.error('Login error:', err);
@@ -312,7 +299,7 @@ loginForm.addEventListener('submit', async function(e) {
 /**
  * PASSWORD RESET
  */
-resetForm.addEventListener('submit', async function(e) {
+resetForm?.addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const email = document.getElementById('reset-email').value.trim();
@@ -373,13 +360,8 @@ resendVerificationBtn?.addEventListener('click', async function() {
     this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Sending...';
     
     try {
-        // Sign in temporarily
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        
-        // Send verification
         await userCredential.user.sendEmailVerification();
-        
-        // Sign out
         await auth.signOut();
         
         this.innerHTML = '<i class="fas fa-check"></i> Sent!';
@@ -404,11 +386,9 @@ resendVerificationBtn?.addEventListener('click', async function() {
  * CHANGE EMAIL BUTTON
  */
 changeEmailBtn?.addEventListener('click', function() {
-    // Clear stored credentials
     window.localStorage.removeItem('verificationEmail');
     window.localStorage.removeItem('verificationPassword');
     
-    // Stop verification check
     if (verificationCheckInterval) {
         clearInterval(verificationCheckInterval);
     }
@@ -417,16 +397,14 @@ changeEmailBtn?.addEventListener('click', function() {
 });
 
 /**
- * CONTINUE TO APP BUTTON (After Verification Success)
+ * CONTINUE TO APP BUTTON
  */
 continueToAppBtn?.addEventListener('click', async function() {
-    // Auth state observer will handle navigation
-    // Just close the success screen
     verificationSuccess.style.display = 'none';
 });
 
 /**
- * RESEND TIMER (60 seconds cooldown)
+ * RESEND TIMER
  */
 function startResendTimer() {
     if (!verifyTimer || !timerCount || !resendVerificationBtn) return;
@@ -452,8 +430,7 @@ function startResendTimer() {
 }
 
 /**
- * ✅ GOOGLE SIGN IN - PERFECT FIX
- * Uses Google displayName & photoURL correctly
+ * GOOGLE SIGN IN
  */
 async function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -467,38 +444,29 @@ async function signInWithGoogle() {
         console.log('  photoURL:', user.photoURL);
         console.log('  email:', user.email);
         
-        // Get ACTUAL Google data
         const googleDisplayName = user.displayName || user.email.split('@')[0] || 'User';
         const googlePhotoURL = user.photoURL || '';
         
-        console.log('✅ Processed Data:');
-        console.log('  username:', googleDisplayName);
-        console.log('  photoURL:', googlePhotoURL);
-        
-        // Update Firebase Auth Profile
         await user.updateProfile({
             displayName: googleDisplayName,
             photoURL: googlePhotoURL
         });
         
-        // Save to database
         const userRef = db.ref('users/' + user.uid);
         const snapshot = await userRef.once('value');
         
         const userData = {
-            username: googleDisplayName, // ✅ GOOGLE DISPLAY NAME
+            username: googleDisplayName,
             email: user.email,
-            photoURL: googlePhotoURL, // ✅ GOOGLE PHOTO URL
+            photoURL: googlePhotoURL,
             emailVerified: true
         };
         
         if (!snapshot.exists()) {
-            // New user
             userData.createdAt = Date.now();
             await userRef.set(userData);
             console.log('✅ New Google user created:', userData);
         } else {
-            // Existing user - update
             await userRef.update(userData);
             console.log('✅ Google user updated:', userData);
         }
@@ -520,7 +488,6 @@ async function signInWithGoogle() {
  * SIGN OUT
  */
 function signOut() {
-    // Stop verification check
     if (verificationCheckInterval) {
         clearInterval(verificationCheckInterval);
     }
@@ -537,23 +504,21 @@ function signOut() {
 }
 
 /**
- * ✅ AUTH STATE OBSERVER - CRITICAL FIX
- * Reads displayName & photoURL from DATABASE (not Firebase Auth)
+ * ✅ AUTH STATE OBSERVER - WITH HOME PAGE ROUTING
  */
 auth.onAuthStateChanged(async user => {
-    console.log('🔐 Auth state changed:', user ? user.email : 'No user');
+    console.log('🔍 Auth state changed:', user ? user.email : 'No user');
     
     if (user) {
-        // Reload user to get latest data
         await user.reload();
         
-        // Check email verification for password users ONLY
+        // Check email verification for password users
         if (user.providerData[0]?.providerId === 'password' && !user.emailVerified) {
             console.log('⚠️ Email not verified, waiting...');
             await auth.signOut();
             
             const storedEmail = window.localStorage.getItem('verificationEmail');
-            if (storedEmail) {
+            if (storedEmail && !isHomePage()) {
                 if (verifyEmailDisplay) {
                     verifyEmailDisplay.textContent = storedEmail;
                 }
@@ -564,12 +529,14 @@ auth.onAuthStateChanged(async user => {
                     startVerificationCheck(storedEmail, storedPassword);
                 }
             } else {
-                showAuthTab('login');
+                if (!isHomePage()) {
+                    showAuthTab('login');
+                }
             }
             return;
         }
         
-        // ✅ CRITICAL: Read from DATABASE, not Firebase Auth
+        // ✅ Read from DATABASE
         try {
             const userRef = db.ref('users/' + user.uid);
             const snapshot = await userRef.once('value');
@@ -578,7 +545,6 @@ auth.onAuthStateChanged(async user => {
             console.log('📦 User data from database:', userData);
             
             if (userData) {
-                // ✅ Use DATABASE values (Google displayName & photoURL are here)
                 currentAuthUser = user;
                 
                 if (typeof currentForumUser !== 'undefined') {
@@ -606,7 +572,6 @@ auth.onAuthStateChanged(async user => {
             }
         } catch (dbError) {
             console.error('❌ Database read error:', dbError);
-            // Fallback to Firebase Auth
             currentAuthUser = user;
             if (typeof currentForumUser !== 'undefined') {
                 currentForumUser = {
@@ -618,41 +583,52 @@ auth.onAuthStateChanged(async user => {
             }
         }
         
-        // Clear stored credentials
         window.localStorage.removeItem('verificationEmail');
         window.localStorage.removeItem('verificationPassword');
         
-        // Stop verification check
         if (verificationCheckInterval) {
             clearInterval(verificationCheckInterval);
         }
         
-        // Hide auth screen, show main app
-        authScreen.style.display = 'none';
-        mainApp.style.display = 'block';
-        
-        // Initialize app modules
-        console.log('✅ User authenticated:', currentForumUser?.displayName || user.email);
-        await initializeApp();
+        // ✅ ROUTING LOGIC
+        if (isHomePage()) {
+            // On home page - update button to "Launch App"
+            console.log('✅ User on home page - showing Launch App button');
+            // Button update handled by home-init.js
+        } else {
+            // On app page - show main app
+            console.log('✅ User on app page - showing main app');
+            if (authScreen) authScreen.style.display = 'none';
+            if (mainApp) mainApp.style.display = 'block';
+            
+            await initializeApp();
+        }
         
     } else {
-        // User is signed out
+        // User signed out
         currentAuthUser = null;
         if (typeof currentForumUser !== 'undefined') {
             currentForumUser = null;
         }
         
-        mainApp.style.display = 'none';
-        authScreen.style.display = 'flex';
-        
-        const storedEmail = window.localStorage.getItem('verificationEmail');
-        if (storedEmail) {
-            if (verifyEmailDisplay) {
-                verifyEmailDisplay.textContent = storedEmail;
-            }
-            showAuthTab('verify');
+        if (isHomePage()) {
+            // On home page - stay on home
+            console.log('✅ Guest on home page');
         } else {
-            showAuthTab('signup');
+            // On app page - show auth screen
+            console.log('✅ Guest on app page - showing auth');
+            if (mainApp) mainApp.style.display = 'none';
+            if (authScreen) authScreen.style.display = 'flex';
+            
+            const storedEmail = window.localStorage.getItem('verificationEmail');
+            if (storedEmail) {
+                if (verifyEmailDisplay) {
+                    verifyEmailDisplay.textContent = storedEmail;
+                }
+                showAuthTab('verify');
+            } else {
+                showAuthTab('signup');
+            }
         }
     }
 });
@@ -703,7 +679,7 @@ async function initializeApp() {
         await delay(100);
         
         if (typeof initPageToggle === 'function') {
-            console.log('📄 Loading page toggle...');
+            console.log('🔄 Loading page toggle...');
             initPageToggle();
         }
         
@@ -728,7 +704,7 @@ window.addEventListener('load', () => {
     const storedEmail = window.localStorage.getItem('verificationEmail');
     const storedPassword = window.localStorage.getItem('verificationPassword');
     
-    if (storedEmail && storedPassword) {
+    if (storedEmail && storedPassword && !isHomePage()) {
         console.log('🔍 Found stored credentials, checking verification...');
         startVerificationCheck(storedEmail, storedPassword);
     }
