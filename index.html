@@ -371,27 +371,39 @@
             </div>
         </div>
         
-        <!-- Molecules Page -->
+    <!-- Molecules Page -->
         <div id="moleculesPage" class="molecules-page" style="display:none;">
             <div class="molecules-container" data-aos="fade-up">
                 <div class="molecules-controls">
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="fas fa-search"></i>
-                        </span>
-                        <input id="moleculeSearch" type="search" class="form-control" placeholder="Search molecules (e.g. CO₂, water, benzene)..." />
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input id="moleculeSearch" type="search" class="molecule-search-input" placeholder="Search molecules (e.g. CO₂, water, benzene)..." />
+                        <div class="search-suggestions" id="searchSuggestions"></div>
                     </div>
-                    <div class="sort-controls mt-2">
-                        <button id="sortAZ" class="btn btn-sm active" data-tippy-content="Sort alphabetically">
-                            <i class="fas fa-sort-alpha-down me-1"></i>A → Z
+                    <div class="sort-controls">
+                        <button id="sortAZ" class="sort-btn active" data-tippy-content="Sort alphabetically">
+                            <i class="fas fa-sort-alpha-down"></i>
+                            <span>A → Z</span>
                         </button>
-                        <button id="sortScore" class="btn btn-sm" data-tippy-content="Sort by relevance">
-                            <i class="fas fa-star me-1"></i>Best match
+                        <button id="sortScore" class="sort-btn" data-tippy-content="Sort by relevance">
+                            <i class="fas fa-star"></i>
+                            <span>Best match</span>
+                        </button>
+                        <button id="viewGrid" class="sort-btn active" data-tippy-content="Grid view">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button id="viewList" class="sort-btn" data-tippy-content="List view">
+                            <i class="fas fa-list"></i>
                         </button>
                     </div>
                 </div>
+                <div class="molecules-stats">
+                    <span id="moleculeCount">0 molecules</span>
+                    <span class="stats-divider">•</span>
+                    <span id="loadingStatus">Ready</span>
+                </div>
                 <div class="molecules-list-wrapper">
-                    <div id="moleculesList" class="molecules-list"></div>
+                    <div id="moleculesList" class="molecules-list grid-view"></div>
                 </div>
             </div>
         </div>
@@ -757,6 +769,7 @@
     </script>
 </body>
 </html>
+
 
 
 
