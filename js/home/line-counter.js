@@ -3,7 +3,7 @@
  * Fetches and displays total lines of code from backend
  */
 
-const BACKEND_URL = 'https://your-render-backend.onrender.com'; // Replace with actual Render URL
+const BACKEND_URL = 'https://periodic-table-3d.onrender.com'; // Replace with actual Render URL
 
 // Firebase reference for caching
 const lineCountRef = db.ref('stats/lineCount');
