@@ -22,8 +22,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-     <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js"></script>
-     <script src="https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js"></script>
+   
  
     <style>  
         body { font-family: 'Balsamiq Sans', sans-serif; }
@@ -46,63 +45,208 @@
         </div>
     </div>
 
-    <!-- Auth Screen -->
-    <div id="auth-screen" style="display: none;">
-        <div class="auth-container">
-            <div class="auth-card">
-                <div class="auth-tabs">
-                    <button id="show-signup" class="auth-tab-btn active">Sign Up</button>
-                    <button id="show-login" class="auth-tab-btn">Log In</button>
+  <!-- Auth Screen -->
+<div id="auth-screen" style="display: none;">
+    <div class="auth-container">
+        <div class="auth-card" id="authCard">
+            <!-- Logo/Brand -->
+            <div class="auth-brand">
+                <div class="auth-logo">
+                    <i class="fas fa-atom"></i>
+                </div>
+                <h1>Chemistry Lab</h1>
+                <p>Explore the Periodic Table</p>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="auth-tabs">
+                <button id="show-signup" class="auth-tab-btn active">
+                    <i class="fas fa-user-plus"></i>
+                    Sign Up
+                </button>
+                <button id="show-login" class="auth-tab-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Log In
+                </button>
+            </div>
+            
+            <!-- Sign Up Form -->
+            <form id="signup-form" class="auth-form">
+                <h2 class="auth-title">Create Your Account</h2>
+                <p class="auth-subtitle">Join thousands of chemistry enthusiasts</p>
+                
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-envelope"></i>
+                        Email Address
+                    </label>
+                    <input id="signup-email" type="email" placeholder="your@email.com" required class="auth-input" autocomplete="email">
                 </div>
                 
-                <form id="signup-form" class="auth-form">
-                    <h2 class="auth-title">Create Account</h2>
-                    <input id="signup-email" type="email" placeholder="Email" required class="auth-input" autocomplete="email">
-                    <input id="signup-password" type="password" placeholder="Password" required class="auth-input" autocomplete="new-password">
-                    <button type="submit" class="auth-submit-btn">Sign Up</button>
-                    <div id="signup-error" class="auth-error"></div>
-                    <div class="auth-footer">
-                        Already have an account?
-                        <span id="goto-login" class="auth-link">Log In</span>
-                    </div>
-                </form>
-                
-                <form id="login-form" class="auth-form" style="display: none;">
-                    <h2 class="auth-title">Welcome Back</h2>
-                    <input id="login-email" type="email" placeholder="Email" required class="auth-input" autocomplete="email">
-                    <input id="login-password" type="password" placeholder="Password" required class="auth-input" autocomplete="current-password">
-                    <button type="submit" class="auth-submit-btn">Log In</button>
-                    <div id="login-error" class="auth-error"></div>
-                    <div class="auth-footer">
-                        <span>Don't have an account? <span id="goto-signup" class="auth-link">Sign Up</span></span>
-                        <span id="goto-reset" class="auth-link">Forgot password?</span>
-                    </div>
-                </form>
-                
-                <form id="reset-form" class="auth-form" style="display: none;">
-                    <h2 class="auth-title">Reset Password</h2>
-                    <input id="reset-email" type="email" placeholder="Email" required class="auth-input" autocomplete="email">
-                    <button type="submit" class="auth-submit-btn">Send Reset Link</button>
-                    <div id="reset-error" class="auth-error"></div>
-                    <div id="reset-success" class="auth-success"></div>
-                    <div class="auth-footer">
-                        <span id="goto-login2" class="auth-link">Back to login</span>
-                    </div>
-                </form>
-                
-                <div id="verify-email-notice" class="verify-notice" style="display: none;">
-                    Please verify your email address.
-                    <button id="resend-verification" class="resend-btn">Resend Verification Email</button>
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-lock"></i>
+                        Password
+                    </label>
+                    <input id="signup-password" type="password" placeholder="Min 6 characters" required class="auth-input" autocomplete="new-password" minlength="6">
+                    <div class="password-strength" id="passwordStrength"></div>
                 </div>
                 
-                <div class="google-signin-wrapper">
-                    <button id="signin-btn" class="google-signin-btn" onclick="signInWithGoogle()">
-                        <i class="fab fa-google"></i> Sign in with Google
+                <button type="submit" class="auth-submit-btn">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                    </span>
+                </button>
+                
+                <div id="signup-error" class="auth-error"></div>
+                
+                <div class="auth-footer">
+                    Already have an account?
+                    <span id="goto-login" class="auth-link">Log In</span>
+                </div>
+            </form>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form" style="display: none;">
+                <h2 class="auth-title">Welcome Back!</h2>
+                <p class="auth-subtitle">Continue your chemistry journey</p>
+                
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-envelope"></i>
+                        Email Address
+                    </label>
+                    <input id="login-email" type="email" placeholder="your@email.com" required class="auth-input" autocomplete="email">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-lock"></i>
+                        Password
+                    </label>
+                    <input id="login-password" type="password" placeholder="Enter password" required class="auth-input" autocomplete="current-password">
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">
+                    <span class="btn-text">Log In</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                    </span>
+                </button>
+                
+                <div id="login-error" class="auth-error"></div>
+                
+                <div class="auth-footer">
+                    <span>Don't have an account? <span id="goto-signup" class="auth-link">Sign Up</span></span>
+                    <span id="goto-reset" class="auth-link">Forgot password?</span>
+                </div>
+            </form>
+            
+            <!-- Password Reset Form -->
+            <form id="reset-form" class="auth-form" style="display: none;">
+                <h2 class="auth-title">Reset Password</h2>
+                <p class="auth-subtitle">We'll send you a reset link</p>
+                
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-envelope"></i>
+                        Email Address
+                    </label>
+                    <input id="reset-email" type="email" placeholder="your@email.com" required class="auth-input" autocomplete="email">
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">
+                    <span class="btn-text">Send Reset Link</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                    </span>
+                </button>
+                
+                <div id="reset-error" class="auth-error"></div>
+                <div id="reset-success" class="auth-success"></div>
+                
+                <div class="auth-footer">
+                    <span id="goto-login2" class="auth-link">
+                        <i class="fas fa-arrow-left"></i> Back to login
+                    </span>
+                </div>
+            </form>
+            
+            <!-- Email Verification Notice -->
+            <div id="verify-email-notice" class="verify-notice" style="display: none;">
+                <div class="verify-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <h3>Check Your Email!</h3>
+                <p>We've sent a verification link to:</p>
+                <div class="verify-email" id="verifyEmailDisplay"></div>
+                <p class="verify-instruction">
+                    Click the link in the email to verify your account and get started.
+                </p>
+                <div class="verify-actions">
+                    <button id="resend-verification" class="resend-btn">
+                        <i class="fas fa-redo"></i>
+                        Resend Email
+                    </button>
+                    <button id="change-email-btn" class="change-email-btn">
+                        <i class="fas fa-edit"></i>
+                        Change Email
                     </button>
                 </div>
+                <div class="verify-timer" id="verifyTimer" style="display: none;">
+                    Resend available in <span id="timerCount">60</span>s
+                </div>
+            </div>
+            
+            <!-- Email Verification Success -->
+            <div id="verification-success" class="verification-success" style="display: none;">
+                <div class="success-animation">
+                    <div class="success-checkmark">
+                        <div class="check-icon">
+                            <span class="icon-line line-tip"></span>
+                            <span class="icon-line line-long"></span>
+                            <div class="icon-circle"></div>
+                            <div class="icon-fix"></div>
+                        </div>
+                    </div>
+                </div>
+                <h3>Email Verified!</h3>
+                <p>Your account has been successfully created.</p>
+                <button id="continue-to-app" class="continue-btn">
+                    <i class="fas fa-arrow-right"></i>
+                    Continue to Chemistry Lab
+                </button>
+            </div>
+            
+            <!-- Divider -->
+            <div class="auth-divider">
+                <span>OR</span>
+            </div>
+            
+            <!-- Google Sign In -->
+            <div class="google-signin-wrapper">
+              <button type="button" id="signin-btn" class="google-signin-btn" onclick="signInWithGoogle()">
+            <i class="fab fa-google"></i>
+              <span>Continue with Google</span>
+             </button>
+            </div>
+        </div>
+        
+        <!-- Decorative Elements -->
+        <div class="auth-decoration">
+            <div class="floating-atom atom-1">
+                <i class="fas fa-atom"></i>
+            </div>
+            <div class="floating-atom atom-2">
+                <i class="fas fa-flask"></i>
+            </div>
+            <div class="floating-atom atom-3">
+                <i class="fas fa-vial"></i>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Main App Container -->
     <div class="container-fluid px-2 px-md-4" id="main-app" style="display: none;">
@@ -613,5 +757,8 @@
     </script>
 </body>
 </html>
+
+
+
 
 

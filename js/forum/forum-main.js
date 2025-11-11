@@ -25,17 +25,20 @@ function initForum() {
     
     postsRef = db.ref('forum/posts');
     
-    firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-            currentForumUser = user;
-            loadForumFeed();
-            setupForumEventListeners();
-        }
-    });
+    // ✅ FIXED: Don't set currentForumUser here
+    // auth-handler.js already sets it properly with displayName & photoURL
+    
+    // Just load the forum feed
+    if (currentForumUser) {
+        console.log('✅ Forum initialized for:', currentForumUser.displayName || currentForumUser.email);
+        loadForumFeed();
+        setupForumEventListeners();
+    } else {
+        console.warn('⚠️ Forum initialized but no user yet');
+    }
     
     console.log('Forum module initialized');
 }
-
 /**
  * Setup event listeners
  */
