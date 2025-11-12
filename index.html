@@ -285,6 +285,14 @@
                        <button id="settings-btn" class="toggle-btn settings-btn" data-tippy-content="Settings">
                              <i class="fas fa-cog"></i>
                       </button>
+
+                    
+                    <!-- Admin Panel Button (shows only for admin@gmail.com) -->
+               <button id="admin-panel-btn" class="toggle-btn admin-btn" data-tippy-content="Admin Panel" style="display: none;">
+                <i class="fas fa-shield-alt"></i>
+                 <span class="admin-badge" id="admin-badge" style="display: none;">0</span>
+               </button>
+
                     
                     <!-- Notification Button -->
                     <button id="notification-bell" class="toggle-btn notification-bell-btn" data-tippy-content="Notifications">
@@ -986,26 +994,37 @@
     <script src="js/data/molecules-data.js"></script>
     <script src="js/data/reactions-data.js"></script>
     <script src="js/data/reactivity-data.js"></script>
+    
     <script src="js/utils/search-utils.js"></script>
     <script src="js/utils/wiki-loader.js"></script>
+    
     <script src="js/periodic-table/table-renderer.js"></script>
     <script src="js/periodic-table/atom-visualization.js"></script>
     <script src="js/periodic-table/reactivity-chart.js"></script>
     <script src="js/periodic-table/element-modal.js"></script>
+    
     <script src="js/molecules/molecules-search.js"></script>
     <script src="js/molecules/molecules-list.js"></script>
     <script src="js/molecules/molecule-3d.js"></script>
     <script src="js/molecules/molecule-2d.js"></script>
     <script src="js/molecules/molecule-modal.js"></script>
+    
     <script src="js/reactions/reactions-builder.js"></script>
     <script src="js/reactions/reactant-selector.js"></script>
     <script src="js/reactions/reaction-animator.js"></script>
+    
     <script src="js/settings/settings-modal.js"></script>
+    
+    <script src="js/admin/admin-panel.js"></script>
+
+    
     <script src="js/auth/firebase-config.js"></script>
     <script src="js/auth/auth-handler.js"></script>
+    
     <script src="js/forum/forum-main.js"></script>
     <script src="js/forum/forum-create-post.js"></script>
     <script src="js/forum/forum-notifications.js"></script>
+    
     <script src="js/core/page-toggle.js"></script>
     <script src="js/core/app-init.js"></script>
     
@@ -1036,6 +1055,7 @@
     </script>
 </body>
 </html>
+
 
 
 
