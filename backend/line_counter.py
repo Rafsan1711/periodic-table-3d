@@ -19,7 +19,7 @@ CORS(app)
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 REPO_OWNER = 'Rafsan1711'
 REPO_NAME = 'periodic-table-3d'
-BRANCH = 'module'  # ✅ FIXED: Changed from 'main' to 'master'
+BRANCH = 'master'  # ✅ FIXED: Changed from 'main' to 'master'
 
 # File extensions with proper categorization
 EXTENSIONS = {
