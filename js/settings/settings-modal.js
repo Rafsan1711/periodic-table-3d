@@ -561,4 +561,4 @@ window.downloadUserData = downloadUserData;
 window.clearCache = clearCache;
 window.confirmDeleteAccount = confirmDeleteAccount;
 
-console.log('✅ Settings modal module loaded');
+console.log('✅ Settings modal module loaded (FIXED)');
