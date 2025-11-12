@@ -56,6 +56,7 @@
 /* 18. Scrollbar & Tippy */
 @import url('scrollbar-tippy.css');
 
+@import url('line-counter-animations.css');
 /* 19. Responsive Design */
 @import url('responsive.css');
 
