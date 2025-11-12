@@ -688,7 +688,281 @@
             </div>
         </div>
     </div>
-
+<!-- Settings Modal -->
+<div class="modal" id="settings-modal">
+    <div class="modal-content settings-modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-cog me-2"></i>Settings
+            </div>
+            <button class="close-btn" onclick="closeSettingsModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body settings-modal-body">
+            <!-- Settings Tabs -->
+            <div class="settings-tabs">
+                <button class="settings-tab active" data-tab="account">
+                    <i class="fas fa-user"></i>
+                    <span>Account</span>
+                </button>
+                <button class="settings-tab" data-tab="appearance">
+                    <i class="fas fa-palette"></i>
+                    <span>Appearance</span>
+                </button>
+                <button class="settings-tab" data-tab="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                </button>
+                <button class="settings-tab" data-tab="data">
+                    <i class="fas fa-database"></i>
+                    <span>Data & Privacy</span>
+                </button>
+                <button class="settings-tab" data-tab="about">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
+                </button>
+            </div>
+            
+            <!-- Settings Content -->
+            <div class="settings-content">
+                <!-- Account Tab -->
+                <div class="settings-tab-content active" id="account-tab">
+                    <h3><i class="fas fa-user-circle me-2"></i>Account Information</h3>
+                    
+                    <div class="settings-section">
+                        <div class="user-profile-card">
+                            <img id="settings-user-photo" src="" alt="Profile" class="user-profile-photo">
+                            <div class="user-profile-info">
+                                <h4 id="settings-user-name">Loading...</h4>
+                                <p id="settings-user-email">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-edit me-2"></i>Edit Profile</h4>
+                        <div class="form-group">
+                            <label>Display Name</label>
+                            <input type="text" id="edit-display-name" class="settings-input" placeholder="Your name">
+                        </div>
+                        <button class="settings-btn primary" onclick="updateDisplayName()">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-key me-2"></i>Change Password</h4>
+                        <p class="settings-description">Update your password to keep your account secure</p>
+                        <button class="settings-btn secondary" onclick="sendPasswordReset()">
+                            <i class="fas fa-envelope"></i> Send Reset Email
+                        </button>
+                    </div>
+                    
+                    <div class="settings-section danger-zone">
+                        <h4><i class="fas fa-sign-out-alt me-2"></i>Sign Out</h4>
+                        <p class="settings-description">Sign out from your account</p>
+                        <button class="settings-btn danger" onclick="handleSignOut()">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Appearance Tab -->
+                <div class="settings-tab-content" id="appearance-tab">
+                    <h3><i class="fas fa-palette me-2"></i>Appearance</h3>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-moon me-2"></i>Theme</h4>
+                        <p class="settings-description">Choose your preferred color theme</p>
+                        <div class="theme-options">
+                            <div class="theme-option active" data-theme="dark">
+                                <div class="theme-preview dark-theme">
+                                    <div class="theme-preview-header"></div>
+                                    <div class="theme-preview-body"></div>
+                                </div>
+                                <span>Dark</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="theme-option" data-theme="light">
+                                <div class="theme-preview light-theme">
+                                    <div class="theme-preview-header"></div>
+                                    <div class="theme-preview-body"></div>
+                                </div>
+                                <span>Light</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="theme-option" data-theme="auto">
+                                <div class="theme-preview auto-theme">
+                                    <div class="theme-preview-header"></div>
+                                    <div class="theme-preview-body"></div>
+                                </div>
+                                <span>Auto</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-text-height me-2"></i>Font Size</h4>
+                        <p class="settings-description">Adjust the text size for better readability</p>
+                        <div class="font-size-slider">
+                            <span>A</span>
+                            <input type="range" id="font-size-slider" min="12" max="20" value="16" step="1">
+                            <span style="font-size: 1.2rem;">A</span>
+                        </div>
+                        <div class="font-size-preview" id="font-size-preview">
+                            Preview: The quick brown fox jumps over the lazy dog
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-magic me-2"></i>Animations</h4>
+                        <div class="settings-toggle">
+                            <label class="toggle-label">
+                                <span>Enable animations and transitions</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="animations-toggle" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notifications Tab -->
+                <div class="settings-tab-content" id="notifications-tab">
+                    <h3><i class="fas fa-bell me-2"></i>Notification Preferences</h3>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-comment me-2"></i>Forum Notifications</h4>
+                        <div class="settings-toggle">
+                            <label class="toggle-label">
+                                <span>New comments on my posts</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="notif-comments" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="settings-toggle">
+                            <label class="toggle-label">
+                                <span>Replies to my comments</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="notif-replies" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="settings-toggle">
+                            <label class="toggle-label">
+                                <span>Likes on my posts</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="notif-likes" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-volume-up me-2"></i>Sound & Vibration</h4>
+                        <div class="settings-toggle">
+                            <label class="toggle-label">
+                                <span>Play sound for notifications</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="notif-sound">
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="settings-toggle">
+                            <label class="toggle-label">
+                                <span>Vibrate on mobile devices</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="notif-vibrate" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Data & Privacy Tab -->
+                <div class="settings-tab-content" id="data-tab">
+                    <h3><i class="fas fa-shield-alt me-2"></i>Data & Privacy</h3>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-download me-2"></i>Download Your Data</h4>
+                        <p class="settings-description">Download a copy of your posts, comments, and activity</p>
+                        <button class="settings-btn secondary" onclick="downloadUserData()">
+                            <i class="fas fa-download"></i> Download Data
+                        </button>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-broom me-2"></i>Clear Cache</h4>
+                        <p class="settings-description">Clear temporary data to free up space</p>
+                        <button class="settings-btn secondary" onclick="clearCache()">
+                            <i class="fas fa-broom"></i> Clear Cache
+                        </button>
+                    </div>
+                    
+                    <div class="settings-section danger-zone">
+                        <h4><i class="fas fa-exclamation-triangle me-2"></i>Delete Account</h4>
+                        <p class="settings-description">Permanently delete your account and all data. This action cannot be undone.</p>
+                        <button class="settings-btn danger" onclick="confirmDeleteAccount()">
+                            <i class="fas fa-trash"></i> Delete Account
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- About Tab -->
+                <div class="settings-tab-content" id="about-tab">
+                    <h3><i class="fas fa-info-circle me-2"></i>About</h3>
+                    
+                    <div class="settings-section">
+                        <div class="about-app">
+                            <div class="about-icon">
+                                <i class="fas fa-atom"></i>
+                            </div>
+                            <h4>Periodic Table 3D</h4>
+                            <p class="version">Version 1.0.0</p>
+                            <p class="about-description">
+                                An interactive chemistry learning platform featuring 3D visualizations, 
+                                molecular structures, chemical reactions, and community discussions.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-link me-2"></i>Quick Links</h4>
+                        <div class="quick-links">
+                            <a href="https://periodic-table-3d.netlify.app" target="_blank" class="quick-link">
+                                <i class="fas fa-globe"></i> Web App
+                            </a>
+                            <a href="https://download-periodic-table-3d.netlify.app" target="_blank" class="quick-link">
+                                <i class="fas fa-download"></i> Download App
+                            </a>
+                            <a href="https://download-periodic-table-3d.netlify.app/privacy-policy.html" target="_blank" class="quick-link">
+                                <i class="fas fa-shield-alt"></i> Privacy Policy
+                            </a>
+                            <a href="https://download-periodic-table-3d.netlify.app/terms-of-service.html" target="_blank" class="quick-link">
+                                <i class="fas fa-file-contract"></i> Terms of Service
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-code me-2"></i>Developer</h4>
+                        <p class="settings-description">Built with ❤️ using Three.js, Firebase, and modern web technologies</p>
+                        <p class="copyright">© 2025 Periodic Table 3D. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     <!-- Notification Modal -->
     <div class="modal" id="notification-modal">
         <div class="modal-content">
@@ -762,6 +1036,7 @@
     </script>
 </body>
 </html>
+
 
 
 
