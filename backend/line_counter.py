@@ -1,7 +1,7 @@
 """
-Line Counter Backend - FIXED for Private Repo
-Counts total lines of code from GitHub repository
-Deploy to Render.com
+Advanced Line Counter Backend
+Supports multiple languages and excludes .github folder
+Uses GitHub API for private repos
 """
 
 from flask import Flask, jsonify
@@ -10,40 +10,74 @@ import requests
 import os
 from datetime import datetime
 import base64
+import re
 
 app = Flask(__name__)
 CORS(app)
 
 # GitHub Configuration
-GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')  # REQUIRED for private repos
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 REPO_OWNER = 'Rafsan1711'
 REPO_NAME = 'periodic-table-3d'
 BRANCH = 'main'
 
-# File extensions to count
+# Extended file extensions
 EXTENSIONS = {
     '.js': 'javascript',
+    '.jsx': 'javascript',
+    '.ts': 'typescript',
+    '.tsx': 'typescript',
     '.css': 'css',
+    '.scss': 'css',
+    '.sass': 'css',
     '.html': 'html',
-    '.py': 'python'
+    '.htm': 'html',
+    '.py': 'python',
+    '.json': 'json',
+    '.md': 'markdown',
+    '.txt': 'text',
+    '.xml': 'xml',
+    '.yml': 'yaml',
+    '.yaml': 'yaml',
+    '.sh': 'shell',
+    '.bat': 'shell'
 }
 
-# Directories to exclude
-EXCLUDE_DIRS = [
+# Directories and files to EXCLUDE
+EXCLUDE_PATTERNS = [
+    '.github',          # GitHub workflows
     'node_modules',
     '.git',
     'dist',
     'build',
     '__pycache__',
-    '.netlify'
+    '.netlify',
+    '.vscode',
+    '.idea',
+    'package-lock.json',
+    'yarn.lock'
 ]
+
+def should_exclude(path):
+    """Check if path should be excluded"""
+    for pattern in EXCLUDE_PATTERNS:
+        if pattern in path:
+            return True
+    return False
 
 @app.route('/', methods=['GET'])
 def index():
     """Root endpoint"""
     return jsonify({
-        'service': 'Periodic Table 3D - Line Counter',
+        'service': 'Periodic Table 3D - Advanced Line Counter',
+        'version': '2.0',
         'status': 'running',
+        'features': [
+            'Multi-language support',
+            'Excludes .github folder',
+            'Real-time processing',
+            'Private repo support'
+        ],
         'endpoints': {
             'line_count': '/api/line-count',
             'health': '/health'
@@ -54,21 +88,20 @@ def index():
 @app.route('/api/line-count', methods=['GET'])
 def get_line_count():
     """
-    Fetch repository contents and count lines
-    Requires GITHUB_TOKEN for private repos
+    Advanced line counting with detailed breakdown
     """
     try:
-        print(f"📊 Counting lines for {REPO_OWNER}/{REPO_NAME}...")
+        print(f"📊 Starting advanced line count for {REPO_OWNER}/{REPO_NAME}...")
         
         if not GITHUB_TOKEN:
-            print("❌ GITHUB_TOKEN not set!")
+            print("❌ GITHUB_TOKEN not configured")
             return jsonify({
-                'error': 'GitHub token not configured',
-                'message': 'Please set GITHUB_TOKEN in Render environment variables',
+                'error': 'GitHub token required',
+                'message': 'Set GITHUB_TOKEN in environment variables',
                 'total': 0
             }), 500
         
-        # Headers with authentication
+        # Headers
         headers = {
             'Authorization': f'Bearer {GITHUB_TOKEN}',
             'Accept': 'application/vnd.github+json',
@@ -78,96 +111,129 @@ def get_line_count():
         # Get repository tree
         tree_url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/git/trees/{BRANCH}?recursive=1'
         
-        print(f"🔗 Fetching: {tree_url}")
-        response = requests.get(tree_url, headers=headers, timeout=15)
-        
-        print(f"📡 Response status: {response.status_code}")
+        print(f"🔗 Fetching tree from GitHub API...")
+        response = requests.get(tree_url, headers=headers, timeout=20)
         
         if response.status_code == 401:
             return jsonify({
                 'error': 'Authentication failed',
                 'message': 'Invalid GitHub token',
                 'total': 0
-            }), 500
+            }), 401
         
         if response.status_code == 404:
             return jsonify({
                 'error': 'Repository not found',
-                'message': 'Check repository name and token permissions',
+                'message': 'Check repo name and token permissions',
                 'total': 0
-            }), 500
+            }), 404
         
         response.raise_for_status()
         tree = response.json()
         
         if 'tree' not in tree:
-            print(f"❌ No tree in response: {tree}")
             return jsonify({
-                'error': 'Unable to fetch repository tree',
+                'error': 'Invalid response',
+                'message': 'Unable to fetch repository tree',
                 'total': 0
             }), 500
         
-        # Count lines by file type
+        print(f"✅ Found {len(tree['tree'])} items in repository")
+        
+        # Initialize counters
         counts = {
             'javascript': 0,
+            'typescript': 0,
             'css': 0,
             'html': 0,
             'python': 0,
+            'json': 0,
+            'markdown': 0,
+            'yaml': 0,
+            'shell': 0,
+            'text': 0,
+            'xml': 0,
             'total': 0
         }
         
-        files_processed = 0
-        files_failed = 0
+        stats = {
+            'files_processed': 0,
+            'files_excluded': 0,
+            'files_failed': 0
+        }
         
+        # Process files
         for item in tree['tree']:
             if item['type'] != 'blob':
                 continue
             
             path = item['path']
             
-            # Skip excluded directories
-            if any(excluded in path for excluded in EXCLUDE_DIRS):
+            # Check exclusion
+            if should_exclude(path):
+                stats['files_excluded'] += 1
+                print(f"⊗ Excluded: {path}")
                 continue
             
-            # Check file extension
+            # Check extension
             ext = os.path.splitext(path)[1].lower()
             if ext not in EXTENSIONS:
                 continue
             
-            # Fetch file content using GitHub API (more reliable for private repos)
+            # Fetch file content
             try:
+                print(f"📄 Processing: {path}")
+                
                 content_url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}?ref={BRANCH}'
-                file_response = requests.get(content_url, headers=headers, timeout=5)
+                file_response = requests.get(content_url, headers=headers, timeout=10)
                 
                 if file_response.status_code == 200:
                     content_data = file_response.json()
                     
-                    # Decode base64 content
                     if 'content' in content_data:
+                        # Decode base64
                         content = base64.b64decode(content_data['content']).decode('utf-8', errors='ignore')
+                        
+                        # Count lines (including blank lines)
                         lines = content.count('\n') + 1
+                        
+                        # Count code lines (non-empty)
+                        code_lines = len([line for line in content.split('\n') if line.strip()])
+                        
+                        # Count comments (basic detection)
+                        comment_lines = count_comments(content, ext)
+                        
                         file_type = EXTENSIONS[ext]
                         
                         counts[file_type] += lines
                         counts['total'] += lines
-                        files_processed += 1
+                        stats['files_processed'] += 1
                         
-                        print(f"✓ {path}: {lines} lines")
+                        print(f"  ✓ {lines} lines ({code_lines} code, {comment_lines} comments)")
                     
+            except requests.RequestException as e:
+                stats['files_failed'] += 1
+                print(f"  ✗ Network error: {str(e)}")
+                continue
             except Exception as e:
-                files_failed += 1
-                print(f"⚠️ Error processing {path}: {str(e)}")
+                stats['files_failed'] += 1
+                print(f"  ✗ Error: {str(e)}")
                 continue
         
-        print(f"✅ Processed {files_processed} files")
-        print(f"⚠️ Failed {files_failed} files")
-        print(f"📊 Total lines: {counts['total']}")
+        print(f"\n📊 === SUMMARY ===")
+        print(f"✅ Files processed: {stats['files_processed']}")
+        print(f"⊗ Files excluded: {stats['files_excluded']}")
+        print(f"✗ Files failed: {stats['files_failed']}")
+        print(f"📝 Total lines: {counts['total']}")
+        print(f"===================\n")
         
+        # Return detailed response
         return jsonify({
             **counts,
+            'statistics': stats,
             'timestamp': int(datetime.now().timestamp() * 1000),
-            'files_processed': files_processed,
-            'files_failed': files_failed
+            'repository': f"{REPO_OWNER}/{REPO_NAME}",
+            'branch': BRANCH
         })
         
     except requests.RequestException as e:
@@ -179,24 +245,54 @@ def get_line_count():
         }), 500
         
     except Exception as e:
-        print(f"❌ Error: {str(e)}")
+        print(f"❌ Unexpected error: {str(e)}")
         return jsonify({
             'error': 'Internal server error',
             'message': str(e),
             'total': 0
         }), 500
 
+def count_comments(content, ext):
+    """
+    Basic comment detection (can be enhanced)
+    """
+    comment_count = 0
+    
+    if ext in ['.js', '.jsx', '.ts', '.tsx', '.css', '.scss']:
+        # Single line comments //
+        comment_count += len(re.findall(r'^\s*//.*$', content, re.MULTILINE))
+        # Multi-line comments /* */
+        comment_count += len(re.findall(r'/\*[\s\S]*?\*/', content))
+    
+    elif ext in ['.py']:
+        # Python comments #
+        comment_count += len(re.findall(r'^\s*#.*$', content, re.MULTILINE))
+        # Docstrings
+        comment_count += len(re.findall(r'"""[\s\S]*?"""', content))
+        comment_count += len(re.findall(r"'''[\s\S]*?'''", content))
+    
+    elif ext in ['.html', '.htm', '.xml']:
+        # HTML/XML comments
+        comment_count += len(re.findall(r'<!--[\s\S]*?-->', content))
+    
+    return comment_count
+
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint"""
-    has_token = bool(GITHUB_TOKEN)
+    """Health check with configuration info"""
     return jsonify({
         'status': 'healthy',
-        'service': 'line-counter',
-        'github_token_configured': has_token,
+        'service': 'advanced-line-counter',
+        'version': '2.0',
+        'github_token_configured': bool(GITHUB_TOKEN),
+        'supported_languages': list(set(EXTENSIONS.values())),
+        'excluded_patterns': EXCLUDE_PATTERNS,
         'timestamp': int(datetime.now().timestamp() * 1000)
     })
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
+    print(f"🚀 Starting Advanced Line Counter on port {port}")
+    print(f"📦 Repository: {REPO_OWNER}/{REPO_NAME}")
+    print(f"🔒 Token configured: {bool(GITHUB_TOKEN)}")
     app.run(host='0.0.0.0', port=port, debug=False)
