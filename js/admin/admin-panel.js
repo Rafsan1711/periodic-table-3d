@@ -12,7 +12,7 @@ let pendingRequestsCount = 0;
 function checkAdminStatus() {
     if (!currentForumUser) return false;
     
-    const adminEmail = 'admin@gmail.com';
+    const adminEmail = 'samiulhaquerafsan@gmail.com';
     isAdmin = currentForumUser.email === adminEmail;
     
     // Show/hide admin button
