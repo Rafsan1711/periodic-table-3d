@@ -67,6 +67,9 @@ async function loadUserSettings() {
     
     // Load preferences from localStorage
     loadPreferences();
+    
+    // Check for pending username requests
+    await checkPendingUsernameRequest();
 }
 
 /**
@@ -162,7 +165,7 @@ function saveNotificationPreferences() {
 }
 
 /**
- * Update display name
+ * Update display name with admin approval
  */
 async function updateDisplayName() {
     if (!currentForumUser || !auth.currentUser) return;
@@ -175,34 +178,150 @@ async function updateDisplayName() {
         return;
     }
     
+    if (newName === currentForumUser.displayName) {
+        alert('This is already your current name');
+        return;
+    }
+    
     try {
-        // Update Firebase Auth profile
-        await auth.currentUser.updateProfile({
-            displayName: newName
+        // Check if user already has a pending request
+        const pendingSnapshot = await db.ref('adminRequests/usernameChanges')
+            .orderByChild('userId')
+            .equalTo(currentForumUser.uid)
+            .once('value');
+        
+        let hasPending = false;
+        pendingSnapshot.forEach(child => {
+            const request = child.val();
+            if (request.status === 'pending') {
+                hasPending = true;
+            }
         });
         
-        // Update database
-        await db.ref(`users/${currentForumUser.uid}`).update({
-            username: newName
-        });
-        
-        // Update local user object
-        currentForumUser.displayName = newName;
-        
-        // Update UI
-        document.getElementById('settings-user-name').textContent = newName;
-        
-        if (typeof showNotification === 'function') {
-            showNotification('✅ Display name updated!', 'success');
-        } else {
-            alert('✅ Display name updated!');
+        if (hasPending) {
+            alert('⏳ You already have a pending username change request. Please wait for admin approval.');
+            return;
         }
         
-        console.log('✅ Display name updated:', newName);
+        // Create username change request for admin
+        const requestData = {
+            userId: currentForumUser.uid,
+            userEmail: currentForumUser.email,
+            currentName: currentForumUser.displayName || 'N/A',
+            requestedName: newName,
+            timestamp: Date.now(),
+            status: 'pending'
+        };
+        
+        const requestRef = await db.ref('adminRequests/usernameChanges').push(requestData);
+        
+        // Send notification to admin
+        await sendAdminNotification(requestData, requestRef.key);
+        
+        // Show success message
+        if (typeof showNotification === 'function') {
+            showNotification('📨 Username change request sent! Waiting for admin approval.', 'info');
+        } else {
+            alert('📨 Username change request sent! Waiting for admin approval.');
+        }
+        
+        // Update UI to show pending status
+        showPendingRequestBadge();
+        
+        console.log('✅ Username change request sent');
         
     } catch (error) {
-        console.error('Error updating display name:', error);
-        alert('Failed to update display name: ' + error.message);
+        console.error('Error requesting username change:', error);
+        alert('Failed to send request: ' + error.message);
+    }
+}
+
+/**
+ * Send notification to admin email
+ */
+async function sendAdminNotification(requestData, requestId) {
+    const adminEmail = 'admin@gmail.com';
+    
+    // Find admin user by email
+    const usersSnapshot = await db.ref('users').once('value');
+    let adminUid = null;
+    
+    usersSnapshot.forEach(child => {
+        const userData = child.val();
+        if (userData.email === adminEmail) {
+            adminUid = child.key;
+        }
+    });
+    
+    if (!adminUid) {
+        console.warn('Admin account not found');
+        return;
+    }
+    
+    // Create notification for admin
+    const notificationData = {
+        type: 'usernameChangeRequest',
+        fromUserId: requestData.userId,
+        fromUserName: requestData.currentName,
+        fromUserEmail: requestData.userEmail,
+        requestedName: requestData.requestedName,
+        requestId: requestId,
+        timestamp: Date.now(),
+        read: false
+    };
+    
+    await db.ref(`notifications/${adminUid}`).push(notificationData);
+    
+    console.log('✅ Admin notification sent');
+}
+
+/**
+ * Show pending request badge
+ */
+function showPendingRequestBadge() {
+    const section = document.querySelector('.settings-section h4');
+    if (!section) return;
+    
+    // Remove existing badge
+    const existingBadge = document.querySelector('.pending-request-badge');
+    if (existingBadge) existingBadge.remove();
+    
+    const badge = document.createElement('div');
+    badge.className = 'pending-request-badge';
+    badge.innerHTML = `
+        <i class="fas fa-clock"></i>
+        Pending Admin Approval
+    `;
+    
+    section.parentElement.insertBefore(badge, section.nextSibling);
+}
+
+/**
+ * Check for pending username change requests
+ */
+async function checkPendingUsernameRequest() {
+    if (!currentForumUser) return;
+    
+    try {
+        const snapshot = await db.ref('adminRequests/usernameChanges')
+            .orderByChild('userId')
+            .equalTo(currentForumUser.uid)
+            .once('value');
+        
+        let hasPending = false;
+        snapshot.forEach(child => {
+            const request = child.val();
+            if (request.status === 'pending') {
+                hasPending = true;
+            }
+        });
+        
+        if (hasPending) {
+            showPendingRequestBadge();
+        }
+        
+    } catch (error) {
+        console.error('Error checking pending requests:', error);
     }
 }
 
