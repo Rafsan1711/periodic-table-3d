@@ -515,9 +515,10 @@ section {
 }
 
 .breakdown-value {
-    font-size: 1.8rem;
-    font-weight: 700;
+    font-size: 2.5rem;
+    font-weight: 900;
     color: var(--text-primary);
+    text-shadow: 0 2px 10px rgba(88, 166, 255, 0.3);
 }
 
 /* Tech Stack */
@@ -668,7 +669,10 @@ section {
     justify-content: space-between;
     align-items: center;
 }
-
+.breakdown-label .fa-js { color: #f7df1e; }
+.breakdown-label .fa-css3 { color: #264de4; }
+.breakdown-label .fa-html5 { color: #e34c26; }
+.breakdown-label .fa-python { color: #3776ab; }
 .modal-header h2 {
     display: flex;
     align-items: center;
