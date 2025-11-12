@@ -441,7 +441,7 @@ section {
 .counter-icon {
     font-size: 4rem;
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .counter-icon i {
@@ -456,9 +456,12 @@ section {
 }
 
 .counter-label {
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 .counter-value {
@@ -483,30 +486,32 @@ section {
 
 .code-breakdown {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1.5rem;
     margin-top: 3rem;
 }
 
 .breakdown-item {
     background: var(--bg-tertiary);
-    padding: 1.5rem;
-    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    border-radius: 16px;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
+    border: 1px solid var(--border-primary);
 }
 
 .breakdown-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     color: var(--text-secondary);
-    font-size: 0.9rem;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 .breakdown-label i {
-    font-size: 1.5rem;
+    font-size: 2rem;
 }
 
 .breakdown-value {
