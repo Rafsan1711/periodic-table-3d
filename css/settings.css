@@ -85,9 +85,28 @@
 .settings-content {
     flex: 1;
     padding: 30px;
-    overflow-y: auto; /* FIXED: Enable scroll */
-    overflow-x: hidden; /* Prevent horizontal scroll */
+    overflow-y: scroll !important; /* CRITICAL FIX: Force scroll */
+    overflow-x: hidden;
     background: var(--bg-secondary);
+    max-height: calc(85vh - 80px); /* Ensure height constraint */
+}
+
+/* Force scrollbar visibility */
+.settings-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.settings-content::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+.settings-content::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 4px;
+}
+
+.settings-content::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
 }
 
 .settings-tab-content {
@@ -462,14 +481,65 @@
     background: white;
 }
 
-/* Danger Zone */
-.danger-zone {
-    border-color: var(--accent-red);
-    background: rgba(255, 123, 114, 0.05);
+/* Admin Approval Notice */
+.admin-notice {
+    background: rgba(255, 166, 87, 0.1);
+    border-left: 4px solid var(--accent-orange);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
 }
 
-.danger-zone h4 {
-    color: var(--accent-red);
+.admin-notice i {
+    color: var(--accent-orange);
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.admin-notice-content {
+    flex: 1;
+}
+
+.admin-notice-content strong {
+    display: block;
+    color: var(--accent-orange);
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+}
+
+.admin-notice-content p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Pending Request Badge */
+.pending-request-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(242, 204, 96, 0.2);
+    border: 1px solid var(--accent-yellow);
+    border-radius: 6px;
+    color: var(--accent-yellow);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.pending-request-badge i {
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* About Section */
@@ -542,41 +612,67 @@
     font-size: 1.2rem;
 }
 
-/* Mobile Optimizations */
+/* Mobile Optimizations - COMPLETELY FIXED */
 @media (max-width: 768px) {
+    .settings-modal-content {
+        max-width: 95vw;
+        max-height: 90vh;
+    }
+    
     .settings-modal-body {
         flex-direction: column;
+        max-height: calc(90vh - 70px);
     }
     
     .settings-tabs {
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--border-primary);
-        padding: 10px 0;
+        padding: 8px 10px;
         display: flex;
         overflow-x: auto;
         overflow-y: visible;
+        gap: 8px;
+        background: var(--bg-secondary);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        -webkit-overflow-scrolling: touch;
     }
     
     .settings-tab {
         flex-shrink: 0;
-        padding: 10px 15px;
+        padding: 10px 16px;
         border-left: none;
         border-bottom: 3px solid transparent;
+        border-radius: 8px 8px 0 0;
+        min-width: auto;
+        white-space: nowrap;
     }
     
     .settings-tab.active {
         border-left: none;
         border-bottom-color: var(--accent-blue);
+        background: rgba(88, 166, 255, 0.15);
     }
     
     .settings-tab span {
-        display: none;
+        display: inline; /* Show text on mobile */
+        font-size: 0.9rem;
+    }
+    
+    .settings-tab i {
+        display: none; /* Hide icons to save space */
     }
     
     .settings-content {
         padding: 20px 15px;
-        max-height: calc(85vh - 140px); /* FIXED: Account for tabs height */
+        max-height: calc(90vh - 140px);
+        overflow-y: scroll !important;
+    }
+    
+    .settings-tab-content h3 {
+        font-size: 1.5rem;
     }
     
     .theme-options {
@@ -590,6 +686,10 @@
     .user-profile-card {
         flex-direction: column;
         text-align: center;
+    }
+    
+    .settings-section {
+        padding: 15px;
     }
 }
 
