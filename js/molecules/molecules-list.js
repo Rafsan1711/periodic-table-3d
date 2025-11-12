@@ -1,18 +1,17 @@
 /**
- * Molecules List Module - PROFESSIONAL ENHANCED VERSION
- * YouTube-style shimmer loading + smooth animations + perfect UX
+ * Molecules List Module - PERFECT MOBILE-FRIENDLY VERSION
+ * Infinite scroll + 3-4s shimmer + batch loading + responsive
  */
 
-let virtualScrollContainer = null;
-let visibleMolecules = [];
 let allFilteredMolecules = [];
-const ITEMS_PER_BATCH = 24; // Load 24 at a time for smooth experience
+const ITEMS_PER_BATCH = 20; // 20 molecules per batch
 let currentBatch = 0;
 let isLoadingMore = false;
-let currentViewMode = 'grid'; // 'grid' or 'list'
+let currentViewMode = 'grid';
+let scrollObserver = null;
 
 /**
- * Renders the molecules list with shimmer loading effect
+ * Main render function with 3-4 second shimmer effect
  */
 function renderMoleculesList(query = '') {
     const moleculesListEl = document.getElementById('moleculesList');
@@ -24,23 +23,31 @@ function renderMoleculesList(query = '') {
         return;
     }
     
-    console.log('🧪 Rendering molecules list (Enhanced with Shimmer), query:', query);
+    console.log('🧪 Rendering molecules with shimmer, query:', query);
     
-    // Show loading status
+    // Update loading status
     if (loadingStatus) {
         loadingStatus.textContent = 'Loading...';
         loadingStatus.style.color = 'var(--accent-orange)';
     }
     
-    // Clear previous content
+    // Reset state
     moleculesListEl.innerHTML = '';
     currentBatch = 0;
     isLoadingMore = false;
     
-    // Show shimmer skeletons immediately
-    showShimmerSkeletons(moleculesListEl, 12);
+    // Disconnect old observer
+    if (scrollObserver) {
+        scrollObserver.disconnect();
+        scrollObserver = null;
+    }
     
-    // Simulate network delay for realistic loading experience
+    // Show 20 shimmer skeletons immediately
+    showShimmerSkeletons(moleculesListEl, 20);
+    
+    // Wait 3-4 seconds before showing real data
+    const shimmerDelay = 3000 + Math.random() * 1000; // 3-4 seconds
+    
     setTimeout(() => {
         // Filter molecules
         const q = (query || '').trim();
@@ -77,8 +84,8 @@ function renderMoleculesList(query = '') {
         // Empty state
         if (allFilteredMolecules.length === 0) {
             moleculesListEl.innerHTML = `
-                <div class="molecules-empty" style="grid-column: 1/-1;">
-                    <i class="fas fa-search"></i>
+                <div class="molecules-empty">
+                    <i class="fas fa-flask"></i>
                     <h3>No molecules found</h3>
                     <p>${q ? 'Try a different search term' : 'No molecules available'}</p>
                 </div>
@@ -90,25 +97,22 @@ function renderMoleculesList(query = '') {
             return;
         }
 
-        // Create virtual scroll container
-        virtualScrollContainer = moleculesListEl;
-
-        // Load first batch
+        // Load first batch (20 molecules)
         loadMoreMolecules();
 
-        // Setup infinite scroll
-        setupInfiniteScroll();
+        // Setup infinite scroll with Intersection Observer
+        setupInfiniteScrollObserver();
 
-        // Update loading status
+        // Update status
         if (loadingStatus) {
             loadingStatus.textContent = 'Ready';
             loadingStatus.style.color = 'var(--accent-green)';
         }
-    }, 300); // 300ms delay for realistic feel
+    }, shimmerDelay);
 }
 
 /**
- * Show shimmer skeleton loaders (YouTube style)
+ * Show YouTube-style shimmer skeletons
  */
 function showShimmerSkeletons(container, count) {
     const fragment = document.createDocumentFragment();
@@ -119,10 +123,10 @@ function showShimmerSkeletons(container, count) {
         skeleton.style.animationDelay = `${i * 0.05}s`;
         
         skeleton.innerHTML = `
-            <div class="molecule-badge"></div>
+            <div class="molecule-badge skeleton-badge"></div>
             <div class="molecule-meta">
-                <div class="molecule-name"></div>
-                <div class="molecule-formula"></div>
+                <div class="molecule-name skeleton-text"></div>
+                <div class="molecule-formula skeleton-text"></div>
             </div>
         `;
         
@@ -133,17 +137,25 @@ function showShimmerSkeletons(container, count) {
 }
 
 /**
- * Load more molecules (batch loading with stagger animation)
+ * Load next batch of 20 molecules with stagger animation
  */
 function loadMoreMolecules() {
     if (isLoadingMore) return;
     
+    const moleculesListEl = document.getElementById('moleculesList');
+    if (!moleculesListEl) return;
+    
     const startIdx = currentBatch * ITEMS_PER_BATCH;
     const endIdx = Math.min(startIdx + ITEMS_PER_BATCH, allFilteredMolecules.length);
     
-    if (startIdx >= allFilteredMolecules.length) return;
+    if (startIdx >= allFilteredMolecules.length) {
+        console.log('✅ All molecules loaded');
+        return;
+    }
     
     isLoadingMore = true;
+    
+    console.log(`📦 Loading batch ${currentBatch + 1}: ${startIdx} to ${endIdx}`);
     
     // Use requestAnimationFrame for smooth rendering
     requestAnimationFrame(() => {
@@ -155,12 +167,17 @@ function loadMoreMolecules() {
             fragment.appendChild(div);
         }
         
-        virtualScrollContainer.appendChild(fragment);
+        moleculesListEl.appendChild(fragment);
         
         currentBatch++;
         isLoadingMore = false;
         
-        // Initialize tooltips for new batch
+        // Re-observe for next batch
+        if (endIdx < allFilteredMolecules.length) {
+            observeLastItem();
+        }
+        
+        // Initialize tooltips
         if (typeof tippy !== 'undefined') {
             setTimeout(() => {
                 tippy('[data-tippy-content]', {
@@ -175,20 +192,20 @@ function loadMoreMolecules() {
 }
 
 /**
- * Create single molecule item with enhanced design
+ * Create molecule item with enhanced mobile-friendly design
  */
 function createMoleculeItem(molecule, batchIndex) {
     const div = document.createElement('div');
     div.className = 'molecule-item';
+    div.setAttribute('data-molecule-id', molecule.id);
     
-    // Stagger animation delay
+    // Stagger animation
     div.style.animationDelay = `${batchIndex * 0.05}s`;
     
     div.setAttribute('data-tippy-content', `
         <strong>${molecule.name}</strong><br>
-        Formula: ${molecule.formula}<br>
-        Atoms: ${molecule.atoms.length}<br>
-        Bonds: ${molecule.bonds.length}
+        ${molecule.formula}<br>
+        ${molecule.atoms.length} atoms
     `);
     
     div.innerHTML = `
@@ -200,14 +217,11 @@ function createMoleculeItem(molecule, batchIndex) {
         <i class="fas fa-chevron-right molecule-arrow"></i>
     `;
     
-    // Enhanced click handler with haptic feedback
+    // Click handler with haptic feedback
     div.addEventListener('click', () => {
-        // Haptic feedback
         if ('vibrate' in navigator) navigator.vibrate(10);
         
-        // Visual feedback
         div.style.transform = 'scale(0.95)';
-        
         setTimeout(() => {
             div.style.transform = '';
             openMatterModal(molecule);
@@ -218,33 +232,43 @@ function createMoleculeItem(molecule, batchIndex) {
 }
 
 /**
- * Setup infinite scroll with Intersection Observer
+ * Setup Intersection Observer for infinite scroll
  */
-function setupInfiniteScroll() {
-    const wrapper = document.querySelector('.molecules-list-wrapper');
-    if (!wrapper) return;
-    
-    // Remove old observer if exists
-    if (window.moleculeScrollObserver) {
-        window.moleculeScrollObserver.disconnect();
+function setupInfiniteScrollObserver() {
+    if (scrollObserver) {
+        scrollObserver.disconnect();
     }
     
-    let scrollTimeout;
-    
-    wrapper.addEventListener('scroll', () => {
-        clearTimeout(scrollTimeout);
-        
-        scrollTimeout = setTimeout(() => {
-            const scrollTop = wrapper.scrollTop;
-            const scrollHeight = wrapper.scrollHeight;
-            const clientHeight = wrapper.clientHeight;
-            
-            // Load more when 80% scrolled
-            if (scrollTop + clientHeight >= scrollHeight * 0.8) {
+    scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !isLoadingMore) {
+                console.log('🔄 Loading more molecules...');
                 loadMoreMolecules();
             }
-        }, 100);
-    }, { passive: true });
+        });
+    }, {
+        root: document.querySelector('.molecules-list-wrapper'),
+        rootMargin: '200px',
+        threshold: 0.1
+    });
+    
+    observeLastItem();
+}
+
+/**
+ * Observe the last item for infinite scroll trigger
+ */
+function observeLastItem() {
+    if (!scrollObserver) return;
+    
+    const moleculesListEl = document.getElementById('moleculesList');
+    if (!moleculesListEl) return;
+    
+    const items = moleculesListEl.querySelectorAll('.molecule-item:not(.skeleton)');
+    if (items.length === 0) return;
+    
+    const lastItem = items[items.length - 1];
+    scrollObserver.observe(lastItem);
 }
 
 /**
@@ -271,21 +295,19 @@ function setViewMode(mode) {
         viewGridBtn?.classList.remove('active');
     }
     
-    // Save preference
     localStorage.setItem('moleculeViewMode', mode);
 }
 
 /**
- * Show search suggestions as user types
+ * Show search suggestions
  */
 function showSearchSuggestions(query) {
     const suggestionsEl = document.getElementById('searchSuggestions');
-    if (!suggestionsEl || !query) {
+    if (!suggestionsEl || !query || query.length < 2) {
         if (suggestionsEl) suggestionsEl.classList.remove('active');
         return;
     }
     
-    // Filter top 5 matches
     const matches = moleculesData
         .map(m => ({
             ...m,
@@ -293,7 +315,7 @@ function showSearchSuggestions(query) {
         }))
         .filter(m => m.score > 0)
         .sort((a, b) => b.score - a.score)
-        .slice(0, 5);
+        .slice(0, 6);
     
     if (matches.length === 0) {
         suggestionsEl.classList.remove('active');
@@ -302,12 +324,14 @@ function showSearchSuggestions(query) {
     
     suggestionsEl.innerHTML = matches.map(m => `
         <div class="suggestion-item" data-formula="${m.formula}">
-            <span class="suggestion-formula">${m.formula}</span>
-            <span class="suggestion-name">${m.name}</span>
+            <div class="suggestion-badge">${m.formula}</div>
+            <div class="suggestion-info">
+                <div class="suggestion-name">${m.name}</div>
+                <div class="suggestion-atoms">${m.atoms.length} atoms</div>
+            </div>
         </div>
     `).join('');
     
-    // Add click handlers
     suggestionsEl.querySelectorAll('.suggestion-item').forEach(item => {
         item.addEventListener('click', () => {
             const formula = item.getAttribute('data-formula');
@@ -323,7 +347,7 @@ function showSearchSuggestions(query) {
 }
 
 /**
- * Initialize molecules search with enhanced features
+ * Initialize molecules search
  */
 function initMoleculesSearch() {
     const moleculeSearch = document.getElementById('moleculeSearch');
@@ -332,19 +356,20 @@ function initMoleculesSearch() {
     const viewGrid = document.getElementById('viewGrid');
     const viewList = document.getElementById('viewList');
 
-    // Search input handler with debounce and suggestions
     let searchDebounce = null;
+    
+    // Search with suggestions
     moleculeSearch?.addEventListener('input', (e) => {
         const query = e.target.value;
         
-        // Show suggestions
+        // Show suggestions immediately
         showSearchSuggestions(query);
         
         // Debounce main search
         if (searchDebounce) clearTimeout(searchDebounce);
         searchDebounce = setTimeout(() => {
             renderMoleculesList(query);
-        }, 300);
+        }, 400);
     });
 
     // Close suggestions on blur
@@ -355,7 +380,7 @@ function initMoleculesSearch() {
         }, 200);
     });
 
-    // Sort button handlers
+    // Sort buttons
     sortAZ?.addEventListener('click', () => {
         currentSortMode = 'az';
         sortAZ.classList.add('active');
@@ -371,13 +396,8 @@ function initMoleculesSearch() {
     });
 
     // View mode buttons
-    viewGrid?.addEventListener('click', () => {
-        setViewMode('grid');
-    });
-
-    viewList?.addEventListener('click', () => {
-        setViewMode('list');
-    });
+    viewGrid?.addEventListener('click', () => setViewMode('grid'));
+    viewList?.addEventListener('click', () => setViewMode('list'));
 
     // Load saved view mode
     const savedMode = localStorage.getItem('moleculeViewMode');
@@ -385,17 +405,7 @@ function initMoleculesSearch() {
         setViewMode(savedMode);
     }
 
-    console.log('✅ Enhanced molecules search initialized');
+    console.log('✅ Molecules search initialized');
 }
 
-/**
- * Highlight matching text in search results
- */
-function highlightMatch(text, query) {
-    if (!query) return text;
-    const regex = new RegExp(`(${query})`, 'gi');
-    return text.replace(regex, '<mark style="background: var(--accent-blue); color: white; padding: 2px 4px; border-radius: 3px;">$1</mark>');
-}
-
-// Auto-initialize when molecules page is shown
-console.log('✅ Enhanced molecules list module loaded');
+console.log('✅ Molecules list module loaded (Perfect Mobile Version)');
