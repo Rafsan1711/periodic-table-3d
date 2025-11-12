@@ -1,7 +1,8 @@
 /* ============================================
-   SETTINGS MODAL STYLES - MOBILE OPTIMIZED
+   SETTINGS MODAL STYLES - FIXED VERSION
    ============================================ */
 
+/* Settings Button - FIXED: Only icon rotates */
 .settings-btn {
     background: var(--bg-secondary);
     border: 2px solid var(--border-primary);
@@ -12,12 +13,16 @@
 .settings-btn:hover {
     border-color: var(--accent-purple);
     background: var(--bg-primary);
-    transform: translateY(-2px) rotate(90deg);
+    transform: translateY(-2px); /* FIXED: No rotation */
+}
+
+.settings-btn:hover i {
+    transform: rotate(90deg); /* FIXED: Only icon rotates */
 }
 
 .settings-btn i {
     font-size: 1.2rem;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease; /* Smooth rotation */
 }
 
 .settings-modal-content {
@@ -30,7 +35,7 @@
     display: flex;
     gap: 0;
     max-height: calc(85vh - 80px);
-    overflow: hidden;
+    overflow: hidden; /* Parent doesn't scroll */
 }
 
 /* Settings Tabs (Sidebar) */
@@ -76,11 +81,12 @@
     width: 20px;
 }
 
-/* Settings Content Area */
+/* Settings Content Area - FIXED: Scrollable */
 .settings-content {
     flex: 1;
     padding: 30px;
-    overflow-y: auto;
+    overflow-y: auto; /* FIXED: Enable scroll */
+    overflow-x: hidden; /* Prevent horizontal scroll */
     background: var(--bg-secondary);
 }
 
@@ -199,7 +205,7 @@
     box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
 }
 
-/* Buttons */
+/* Buttons - FIXED: No rotation on hover */
 .settings-btn {
     padding: 12px 24px;
     border-radius: 8px;
@@ -219,7 +225,7 @@
 }
 
 .settings-btn.primary:hover {
-    transform: translateY(-2px);
+    transform: translateY(-2px); /* FIXED: No rotation */
     box-shadow: 0 6px 16px rgba(88, 166, 255, 0.4);
 }
 
@@ -232,6 +238,7 @@
 .settings-btn.secondary:hover {
     background: var(--bg-tertiary);
     border-color: var(--accent-blue);
+    transform: translateY(-2px); /* FIXED: No rotation */
 }
 
 .settings-btn.danger {
@@ -241,7 +248,7 @@
 
 .settings-btn.danger:hover {
     background: #d63031;
-    transform: translateY(-2px);
+    transform: translateY(-2px); /* FIXED: No rotation */
 }
 
 /* Theme Options */
@@ -569,6 +576,7 @@
     
     .settings-content {
         padding: 20px 15px;
+        max-height: calc(85vh - 140px); /* FIXED: Account for tabs height */
     }
     
     .theme-options {
