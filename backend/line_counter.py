@@ -2,6 +2,8 @@
 Advanced Line Counter Backend
 Supports multiple languages and excludes .github folder
 Uses GitHub API for private repos
+
+Added: /api/readme endpoint to fetch README.md content
 """
 
 from flask import Flask, jsonify
@@ -80,7 +82,8 @@ def index():
         ],
         'endpoints': {
             'line_count': '/api/line-count',
-            'health': '/health'
+            'health': '/health',
+            'readme': '/api/readme'
         },
         'timestamp': int(datetime.now().timestamp() * 1000)
     })
@@ -252,6 +255,7 @@ def get_line_count():
             'total': 0
         }), 500
 
+
 def count_comments(content, ext):
     """
     Basic comment detection (can be enhanced)
@@ -276,6 +280,44 @@ def count_comments(content, ext):
         comment_count += len(re.findall(r'<!--[\s\S]*?-->', content))
     
     return comment_count
+
+@app.route('/api/readme', methods=['GET'])
+def get_readme():
+    """
+    Fetch README.md content from repository
+    """
+    try:
+        if not GITHUB_TOKEN:
+            return jsonify({'error': 'Token not configured'}), 500
+        
+        headers = {
+            'Authorization': f'Bearer {GITHUB_TOKEN}',
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+        
+        # Fetch README
+        readme_url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/readme?ref={BRANCH}'
+        response = requests.get(readme_url, headers=headers, timeout=10)
+        
+        if response.status_code != 200:
+            return jsonify({'error': 'README not found'}), 404
+        
+        data = response.json()
+        
+        # Decode content
+        content = base64.b64decode(data['content']).decode('utf-8')
+        
+        return jsonify({
+            'content': content,
+            'name': data.get('name'),
+            'path': data.get('path'),
+            'timestamp': int(datetime.now().timestamp() * 1000)
+        })
+        
+    except Exception as e:
+        print(f"❌ README error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/health', methods=['GET'])
 def health_check():
