@@ -1,457 +1,363 @@
-/**
- * 🎨 Professional Line Counter - FIXED
- * ✅ Handles missing/null data
- * ✅ Creates cache if doesn't exist
- * ✅ CORS handling
- */
+"""
+Advanced Line Counter Backend - COMPLETE & READY
+✅ CORS configured
+✅ Branch: master
+✅ All languages supported
+✅ Error handling
+✅ Memory optimized for 512MB RAM
 
-const BACKEND_URL = 'https://periodic-table-3d.onrender.com';
-const lineCountRef = db.ref('stats/lineCount');
+DEPLOY INSTRUCTIONS:
+1. Copy this entire file to backend/line_counter.py
+2. Render.com settings:
+   - Root Directory: backend
+   - Build Command: pip install -r requirements.txt
+   - Start Command: gunicorn -w 4 -b 0.0.0.0:$PORT line_counter:app
+   - Environment Variable: GITHUB_TOKEN = your_token_here
+3. Deploy!
+"""
 
-let isCalculating = false;
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+import requests
+import os
+from datetime import datetime
+import base64
 
-/**
- * Main fetch with complete error handling
- */
-async function fetchLineCount() {
-    const container = document.querySelector('.line-counter-card');
-    const subtitleEl = document.querySelector('.counter-subtitle');
+# ============================================
+# APP INITIALIZATION
+# ============================================
+
+app = Flask(__name__)
+
+# ✅ PROPER CORS CONFIGURATION
+CORS(app, resources={
+    r"/*": {
+        "origins": [
+            "https://periodic-table-3d-module.netlify.app",
+            "https://periodic-table-3d.netlify.app",
+            "http://localhost:*",
+            "http://127.0.0.1:*"
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Accept", "Authorization"],
+        "expose_headers": ["Content-Type"],
+        "supports_credentials": False,
+        "max_age": 3600
+    }
+})
+
+# ============================================
+# CONFIGURATION
+# ============================================
+
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
+REPO_OWNER = 'Rafsan1711'
+REPO_NAME = 'periodic-table-3d'
+BRANCH = 'master'  # Your branch name
+
+# File extensions
+EXTENSIONS = {
+    '.js': 'javascript',
+    '.jsx': 'javascript',
+    '.mjs': 'javascript',
+    '.ts': 'typescript',
+    '.tsx': 'typescript',
+    '.css': 'css',
+    '.scss': 'css',
+    '.sass': 'css',
+    '.less': 'css',
+    '.html': 'html',
+    '.htm': 'html',
+    '.py': 'python',
+    '.json': 'json',
+    '.md': 'markdown',
+    '.markdown': 'markdown',
+    '.txt': 'text',
+    '.xml': 'xml',
+    '.yml': 'yaml',
+    '.yaml': 'yaml',
+    '.sh': 'shell',
+    '.bat': 'batch'
+}
+
+# Exclude patterns
+EXCLUDE_PATTERNS = [
+    '.github/',
+    'node_modules/',
+    '.git/',
+    'dist/',
+    'build/',
+    '__pycache__/',
+    '.netlify/',
+    '.vscode/',
+    'package-lock.json',
+    'yarn.lock'
+]
+
+def should_exclude(path):
+    """Check if path should be excluded"""
+    return any(pattern in path for pattern in EXCLUDE_PATTERNS)
+
+# ============================================
+# MIDDLEWARE - CORS Headers
+# ============================================
+
+@app.after_request
+def after_request(response):
+    """Add CORS headers to all responses"""
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Accept,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+    response.headers.add('Access-Control-Max-Age', '3600')
+    return response
+
+# ============================================
+# ROUTES
+# ============================================
+
+@app.route('/', methods=['GET', 'OPTIONS'])
+def index():
+    """Root endpoint"""
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'}), 200
     
-    try {
-        console.log('🚀 Starting line counter...');
+    return jsonify({
+        'service': 'Periodic Table 3D Line Counter',
+        'version': '3.0',
+        'status': 'running',
+        'branch': BRANCH,
+        'repository': f"{REPO_OWNER}/{REPO_NAME}",
+        'endpoints': {
+            'line_count': '/api/line-count',
+            'readme': '/api/readme',
+            'health': '/health'
+        },
+        'timestamp': int(datetime.now().timestamp() * 1000)
+    })
+
+@app.route('/api/line-count', methods=['GET', 'OPTIONS'])
+def get_line_count():
+    """Count lines of code"""
+    
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'}), 200
+    
+    try:
+        print(f"\n{'='*60}")
+        print(f"📊 LINE COUNTER STARTED")
+        print(f"📦 Repository: {REPO_OWNER}/{REPO_NAME}")
+        print(f"🌿 Branch: {BRANCH}")
+        print(f"{'='*60}\n")
         
-        // Check cache first
-        const cached = await lineCountRef.once('value');
-        const cachedData = cached.val();
+        if not GITHUB_TOKEN:
+            print("❌ ERROR: GITHUB_TOKEN not set!")
+            return jsonify({
+                'error': 'GitHub token required',
+                'message': 'Set GITHUB_TOKEN in environment variables',
+                'total': 0
+            }), 500
         
-        // If cache exists and is fresh, use it
-        if (cachedData && cachedData.total && (Date.now() - cachedData.timestamp < 3600000)) {
-            console.log('✅ Using cached data:', cachedData.total);
-            await showCachedAnimation(cachedData);
-            return;
+        # Headers
+        headers = {
+            'Authorization': f'Bearer {GITHUB_TOKEN}',
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28'
         }
         
-        console.log('📡 Cache expired or missing, fetching fresh data...');
+        # Get repository tree
+        tree_url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/git/trees/{BRANCH}?recursive=1'
         
-        // Start animation sequence
-        isCalculating = true;
+        print(f"🔗 Fetching tree: {tree_url}")
+        response = requests.get(tree_url, headers=headers, timeout=30)
         
-        // Stage 1: ZIP Animation
-        await showZipAnimation(container, subtitleEl);
-        await delay(3000);
+        print(f"📡 Response status: {response.status_code}")
         
-        // Stage 2: Calculation Animation
-        showCalculatingAnimation(container, subtitleEl);
+        if response.status_code == 401:
+            print("❌ Authentication failed!")
+            return jsonify({
+                'error': 'Invalid token',
+                'total': 0
+            }), 401
         
-        console.log('📡 Fetching from backend:', BACKEND_URL);
+        if response.status_code == 404:
+            print(f"❌ Repository or branch not found!")
+            return jsonify({
+                'error': 'Repository not found',
+                'total': 0
+            }), 404
         
-        const response = await fetch(`${BACKEND_URL}/api/line-count`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            mode: 'cors'
-        });
+        response.raise_for_status()
+        tree_data = response.json()
         
-        if (!response.ok) {
-            throw new Error(`Backend error: ${response.status}`);
+        if 'tree' not in tree_data:
+            print("❌ Invalid tree response!")
+            return jsonify({
+                'error': 'Invalid response',
+                'total': 0
+            }), 500
+        
+        files = tree_data['tree']
+        print(f"📂 Total items: {len(files)}\n")
+        
+        # Initialize counters
+        counts = {
+            'javascript': 0,
+            'typescript': 0,
+            'css': 0,
+            'html': 0,
+            'python': 0,
+            'json': 0,
+            'markdown': 0,
+            'yaml': 0,
+            'shell': 0,
+            'batch': 0,
+            'text': 0,
+            'xml': 0,
+            'total': 0
         }
         
-        const data = await response.json();
-        console.log('✅ Data received:', data);
-        
-        // Validate data
-        if (!data || typeof data.total === 'undefined') {
-            throw new Error('Invalid data structure');
+        stats = {
+            'files_processed': 0,
+            'files_excluded': 0,
+            'files_skipped': 0
         }
         
-        await delay(2000);
+        # Process files
+        processed = 0
         
-        // Stage 3: Display results
-        await showResultAnimation(data, container, subtitleEl);
-        
-        // Save to cache
-        console.log('💾 Saving to cache...');
-        await lineCountRef.set({
-            ...data,
-            timestamp: Date.now()
-        });
-        
-        console.log('✅ Complete!');
-        
-    } catch (error) {
-        console.error('❌ Error:', error);
-        
-        // Try cache as fallback
-        const cached = await lineCountRef.once('value');
-        const cachedData = cached.val();
-        
-        if (cachedData && cachedData.total) {
-            console.log('⚠️ Using old cache as fallback');
-            await showCachedAnimation(cachedData);
+        for item in files:
+            if item['type'] != 'blob':
+                continue
             
-            const subtitleEl = document.querySelector('.counter-subtitle');
-            if (subtitleEl) {
-                subtitleEl.innerHTML = `
-                    <div class="cache-info">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span>Showing cached data • Last updated ${getTimeAgo(cachedData.timestamp)}</span>
-                    </div>
-                `;
-            }
-        } else {
-            // No cache available, show friendly error
-            await showNoDataState(container, subtitleEl);
-        }
-    } finally {
-        isCalculating = false;
-    }
-}
-
-/**
- * Show state when no data available
- */
-async function showNoDataState(container, subtitleEl) {
-    const countEl = document.getElementById('line-count');
-    
-    countEl.innerHTML = `
-        <div class="no-data-container">
-            <div class="no-data-icon">
-                <i class="fas fa-code"></i>
-            </div>
-            <div class="no-data-text">
-                <h3>Initializing Line Counter</h3>
-                <p>First-time setup in progress...</p>
-            </div>
-        </div>
-    `;
-    
-    subtitleEl.innerHTML = `
-        <div class="info-text">
-            <i class="fas fa-info-circle"></i>
-            <span>Please wait while we analyze the repository</span>
-        </div>
-    `;
-    
-    // Retry after 5 seconds
-    setTimeout(() => {
-        console.log('🔄 Retrying...');
-        fetchLineCount();
-    }, 5000);
-}
-
-/**
- * 🎬 STAGE 1: ZIP ANIMATION
- */
-async function showZipAnimation(container, subtitleEl) {
-    const countEl = document.getElementById('line-count');
-    
-    countEl.innerHTML = '';
-    
-    const zipContainer = document.createElement('div');
-    zipContainer.className = 'zip-animation-container';
-    zipContainer.innerHTML = `
-        <div class="zip-file">
-            <div class="zip-icon">
-                <i class="fas fa-file-archive"></i>
-            </div>
-            <div class="zip-label">repository.zip</div>
-        </div>
-        <div class="unzip-effect">
-            <div class="flying-file" style="--delay: 0.2s">
-                <i class="fab fa-js"></i>
-            </div>
-            <div class="flying-file" style="--delay: 0.4s">
-                <i class="fab fa-css3"></i>
-            </div>
-            <div class="flying-file" style="--delay: 0.6s">
-                <i class="fab fa-html5"></i>
-            </div>
-            <div class="flying-file" style="--delay: 0.8s">
-                <i class="fab fa-python"></i>
-            </div>
-        </div>
-        <div class="unzip-progress-bar">
-            <div class="unzip-progress-fill"></div>
-        </div>
-    `;
-    
-    countEl.appendChild(zipContainer);
-    
-    subtitleEl.innerHTML = `
-        <div class="stage-text animated-gradient">
-            <i class="fas fa-box-open"></i>
-            Extracting files from repository...
-        </div>
-    `;
-    
-    setTimeout(() => {
-        const zipFile = zipContainer.querySelector('.zip-file');
-        if (zipFile) zipFile.style.animation = 'zipBounce 0.6s ease-out';
-    }, 100);
-    
-    setTimeout(() => {
-        const unzipEffect = zipContainer.querySelector('.unzip-effect');
-        if (unzipEffect) unzipEffect.style.opacity = '1';
-    }, 800);
-    
-    const progressFill = zipContainer.querySelector('.unzip-progress-fill');
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-        progress += 3;
-        if (progressFill) progressFill.style.width = progress + '%';
-        if (progress >= 100) clearInterval(progressInterval);
-    }, 60);
-}
-
-/**
- * ⚙️ STAGE 2: CALCULATING ANIMATION
- */
-function showCalculatingAnimation(container, subtitleEl) {
-    const countEl = document.getElementById('line-count');
-    
-    countEl.innerHTML = `
-        <div class="calculation-container">
-            <div class="gear-system">
-                <div class="gear big-gear">
-                    <i class="fas fa-cog"></i>
-                </div>
-                <div class="gear medium-gear">
-                    <i class="fas fa-cog"></i>
-                </div>
-                <div class="gear small-gear">
-                    <i class="fas fa-cog"></i>
-                </div>
-            </div>
-            <div class="calculation-sparks">
-                <div class="spark" style="--angle: 45deg"></div>
-                <div class="spark" style="--angle: 135deg"></div>
-                <div class="spark" style="--angle: 225deg"></div>
-                <div class="spark" style="--angle: 315deg"></div>
-            </div>
-        </div>
-    `;
-    
-    subtitleEl.innerHTML = `
-        <div class="stage-text animated-gradient">
-            <i class="fas fa-calculator"></i>
-            Analyzing code structure...
-        </div>
-    `;
-}
-
-/**
- * 🎯 STAGE 3: RESULT DISPLAY
- */
-async function showResultAnimation(data, container, subtitleEl) {
-    const countEl = document.getElementById('line-count');
-    
-    // Validate data
-    if (!data || typeof data.total === 'undefined' || data.total === null) {
-        console.error('Invalid data:', data);
-        throw new Error('Invalid data structure');
-    }
-    
-    // Fade out
-    countEl.style.opacity = '0';
-    await delay(500);
-    
-    // Create odometer
-    countEl.innerHTML = '';
-    countEl.style.opacity = '1';
-    
-    const totalStr = data.total.toString();
-    const digits = totalStr.split('');
-    
-    digits.forEach((digit, index) => {
-        const digitWrapper = document.createElement('div');
-        digitWrapper.className = 'odometer-digit-wrapper';
-        
-        const digitEl = document.createElement('div');
-        digitEl.className = 'odometer-digit';
-        digitEl.textContent = '0';
-        
-        digitWrapper.appendChild(digitEl);
-        countEl.appendChild(digitWrapper);
-        
-        // Add commas
-        const fromRight = digits.length - index - 1;
-        if (fromRight > 0 && fromRight % 3 === 0) {
-            const comma = document.createElement('span');
-            comma.className = 'odometer-comma';
-            comma.textContent = ',';
-            countEl.appendChild(comma);
-        }
-        
-        // Animate
-        setTimeout(() => {
-            animateDigit(digitEl, parseInt(digit));
-        }, index * 100);
-    });
-    
-    // Update breakdown
-    await delay(1000);
-    updateBreakdown(data);
-    
-    // Success message
-    if (subtitleEl) {
-        subtitleEl.innerHTML = `
-            <div class="success-animation">
-                <i class="fas fa-check-circle"></i>
-                <span>Analysis complete! ${formatNumber(data.total)} lines of code</span>
-            </div>
-        `;
-    }
-}
-
-/**
- * Animate digit
- */
-function animateDigit(element, targetDigit) {
-    if (!element) return;
-    
-    let current = 0;
-    const duration = 1000;
-    const steps = 20;
-    const increment = targetDigit / steps;
-    
-    const interval = setInterval(() => {
-        current += increment;
-        if (current >= targetDigit) {
-            element.textContent = targetDigit;
-            clearInterval(interval);
-        } else {
-            element.textContent = Math.floor(current);
-        }
-    }, duration / steps);
-}
-
-/**
- * Update breakdown with validation
- */
-function updateBreakdown(data) {
-    if (!data) return;
-    
-    const languages = [
-        { id: 'js-lines', value: data.javascript || 0 },
-        { id: 'css-lines', value: data.css || 0 },
-        { id: 'html-lines', value: data.html || 0 },
-        { id: 'python-lines', value: data.python || 0 }
-    ];
-    
-    languages.forEach((lang, index) => {
-        setTimeout(() => {
-            const el = document.getElementById(lang.id);
-            if (el) {
-                el.style.opacity = '0';
-                el.style.transform = 'translateX(-30px)';
+            path = item['path']
+            
+            # Check exclusion
+            if should_exclude(path):
+                stats['files_excluded'] += 1
+                continue
+            
+            # Check extension
+            ext = os.path.splitext(path)[1].lower()
+            if ext not in EXTENSIONS:
+                stats['files_skipped'] += 1
+                continue
+            
+            # Fetch file content
+            try:
+                content_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}?ref={BRANCH}"
+                file_response = requests.get(content_url, headers=headers, timeout=10)
                 
-                setTimeout(() => {
-                    el.textContent = formatNumber(lang.value);
-                    el.style.transition = 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                    el.style.opacity = '1';
-                    el.style.transform = 'translateX(0)';
-                }, 100);
-            }
-        }, index * 200);
-    });
-}
+                if file_response.status_code == 200:
+                    file_data = file_response.json()
+                    
+                    if 'content' in file_data:
+                        # Decode base64
+                        content = base64.b64decode(file_data['content']).decode('utf-8', errors='ignore')
+                        
+                        # Count lines
+                        lines = content.count('\n') + 1
+                        file_type = EXTENSIONS[ext]
+                        
+                        counts[file_type] += lines
+                        counts['total'] += lines
+                        stats['files_processed'] += 1
+                        
+                        processed += 1
+                        print(f"✓ [{processed}] {path}: {lines} lines ({file_type})")
+                
+            except Exception as e:
+                print(f"✗ Error: {path} - {str(e)[:50]}")
+                continue
+        
+        print(f"\n{'='*60}")
+        print(f"📊 SUMMARY")
+        print(f"{'='*60}")
+        print(f"✅ Processed: {stats['files_processed']}")
+        print(f"⊗  Excluded: {stats['files_excluded']}")
+        print(f"⊘  Skipped: {stats['files_skipped']}")
+        print(f"\n📝 LINES BY LANGUAGE:")
+        for lang, count in counts.items():
+            if lang != 'total' and count > 0:
+                print(f"   {lang.capitalize()}: {count:,}")
+        print(f"\n🎯 TOTAL: {counts['total']:,}")
+        print(f"{'='*60}\n")
+        
+        return jsonify({
+            **counts,
+            'statistics': stats,
+            'timestamp': int(datetime.now().timestamp() * 1000),
+            'repository': f"{REPO_OWNER}/{REPO_NAME}",
+            'branch': BRANCH
+        })
+        
+    except Exception as e:
+        print(f"\n❌ FATAL ERROR: {str(e)}\n")
+        return jsonify({
+            'error': 'Internal error',
+            'message': str(e),
+            'total': 0
+        }), 500
 
-/**
- * Show cached data quickly
- */
-async function showCachedAnimation(data) {
-    // Validate
-    if (!data || typeof data.total === 'undefined') {
-        console.warn('Invalid cached data, fetching fresh...');
-        await fetchLineCount();
-        return;
-    }
+@app.route('/api/readme', methods=['GET', 'OPTIONS'])
+def get_readme():
+    """Fetch README.md"""
     
-    const countEl = document.getElementById('line-count');
-    const subtitleEl = document.querySelector('.counter-subtitle');
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'}), 200
     
-    countEl.style.opacity = '0';
-    await delay(300);
-    
-    await showResultAnimation(data, null, subtitleEl);
-    
-    if (subtitleEl) {
-        subtitleEl.innerHTML = `
-            <div class="cache-info">
-                <i class="fas fa-database"></i>
-                <span>Cached data • Updated ${getTimeAgo(data.timestamp)}</span>
-            </div>
-        `;
-    }
-}
-
-/**
- * Format number
- */
-function formatNumber(num) {
-    if (typeof num === 'undefined' || num === null) return '0';
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
-/**
- * Get time ago
- */
-function getTimeAgo(timestamp) {
-    if (!timestamp) return 'unknown';
-    
-    const diff = Date.now() - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-    
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
-}
-
-/**
- * Delay helper
- */
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
- * Real-time listener
- */
-lineCountRef.on('value', (snapshot) => {
-    const data = snapshot.val();
-    
-    if (!isCalculating && data && data.total) {
-        const countEl = document.getElementById('line-count');
-        if (countEl && !countEl.querySelector('.odometer-digit-wrapper')) {
-            console.log('🔄 Real-time update detected');
-            showCachedAnimation(data);
+    try:
+        if not GITHUB_TOKEN:
+            return jsonify({'error': 'Token required'}), 500
+        
+        headers = {
+            'Authorization': f'Bearer {GITHUB_TOKEN}',
+            'Accept': 'application/vnd.github+json'
         }
-    }
-});
+        
+        readme_url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/readme?ref={BRANCH}'
+        response = requests.get(readme_url, headers=headers, timeout=10)
+        
+        if response.status_code != 200:
+            return jsonify({'error': 'README not found'}), 404
+        
+        data = response.json()
+        content = base64.b64decode(data['content']).decode('utf-8')
+        
+        return jsonify({
+            'content': content,
+            'name': data['name'],
+            'timestamp': int(datetime.now().timestamp() * 1000)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-/**
- * Initialize on scroll
- */
-document.addEventListener('DOMContentLoaded', () => {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                console.log('👁️ Line counter visible, starting...');
-                fetchLineCount();
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.3 });
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check"""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'line-counter',
+        'version': '3.0',
+        'branch': BRANCH,
+        'token_configured': bool(GITHUB_TOKEN),
+        'timestamp': int(datetime.now().timestamp() * 1000)
+    })
+
+# ============================================
+# MAIN
+# ============================================
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
     
-    const section = document.querySelector('.line-counter-section');
-    if (section) {
-        observer.observe(section);
-    }
+    print(f"\n{'='*60}")
+    print(f"🚀 LINE COUNTER STARTING")
+    print(f"{'='*60}")
+    print(f"📦 Repository: {REPO_OWNER}/{REPO_NAME}")
+    print(f"🌿 Branch: {BRANCH}")
+    print(f"🔒 Token: {'✓ Configured' if GITHUB_TOKEN else '✗ Missing'}")
+    print(f"🌐 Port: {port}")
+    print(f"{'='*60}\n")
     
-    console.log('✅ Line counter initialized');
-});
+    app.run(host='0.0.0.0', port=port, debug=False)
