@@ -1,8 +1,8 @@
 /**
- * 🎨 Professional Line Counter with Stunning Animations
- * Stage 1: ZIP Logo appears and unzips
- * Stage 2: Gears rotate while calculating
- * Stage 3: Numbers count up with odometer effect
+ * Line Counter - COMPLETE FIX
+ * ✅ Null safety
+ * ✅ Default values
+ * ✅ Error recovery
  */
 
 const BACKEND_URL = 'https://periodic-table-3d.onrender.com';
@@ -10,154 +10,187 @@ const lineCountRef = db.ref('stats/lineCount');
 
 let isCalculating = false;
 
-/**
- * Main fetch function with animation pipeline
- */
 async function fetchLineCount() {
     const container = document.querySelector('.line-counter-card');
     const subtitleEl = document.querySelector('.counter-subtitle');
     
     try {
-        // Check cache first
+        console.log('🚀 Line counter starting...');
+        
+        // Check cache
         const cached = await lineCountRef.once('value');
         const cachedData = cached.val();
         
-        if (cachedData && (Date.now() - cachedData.timestamp < 3600000)) {
+        // Use cache if valid and fresh
+        if (cachedData && cachedData.total && (Date.now() - cachedData.timestamp < 3600000)) {
             console.log('✅ Using cached data');
             await showCachedAnimation(cachedData);
             return;
         }
         
-        // Start full animation sequence
+        console.log('📡 Fetching fresh data...');
         isCalculating = true;
         
-        // Stage 1: ZIP Animation (3 seconds)
+        // Stage 1: ZIP
         await showZipAnimation(container, subtitleEl);
         await delay(3000);
         
-        // Stage 2: Calculation Animation (fetch during this)
+        // Stage 2: Calculate
         showCalculatingAnimation(container, subtitleEl);
         
-        console.log('📡 Fetching from backend...');
-        const response = await fetch(`${BACKEND_URL}/api/line-count`);
+        const response = await fetch(`${BACKEND_URL}/api/line-count`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            mode: 'cors'
+        });
         
-        if (!response.ok) throw new Error('Backend failed');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
         
         const data = await response.json();
         console.log('✅ Data received:', data);
         
-        await delay(2000); // Let gears spin
+        // Validate and set defaults
+        const validData = {
+            total: data.total || 0,
+            javascript: data.javascript || 0,
+            css: data.css || 0,
+            html: data.html || 0,
+            python: data.python || 0,
+            json: data.json || 0,
+            markdown: data.markdown || 0,
+            timestamp: data.timestamp || Date.now()
+        };
         
-        // Stage 3: Display results with odometer
-        await showResultAnimation(data, container, subtitleEl);
+        await delay(2000);
         
-        // Cache result
-        await lineCountRef.set({
-            ...data,
-            timestamp: Date.now()
-        });
+        // Stage 3: Display
+        await showResultAnimation(validData, container, subtitleEl);
+        
+        // Save cache
+        await lineCountRef.set(validData);
+        console.log('✅ Saved to cache');
         
     } catch (error) {
         console.error('❌ Error:', error);
-        await showErrorAnimation(container, subtitleEl);
         
-        // Try cache as fallback
+        // Try old cache
         const cached = await lineCountRef.once('value');
-        if (cached.val()) {
-            await delay(1000);
-            await showCachedAnimation(cached.val());
+        const cachedData = cached.val();
+        
+        if (cachedData && cachedData.total) {
+            console.log('⚠️ Using old cache');
+            await showCachedAnimation(cachedData);
+            
+            if (subtitleEl) {
+                subtitleEl.innerHTML = `
+                    <div class="cache-info">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Using cached data (${getTimeAgo(cachedData.timestamp)})</span>
+                    </div>
+                `;
+            }
+        } else {
+            // No data at all
+            await showNoDataState(container, subtitleEl);
         }
     } finally {
         isCalculating = false;
     }
 }
 
-/**
- * 🎬 STAGE 1: ZIP UNZIPPING ANIMATION
- */
-async function showZipAnimation(container, subtitleEl) {
+async function showNoDataState(container, subtitleEl) {
     const countEl = document.getElementById('line-count');
     
-    // Clear existing content
-    countEl.innerHTML = '';
-    
-    // Create ZIP container
-    const zipContainer = document.createElement('div');
-    zipContainer.className = 'zip-animation-container';
-    zipContainer.innerHTML = `
-        <div class="zip-file">
-            <div class="zip-icon">
-                <i class="fas fa-file-archive"></i>
+    countEl.innerHTML = `
+        <div class="no-data-container">
+            <div class="no-data-icon">
+                <i class="fas fa-code"></i>
             </div>
-            <div class="zip-label">repository.zip</div>
-        </div>
-        <div class="unzip-effect">
-            <div class="flying-file" style="--delay: 0.2s">
-                <i class="fab fa-js"></i>
+            <div class="no-data-text">
+                <h3>First Time Setup</h3>
+                <p>Initializing line counter...</p>
             </div>
-            <div class="flying-file" style="--delay: 0.4s">
-                <i class="fab fa-css3"></i>
-            </div>
-            <div class="flying-file" style="--delay: 0.6s">
-                <i class="fab fa-html5"></i>
-            </div>
-            <div class="flying-file" style="--delay: 0.8s">
-                <i class="fab fa-python"></i>
-            </div>
-        </div>
-        <div class="unzip-progress-bar">
-            <div class="unzip-progress-fill"></div>
         </div>
     `;
     
-    countEl.appendChild(zipContainer);
+    if (subtitleEl) {
+        subtitleEl.innerHTML = `
+            <div class="info-text">
+                <i class="fas fa-sync fa-spin"></i>
+                <span>Retrying in 5 seconds...</span>
+            </div>
+        `;
+    }
     
-    subtitleEl.innerHTML = `
-        <div class="stage-text animated-gradient">
-            <i class="fas fa-box-open"></i>
-            Extracting files from repository...
+    setTimeout(() => fetchLineCount(), 5000);
+}
+
+async function showZipAnimation(container, subtitleEl) {
+    const countEl = document.getElementById('line-count');
+    if (!countEl) return;
+    
+    countEl.innerHTML = `
+        <div class="zip-animation-container">
+            <div class="zip-file">
+                <div class="zip-icon">
+                    <i class="fas fa-file-archive"></i>
+                </div>
+                <div class="zip-label">repository.zip</div>
+            </div>
+            <div class="unzip-effect">
+                <div class="flying-file" style="--delay: 0.2s"><i class="fab fa-js"></i></div>
+                <div class="flying-file" style="--delay: 0.4s"><i class="fab fa-css3"></i></div>
+                <div class="flying-file" style="--delay: 0.6s"><i class="fab fa-html5"></i></div>
+                <div class="flying-file" style="--delay: 0.8s"><i class="fab fa-python"></i></div>
+            </div>
+            <div class="unzip-progress-bar">
+                <div class="unzip-progress-fill"></div>
+            </div>
         </div>
     `;
     
-    // Trigger animations
+    if (subtitleEl) {
+        subtitleEl.innerHTML = `
+            <div class="stage-text animated-gradient">
+                <i class="fas fa-box-open"></i>
+                Extracting repository files...
+            </div>
+        `;
+    }
+    
     setTimeout(() => {
-        const zipFile = zipContainer.querySelector('.zip-file');
-        zipFile.style.animation = 'zipBounce 0.6s ease-out';
+        const zipFile = countEl.querySelector('.zip-file');
+        if (zipFile) zipFile.style.animation = 'zipBounce 0.6s ease-out';
     }, 100);
     
     setTimeout(() => {
-        const unzipEffect = zipContainer.querySelector('.unzip-effect');
-        unzipEffect.style.opacity = '1';
+        const effect = countEl.querySelector('.unzip-effect');
+        if (effect) effect.style.opacity = '1';
     }, 800);
     
-    // Animate progress bar
-    const progressFill = zipContainer.querySelector('.unzip-progress-fill');
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-        progress += 3;
-        progressFill.style.width = progress + '%';
-        if (progress >= 100) clearInterval(progressInterval);
-    }, 60);
+    const fill = countEl.querySelector('.unzip-progress-fill');
+    if (fill) {
+        let p = 0;
+        const int = setInterval(() => {
+            p += 3;
+            fill.style.width = p + '%';
+            if (p >= 100) clearInterval(int);
+        }, 60);
+    }
 }
 
-/**
- * ⚙️ STAGE 2: CALCULATING ANIMATION
- */
 function showCalculatingAnimation(container, subtitleEl) {
     const countEl = document.getElementById('line-count');
+    if (!countEl) return;
     
     countEl.innerHTML = `
         <div class="calculation-container">
             <div class="gear-system">
-                <div class="gear big-gear">
-                    <i class="fas fa-cog"></i>
-                </div>
-                <div class="gear medium-gear">
-                    <i class="fas fa-cog"></i>
-                </div>
-                <div class="gear small-gear">
-                    <i class="fas fa-cog"></i>
-                </div>
+                <div class="gear big-gear"><i class="fas fa-cog"></i></div>
+                <div class="gear medium-gear"><i class="fas fa-cog"></i></div>
+                <div class="gear small-gear"><i class="fas fa-cog"></i></div>
             </div>
             <div class="calculation-sparks">
                 <div class="spark" style="--angle: 45deg"></div>
@@ -168,44 +201,43 @@ function showCalculatingAnimation(container, subtitleEl) {
         </div>
     `;
     
-    subtitleEl.innerHTML = `
-        <div class="stage-text animated-gradient">
-            <i class="fas fa-calculator"></i>
-            Analyzing code structure...
-        </div>
-    `;
+    if (subtitleEl) {
+        subtitleEl.innerHTML = `
+            <div class="stage-text animated-gradient">
+                <i class="fas fa-calculator"></i>
+                Analyzing code structure...
+            </div>
+        `;
+    }
 }
 
-/**
- * 🎯 STAGE 3: RESULT DISPLAY WITH ODOMETER
- */
 async function showResultAnimation(data, container, subtitleEl) {
     const countEl = document.getElementById('line-count');
+    if (!countEl) return;
     
-    // Fade out calculation
+    // Validate data with defaults
+    const total = data.total || 0;
+    
     countEl.style.opacity = '0';
     await delay(500);
     
-    // Create odometer
     countEl.innerHTML = '';
     countEl.style.opacity = '1';
     
-    const totalStr = data.total.toString();
-    const digits = totalStr.split('');
+    const digits = total.toString().split('');
     
-    digits.forEach((digit, index) => {
-        const digitWrapper = document.createElement('div');
-        digitWrapper.className = 'odometer-digit-wrapper';
+    digits.forEach((digit, i) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'odometer-digit-wrapper';
         
         const digitEl = document.createElement('div');
         digitEl.className = 'odometer-digit';
         digitEl.textContent = '0';
         
-        digitWrapper.appendChild(digitEl);
-        countEl.appendChild(digitWrapper);
+        wrapper.appendChild(digitEl);
+        countEl.appendChild(wrapper);
         
-        // Add comma separators
-        const fromRight = digits.length - index - 1;
+        const fromRight = digits.length - i - 1;
         if (fromRight > 0 && fromRight % 3 === 0) {
             const comma = document.createElement('span');
             comma.className = 'odometer-comma';
@@ -213,57 +245,48 @@ async function showResultAnimation(data, container, subtitleEl) {
             countEl.appendChild(comma);
         }
         
-        // Animate each digit
-        setTimeout(() => {
-            animateDigit(digitEl, parseInt(digit));
-        }, index * 100);
+        setTimeout(() => animateDigit(digitEl, parseInt(digit)), i * 100);
     });
     
-    // Update breakdown
     await delay(1000);
     updateBreakdown(data);
     
-    // Success message
-    subtitleEl.innerHTML = `
-        <div class="success-animation">
-            <i class="fas fa-check-circle"></i>
-            <span>Analysis complete! ${formatNumber(data.total)} lines processed</span>
-        </div>
-    `;
+    if (subtitleEl) {
+        subtitleEl.innerHTML = `
+            <div class="success-animation">
+                <i class="fas fa-check-circle"></i>
+                <span>Complete! ${formatNumber(total)} lines analyzed</span>
+            </div>
+        `;
+    }
 }
 
-/**
- * Animate single digit with rolling effect
- */
-function animateDigit(element, targetDigit) {
-    let current = 0;
-    const duration = 1000;
+function animateDigit(el, target) {
+    if (!el) return;
+    let curr = 0;
     const steps = 20;
-    const increment = targetDigit / steps;
+    const inc = target / steps;
     
-    const interval = setInterval(() => {
-        current += increment;
-        if (current >= targetDigit) {
-            element.textContent = targetDigit;
-            clearInterval(interval);
+    const int = setInterval(() => {
+        curr += inc;
+        if (curr >= target) {
+            el.textContent = target;
+            clearInterval(int);
         } else {
-            element.textContent = Math.floor(current);
+            el.textContent = Math.floor(curr);
         }
-    }, duration / steps);
+    }, 50);
 }
 
-/**
- * Update language breakdown with slide-in
- */
 function updateBreakdown(data) {
-    const languages = [
+    const langs = [
         { id: 'js-lines', value: data.javascript || 0 },
         { id: 'css-lines', value: data.css || 0 },
         { id: 'html-lines', value: data.html || 0 },
         { id: 'python-lines', value: data.python || 0 }
     ];
     
-    languages.forEach((lang, index) => {
+    langs.forEach((lang, i) => {
         setTimeout(() => {
             const el = document.getElementById(lang.id);
             if (el) {
@@ -277,84 +300,61 @@ function updateBreakdown(data) {
                     el.style.transform = 'translateX(0)';
                 }, 100);
             }
-        }, index * 200);
+        }, i * 200);
     });
 }
 
-/**
- * Show cached data with quick animation
- */
 async function showCachedAnimation(data) {
+    if (!data || !data.total) {
+        console.warn('Invalid cache, fetching...');
+        await fetchLineCount();
+        return;
+    }
+    
     const countEl = document.getElementById('line-count');
     const subtitleEl = document.querySelector('.counter-subtitle');
     
-    countEl.style.opacity = '0';
-    await delay(300);
+    if (countEl) {
+        countEl.style.opacity = '0';
+        await delay(300);
+        await showResultAnimation(data, null, subtitleEl);
+    }
     
-    await showResultAnimation(data, null, subtitleEl);
-    
-    subtitleEl.innerHTML = `
-        <div class="cache-info">
-            <i class="fas fa-database"></i>
-            <span>Cached data • Last updated ${getTimeAgo(data.timestamp)}</span>
-        </div>
-    `;
-}
-
-/**
- * Show error state
- */
-async function showErrorAnimation(container, subtitleEl) {
-    const countEl = document.getElementById('line-count');
-    
-    countEl.innerHTML = `
-        <div class="error-container">
-            <div class="error-icon">
-                <i class="fas fa-exclamation-triangle"></i>
+    if (subtitleEl) {
+        subtitleEl.innerHTML = `
+            <div class="cache-info">
+                <i class="fas fa-database"></i>
+                <span>Cached • Updated ${getTimeAgo(data.timestamp)}</span>
             </div>
-        </div>
-    `;
-    
-    subtitleEl.innerHTML = `
-        <div class="error-text">
-            <i class="fas fa-times-circle"></i>
-            <span>Unable to fetch data. Trying cache...</span>
-        </div>
-    `;
+        `;
+    }
 }
 
-/**
- * Format number with commas
- */
 function formatNumber(num) {
+    if (typeof num === 'undefined' || num === null) return '0';
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-/**
- * Get time ago
- */
-function getTimeAgo(timestamp) {
-    const diff = Date.now() - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
+function getTimeAgo(ts) {
+    if (!ts) return 'unknown';
+    const diff = Date.now() - ts;
+    const m = Math.floor(diff / 60000);
+    const h = Math.floor(diff / 3600000);
+    const d = Math.floor(diff / 86400000);
+    if (m < 1) return 'just now';
+    if (m < 60) return `${m}m ago`;
+    if (h < 24) return `${h}h ago`;
+    return `${d}d ago`;
 }
 
-/**
- * Delay helper
- */
 function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(r => setTimeout(r, ms));
 }
 
 // Real-time listener
 lineCountRef.on('value', (snapshot) => {
-    if (!isCalculating && snapshot.val()) {
-        const data = snapshot.val();
+    const data = snapshot.val();
+    if (!isCalculating && data && data.total) {
         const countEl = document.getElementById('line-count');
         if (countEl && !countEl.querySelector('.odometer-digit-wrapper')) {
             showCachedAnimation(data);
@@ -362,19 +362,19 @@ lineCountRef.on('value', (snapshot) => {
     }
 });
 
-// Initialize on scroll into view
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
+    const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
                 fetchLineCount();
-                observer.unobserve(entry.target);
+                obs.unobserve(e.target);
             }
         });
     }, { threshold: 0.3 });
     
-    const section = document.querySelector('.line-counter-section');
-    if (section) observer.observe(section);
+    const sec = document.querySelector('.line-counter-section');
+    if (sec) obs.observe(sec);
     
     console.log('✅ Line counter initialized');
 });
