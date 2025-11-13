@@ -700,6 +700,8 @@
             </div>
         </div>
     </div>
+<!-- PASTE THIS AFTER NOTIFICATION MODAL (Line ~655) -->
+
 <!-- Settings Modal -->
 <div class="modal" id="settings-modal">
     <div class="modal-content settings-modal-content">
@@ -726,10 +728,6 @@
                     <i class="fas fa-bell"></i>
                     <span>Notifications</span>
                 </button>
-                <button class="settings-tab" data-tab="data">
-                    <i class="fas fa-database"></i>
-                    <span>Data & Privacy</span>
-                </button>
                 <button class="settings-tab" data-tab="about">
                     <i class="fas fa-info-circle"></i>
                     <span>About</span>
@@ -754,12 +752,22 @@
                     
                     <div class="settings-section">
                         <h4><i class="fas fa-edit me-2"></i>Edit Profile</h4>
+                        
+                        <!-- Admin Notice -->
+                        <div class="admin-notice">
+                            <i class="fas fa-info-circle"></i>
+                            <div class="admin-notice-content">
+                                <strong>⚠️ Admin Approval Required</strong>
+                                <p>Username changes require approval from an administrator. Once you submit your request, the admin will be notified and you'll receive a notification when approved or declined.</p>
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
                             <label>Display Name</label>
                             <input type="text" id="edit-display-name" class="settings-input" placeholder="Your name">
                         </div>
                         <button class="settings-btn primary" onclick="updateDisplayName()">
-                            <i class="fas fa-save"></i> Save Changes
+                            <i class="fas fa-paper-plane"></i> Request Username Change
                         </button>
                     </div>
                     
@@ -817,7 +825,7 @@
                     
                     <div class="settings-section">
                         <h4><i class="fas fa-text-height me-2"></i>Font Size</h4>
-                        <p class="settings-description">Adjust the text size for better readability</p>
+                        <p class="settings-description">Adjust text size for better readability</p>
                         <div class="font-size-slider">
                             <span>A</span>
                             <input type="range" id="font-size-slider" min="12" max="20" value="16" step="1">
@@ -825,19 +833,6 @@
                         </div>
                         <div class="font-size-preview" id="font-size-preview">
                             Preview: The quick brown fox jumps over the lazy dog
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h4><i class="fas fa-magic me-2"></i>Animations</h4>
-                        <div class="settings-toggle">
-                            <label class="toggle-label">
-                                <span>Enable animations and transitions</span>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="animations-toggle" checked>
-                                    <span class="toggle-slider"></span>
-                                </div>
-                            </label>
                         </div>
                     </div>
                 </div>
@@ -866,66 +861,6 @@
                                 </div>
                             </label>
                         </div>
-                        <div class="settings-toggle">
-                            <label class="toggle-label">
-                                <span>Likes on my posts</span>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="notif-likes" checked>
-                                    <span class="toggle-slider"></span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h4><i class="fas fa-volume-up me-2"></i>Sound & Vibration</h4>
-                        <div class="settings-toggle">
-                            <label class="toggle-label">
-                                <span>Play sound for notifications</span>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="notif-sound">
-                                    <span class="toggle-slider"></span>
-                                </div>
-                            </label>
-                        </div>
-                        <div class="settings-toggle">
-                            <label class="toggle-label">
-                                <span>Vibrate on mobile devices</span>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="notif-vibrate" checked>
-                                    <span class="toggle-slider"></span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Data & Privacy Tab -->
-                <div class="settings-tab-content" id="data-tab">
-                    <h3><i class="fas fa-shield-alt me-2"></i>Data & Privacy</h3>
-                    
-                    <div class="settings-section">
-                        <h4><i class="fas fa-download me-2"></i>Download Your Data</h4>
-                        <p class="settings-description">Download a copy of your posts, comments, and activity</p>
-                        <button class="settings-btn secondary" onclick="downloadUserData()">
-                            <i class="fas fa-download"></i> Download Data
-                        </button>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h4><i class="fas fa-broom me-2"></i>Clear Cache</h4>
-                        <p class="settings-description">Clear temporary data to free up space</p>
-                        <button class="settings-btn secondary" onclick="clearCache()">
-                            <i class="fas fa-broom"></i> Clear Cache
-                        </button>
-                    </div>
-                    
-                    <div class="settings-section danger-zone">
-                        <h4><i class="fas fa-exclamation-triangle me-2"></i>Delete Account</h4>
-                        <p class="settings-description">Permanently delete your account and all data. This action cannot be undone.</p>
-                        <button class="settings-btn danger" onclick="confirmDeleteAccount()">
-                            <i class="fas fa-trash"></i> Delete Account
-                        </button>
                     </div>
                 </div>
                 
@@ -942,26 +877,8 @@
                             <p class="version">Version 1.0.0</p>
                             <p class="about-description">
                                 An interactive chemistry learning platform featuring 3D visualizations, 
-                                molecular structures, chemical reactions, and community discussions.
+                                molecular structures, and community discussions.
                             </p>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h4><i class="fas fa-link me-2"></i>Quick Links</h4>
-                        <div class="quick-links">
-                            <a href="https://periodic-table-3d.netlify.app" target="_blank" class="quick-link">
-                                <i class="fas fa-globe"></i> Web App
-                            </a>
-                            <a href="https://download-periodic-table-3d.netlify.app" target="_blank" class="quick-link">
-                                <i class="fas fa-download"></i> Download App
-                            </a>
-                            <a href="https://download-periodic-table-3d.netlify.app/privacy-policy.html" target="_blank" class="quick-link">
-                                <i class="fas fa-shield-alt"></i> Privacy Policy
-                            </a>
-                            <a href="https://download-periodic-table-3d.netlify.app/terms-of-service.html" target="_blank" class="quick-link">
-                                <i class="fas fa-file-contract"></i> Terms of Service
-                            </a>
                         </div>
                     </div>
                     
@@ -975,7 +892,6 @@
         </div>
     </div>
 </div>
-
 
 <!-- Admin Panel Modal -->
 <div class="modal" id="admin-panel-modal">
@@ -1103,6 +1019,7 @@
     </script>
 </body>
 </html>
+
 
 
 
