@@ -280,12 +280,29 @@
                     <a href="https://download-periodic-table-3d.netlify.app" target="_blank" class="toggle-btn download-btn" data-tippy-content="Download App">
                         <i class="fas fa-download"></i>
                     </a>
+
+                    <!-- Settings Button -->
+                       <button id="settings-btn" class="toggle-btn settings-btn" data-tippy-content="Settings">
+                             <i class="fas fa-cog"></i>
+                      </button>
+
+                    
+                    <!-- Admin Panel Button (shows only for admin@gmail.com) -->
+
                     
                     <!-- Notification Button -->
                     <button id="notification-bell" class="toggle-btn notification-bell-btn" data-tippy-content="Notifications">
                         <i class="fas fa-bell"></i>
                         <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
                     </button>
+
+
+               <button id="admin-panel-btn" class="toggle-btn admin-btn" data-tippy-content="Admin Panel" style="display: none;">
+                <i class="fas fa-shield-alt"></i>
+                 <span class="admin-badge" id="admin-badge" style="display: none;">0</span>
+               </button>
+
+                    
                 </div>
             </div>
             <h1 class="display-4 display-md-3">
@@ -683,6 +700,240 @@
             </div>
         </div>
     </div>
+<!-- PASTE THIS AFTER NOTIFICATION MODAL (Line ~655) -->
+
+<!-- Settings Modal -->
+<div class="modal" id="settings-modal">
+    <div class="modal-content settings-modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-cog me-2"></i>Settings
+            </div>
+            <button class="close-btn" onclick="closeSettingsModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body settings-modal-body">
+            <!-- Settings Tabs -->
+            <div class="settings-tabs">
+                <button class="settings-tab active" data-tab="account">
+                    <i class="fas fa-user"></i>
+                    <span>Account</span>
+                </button>
+                <button class="settings-tab" data-tab="appearance">
+                    <i class="fas fa-palette"></i>
+                    <span>Appearance</span>
+                </button>
+                <button class="settings-tab" data-tab="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                </button>
+                <button class="settings-tab" data-tab="about">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
+                </button>
+            </div>
+            
+            <!-- Settings Content -->
+            <div class="settings-content">
+                <!-- Account Tab -->
+                <div class="settings-tab-content active" id="account-tab">
+                    <h3><i class="fas fa-user-circle me-2"></i>Account Information</h3>
+                    
+                    <div class="settings-section">
+                        <div class="user-profile-card">
+                            <img id="settings-user-photo" src="" alt="Profile" class="user-profile-photo">
+                            <div class="user-profile-info">
+                                <h4 id="settings-user-name">Loading...</h4>
+                                <p id="settings-user-email">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-edit me-2"></i>Edit Profile</h4>
+                        
+                        <!-- Admin Notice -->
+                        <div class="admin-notice">
+                            <i class="fas fa-info-circle"></i>
+                            <div class="admin-notice-content">
+                                <strong>⚠️ Admin Approval Required</strong>
+                                <p>Username changes require approval from an administrator. Once you submit your request, the admin will be notified and you'll receive a notification when approved or declined.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Display Name</label>
+                            <input type="text" id="edit-display-name" class="settings-input" placeholder="Your name">
+                        </div>
+                        <button class="settings-btn primary" onclick="updateDisplayName()">
+                            <i class="fas fa-paper-plane"></i> Request Username Change
+                        </button>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-key me-2"></i>Change Password</h4>
+                        <p class="settings-description">Update your password to keep your account secure</p>
+                        <button class="settings-btn secondary" onclick="sendPasswordReset()">
+                            <i class="fas fa-envelope"></i> Send Reset Email
+                        </button>
+                    </div>
+                    
+                    <div class="settings-section danger-zone">
+                        <h4><i class="fas fa-sign-out-alt me-2"></i>Sign Out</h4>
+                        <p class="settings-description">Sign out from your account</p>
+                        <button class="settings-btn danger" onclick="handleSignOut()">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Appearance Tab -->
+                <div class="settings-tab-content" id="appearance-tab">
+                    <h3><i class="fas fa-palette me-2"></i>Appearance</h3>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-moon me-2"></i>Theme</h4>
+                        <p class="settings-description">Choose your preferred color theme</p>
+                        <div class="theme-options">
+                            <div class="theme-option active" data-theme="dark">
+                                <div class="theme-preview dark-theme">
+                                    <div class="theme-preview-header"></div>
+                                    <div class="theme-preview-body"></div>
+                                </div>
+                                <span>Dark</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="theme-option" data-theme="light">
+                                <div class="theme-preview light-theme">
+                                    <div class="theme-preview-header"></div>
+                                    <div class="theme-preview-body"></div>
+                                </div>
+                                <span>Light</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="theme-option" data-theme="auto">
+                                <div class="theme-preview auto-theme">
+                                    <div class="theme-preview-header"></div>
+                                    <div class="theme-preview-body"></div>
+                                </div>
+                                <span>Auto</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-text-height me-2"></i>Font Size</h4>
+                        <p class="settings-description">Adjust text size for better readability</p>
+                        <div class="font-size-slider">
+                            <span>A</span>
+                            <input type="range" id="font-size-slider" min="12" max="20" value="16" step="1">
+                            <span style="font-size: 1.2rem;">A</span>
+                        </div>
+                        <div class="font-size-preview" id="font-size-preview">
+                            Preview: The quick brown fox jumps over the lazy dog
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notifications Tab -->
+                <div class="settings-tab-content" id="notifications-tab">
+                    <h3><i class="fas fa-bell me-2"></i>Notification Preferences</h3>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-comment me-2"></i>Forum Notifications</h4>
+                        <div class="settings-toggle">
+                            <label class="toggle-label">
+                                <span>New comments on my posts</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="notif-comments" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="settings-toggle">
+                            <label class="toggle-label">
+                                <span>Replies to my comments</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="notif-replies" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- About Tab -->
+                <div class="settings-tab-content" id="about-tab">
+                    <h3><i class="fas fa-info-circle me-2"></i>About</h3>
+                    
+                    <div class="settings-section">
+                        <div class="about-app">
+                            <div class="about-icon">
+                                <i class="fas fa-atom"></i>
+                            </div>
+                            <h4>Periodic Table 3D</h4>
+                            <p class="version">Version 1.0.0</p>
+                            <p class="about-description">
+                                An interactive chemistry learning platform featuring 3D visualizations, 
+                                molecular structures, and community discussions.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-code me-2"></i>Developer</h4>
+                        <p class="settings-description">Built with ❤️ using Three.js, Firebase, and modern web technologies</p>
+                        <p class="copyright">© 2025 Periodic Table 3D. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Panel Modal -->
+<div class="modal" id="admin-panel-modal">
+    <div class="modal-content admin-panel-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-shield-alt me-2"></i>Admin Panel
+            </div>
+            <button class="close-btn" onclick="closeAdminPanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="username-requests">
+                    <i class="fas fa-user-edit"></i>
+                    <span>Username Requests</span>
+                    <span class="request-count" id="username-request-count">0</span>
+                </button>
+                <button class="admin-tab" data-tab="users">
+                    <i class="fas fa-users"></i>
+                    <span>All Users</span>
+                </button>
+            </div>
+            
+            <div class="admin-content">
+                <!-- Username Requests Tab -->
+                <div class="admin-tab-content active" id="username-requests-tab">
+                    <h3><i class="fas fa-user-edit me-2"></i>Username Change Requests</h3>
+                    <div id="username-requests-list" class="requests-list"></div>
+                </div>
+                
+                <!-- Users Tab -->
+                <div class="admin-tab-content" id="users-tab">
+                    <h3><i class="fas fa-users me-2"></i>All Users</h3>
+                    <div id="users-list" class="users-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
     <!-- Notification Modal -->
     <div class="modal" id="notification-modal">
@@ -707,26 +958,32 @@
     <script src="js/data/molecules-data.js"></script>
     <script src="js/data/reactions-data.js"></script>
     <script src="js/data/reactivity-data.js"></script>
+    
     <script src="js/utils/search-utils.js"></script>
     <script src="js/utils/wiki-loader.js"></script>
+    
     <script src="js/periodic-table/table-renderer.js"></script>
     <script src="js/periodic-table/atom-visualization.js"></script>
     <script src="js/periodic-table/reactivity-chart.js"></script>
     <script src="js/periodic-table/element-modal.js"></script>
+    
     <script src="js/molecules/molecules-search.js"></script>
     <script src="js/molecules/molecules-list.js"></script>
     <script src="js/molecules/molecule-3d.js"></script>
     <script src="js/molecules/molecule-2d.js"></script>
     <script src="js/molecules/molecule-modal.js"></script>
+    
     <script src="js/reactions/reactions-builder.js"></script>
     <script src="js/reactions/reactant-selector.js"></script>
     <script src="js/reactions/reaction-animator.js"></script>
-    
     <script src="js/auth/firebase-config.js"></script>
+    <script src="js/settings/settings-modal.js"></script>
     <script src="js/auth/auth-handler.js"></script>
+    <script src="js/admin/admin-panel.js"></script>
     <script src="js/forum/forum-main.js"></script>
     <script src="js/forum/forum-create-post.js"></script>
     <script src="js/forum/forum-notifications.js"></script>
+    
     <script src="js/core/page-toggle.js"></script>
     <script src="js/core/app-init.js"></script>
     
@@ -757,6 +1014,13 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 

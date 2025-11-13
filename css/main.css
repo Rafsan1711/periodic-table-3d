@@ -56,6 +56,8 @@
 /* 18. Scrollbar & Tippy */
 @import url('scrollbar-tippy.css');
 
+@import url('settings.css');
+@import url('admin-panel.css');
 /* 19. Responsive Design */
 @import url('responsive.css');
 
