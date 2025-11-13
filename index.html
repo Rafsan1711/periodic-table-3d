@@ -975,6 +975,50 @@
         </div>
     </div>
 </div>
+
+
+<!-- Admin Panel Modal -->
+<div class="modal" id="admin-panel-modal">
+    <div class="modal-content admin-panel-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-shield-alt me-2"></i>Admin Panel
+            </div>
+            <button class="close-btn" onclick="closeAdminPanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="username-requests">
+                    <i class="fas fa-user-edit"></i>
+                    <span>Username Requests</span>
+                    <span class="request-count" id="username-request-count">0</span>
+                </button>
+                <button class="admin-tab" data-tab="users">
+                    <i class="fas fa-users"></i>
+                    <span>All Users</span>
+                </button>
+            </div>
+            
+            <div class="admin-content">
+                <!-- Username Requests Tab -->
+                <div class="admin-tab-content active" id="username-requests-tab">
+                    <h3><i class="fas fa-user-edit me-2"></i>Username Change Requests</h3>
+                    <div id="username-requests-list" class="requests-list"></div>
+                </div>
+                
+                <!-- Users Tab -->
+                <div class="admin-tab-content" id="users-tab">
+                    <h3><i class="fas fa-users me-2"></i>All Users</h3>
+                    <div id="users-list" class="users-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
     <!-- Notification Modal -->
     <div class="modal" id="notification-modal">
         <div class="modal-content">
@@ -1059,6 +1103,7 @@
     </script>
 </body>
 </html>
+
 
 
 
