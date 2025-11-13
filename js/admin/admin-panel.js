@@ -1,46 +1,111 @@
 /**
- * Admin Panel Module - Complete Username Approval System
- * Only accessible to admin@gmail.com
+ * ============================================
+ * ADMIN PANEL MODULE - COMPLETE FINAL VERSION
+ * Only accessible to samiulhaquerafsan@gmail.com
+ * ============================================
  */
 
 let isAdmin = false;
 let pendingRequestsCount = 0;
+let adminCheckInterval = null;
 
 /**
- * Check if current user is admin
+ * CRITICAL FIX: Force show admin button
+ */
+function forceShowAdminButton() {
+    const adminBtn = document.getElementById('admin-panel-btn');
+    if (!adminBtn) {
+        console.warn('⚠️ Admin button element not found in DOM');
+        return false;
+    }
+    
+    // Check if user is logged in and is admin
+    if (typeof currentForumUser !== 'undefined' && currentForumUser) {
+        const userEmail = currentForumUser.email;
+        console.log('🔍 Checking admin status for:', userEmail);
+        
+        if (userEmail === 'samiulhaquerafsan@gmail.com') {
+            isAdmin = true;
+            adminBtn.style.display = 'block';
+            adminBtn.style.visibility = 'visible';
+            adminBtn.style.opacity = '1';
+            console.log('✅ ADMIN BUTTON SHOWN FOR:', userEmail);
+            
+            // Stop checking
+            if (adminCheckInterval) {
+                clearInterval(adminCheckInterval);
+                adminCheckInterval = null;
+            }
+            
+            // Load pending requests
+            loadPendingRequestsCount();
+            
+            // Listen for new requests
+            if (typeof db !== 'undefined') {
+                db.ref('adminRequests/usernameChanges')
+                    .orderByChild('status')
+                    .equalTo('pending')
+                    .on('value', () => {
+                        loadPendingRequestsCount();
+                    });
+            }
+            
+            return true;
+        } else {
+            console.log('❌ User is not admin:', userEmail);
+            adminBtn.style.display = 'none';
+            return false;
+        }
+    } else {
+        console.log('⏳ currentForumUser not ready yet...');
+        return false;
+    }
+}
+
+/**
+ * Start interval to check for admin
+ */
+function startAdminCheck() {
+    console.log('🔄 Starting admin check interval...');
+    
+    // Check immediately
+    if (forceShowAdminButton()) {
+        return;
+    }
+    
+    // Check every 500ms until user loads
+    let attempts = 0;
+    adminCheckInterval = setInterval(() => {
+        attempts++;
+        console.log(`🔍 Admin check attempt ${attempts}...`);
+        
+        if (forceShowAdminButton()) {
+            clearInterval(adminCheckInterval);
+            adminCheckInterval = null;
+        }
+        
+        // Stop after 30 attempts (15 seconds)
+        if (attempts >= 30) {
+            clearInterval(adminCheckInterval);
+            adminCheckInterval = null;
+            console.log('⏹️ Stopped admin check - max attempts reached');
+        }
+    }, 500);
+}
+
+/**
+ * Check if current user is admin (Legacy function)
  */
 function checkAdminStatus() {
-    if (!currentForumUser) return false;
-    
-    const adminEmail = 'samiulhaquerafsan@gmail.com';
-    isAdmin = currentForumUser.email === adminEmail;
-    
-    // Show/hide admin button
-    const adminBtn = document.getElementById('admin-panel-btn');
-    if (adminBtn) {
-        adminBtn.style.display = isAdmin ? 'block' : 'none';
-    }
-    
-    if (isAdmin) {
-        console.log('🛡️ Admin privileges granted');
-        loadPendingRequestsCount();
-        
-        // Listen for new requests
-        db.ref('adminRequests/usernameChanges')
-            .orderByChild('status')
-            .equalTo('pending')
-            .on('value', () => {
-                loadPendingRequestsCount();
-            });
-    }
-    
-    return isAdmin;
+    return forceShowAdminButton();
 }
 
 /**
  * Load pending requests count
  */
 async function loadPendingRequestsCount() {
+    if (typeof db === 'undefined') return;
+    
     try {
         const snapshot = await db.ref('adminRequests/usernameChanges')
             .orderByChild('status')
@@ -66,6 +131,8 @@ async function loadPendingRequestsCount() {
             requestCountBadge.textContent = pendingRequestsCount;
         }
         
+        console.log('📊 Pending requests:', pendingRequestsCount);
+        
     } catch (error) {
         console.error('Error loading requests count:', error);
     }
@@ -81,7 +148,11 @@ function openAdminPanel() {
     }
     
     const modal = document.getElementById('admin-panel-modal');
-    if (!modal) return;
+    if (!modal) {
+        console.error('❌ Admin panel modal not found in HTML');
+        alert('Admin panel modal not found. Please check HTML setup.');
+        return;
+    }
     
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -108,9 +179,12 @@ function closeAdminPanel() {
  */
 async function loadUsernameRequests() {
     const listEl = document.getElementById('username-requests-list');
-    if (!listEl) return;
+    if (!listEl) {
+        console.error('❌ Username requests list element not found');
+        return;
+    }
     
-    listEl.innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--accent-blue);"></i></div>';
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;"><i class="fas fa-spinner fa-spin" style="font-size:2.5rem;color:var(--accent-blue);"></i><p style="color:var(--text-secondary);margin-top:15px;">Loading requests...</p></div>';
     
     try {
         const snapshot = await db.ref('adminRequests/usernameChanges')
@@ -159,9 +233,11 @@ async function loadUsernameRequests() {
             listEl.appendChild(card);
         });
         
+        console.log('✅ Loaded', requests.length, 'pending requests');
+        
     } catch (error) {
         console.error('Error loading requests:', error);
-        listEl.innerHTML = '<div style="color:var(--accent-red);padding:20px;text-align:center;">Error loading requests</div>';
+        listEl.innerHTML = '<div style="color:var(--accent-red);padding:20px;text-align:center;"><i class="fas fa-exclamation-triangle"></i><p>Error loading requests</p></div>';
     }
 }
 
@@ -181,8 +257,8 @@ function createRequestCard(request) {
                      alt="${request.currentName}" 
                      class="request-user-photo">
                 <div class="request-user-details">
-                    <h4>${request.currentName}</h4>
-                    <p>${request.userEmail}</p>
+                    <h4>${escapeHtml(request.currentName)}</h4>
+                    <p>${escapeHtml(request.userEmail)}</p>
                 </div>
             </div>
             <div class="request-timestamp">
@@ -192,9 +268,9 @@ function createRequestCard(request) {
         
         <div class="request-body">
             <div class="name-change-display">
-                <div class="old-name">${request.currentName}</div>
+                <div class="old-name">${escapeHtml(request.currentName)}</div>
                 <div class="arrow-icon">→</div>
-                <div class="new-name">${request.requestedName}</div>
+                <div class="new-name">${escapeHtml(request.requestedName)}</div>
             </div>
         </div>
         
@@ -202,13 +278,22 @@ function createRequestCard(request) {
             <button class="decline-btn" onclick="declineUsernameRequest('${request.id}', '${request.userId}')">
                 <i class="fas fa-times"></i> Decline
             </button>
-            <button class="approve-btn" onclick="approveUsernameRequest('${request.id}', '${request.userId}', '${request.requestedName}')">
+            <button class="approve-btn" onclick="approveUsernameRequest('${request.id}', '${request.userId}', '${escapeHtml(request.requestedName)}')">
                 <i class="fas fa-check"></i> Approve
             </button>
         </div>
     `;
     
     return card;
+}
+
+/**
+ * Escape HTML to prevent XSS
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 /**
@@ -234,6 +319,8 @@ async function approveUsernameRequest(requestId, userId, newName) {
         // Send notification to user
         await db.ref(`notifications/${userId}`).push({
             type: 'usernameApproved',
+            fromUserName: 'Admin',
+            fromUserPhoto: '',
             newName: newName,
             timestamp: Date.now(),
             read: false
@@ -274,6 +361,8 @@ async function declineUsernameRequest(requestId, userId) {
         // Send notification to user
         await db.ref(`notifications/${userId}`).push({
             type: 'usernameDeclined',
+            fromUserName: 'Admin',
+            fromUserPhoto: '',
             reason: reason || 'No reason provided',
             timestamp: Date.now(),
             read: false
@@ -321,7 +410,7 @@ async function loadAllUsers() {
     const listEl = document.getElementById('users-list');
     if (!listEl) return;
     
-    listEl.innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--accent-blue);"></i></div>';
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;"><i class="fas fa-spinner fa-spin" style="font-size:2.5rem;color:var(--accent-blue);"></i><p style="color:var(--text-secondary);margin-top:15px;">Loading users...</p></div>';
     
     try {
         const snapshot = await db.ref('users').once('value');
@@ -332,26 +421,31 @@ async function loadAllUsers() {
         }
         
         listEl.innerHTML = '';
+        let userCount = 0;
+        
         snapshot.forEach(child => {
             const user = child.val();
             const card = document.createElement('div');
             card.className = 'user-card';
             card.innerHTML = `
-                <img src="${user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username)}" 
-                     alt="${user.username}" 
+                <img src="${user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username || 'User')}" 
+                     alt="${user.username || 'User'}" 
                      class="user-card-photo">
                 <h4>${user.username || 'User'}</h4>
                 <p>${user.email}</p>
                 <p style="font-size:0.75rem;margin-top:8px;opacity:0.7;">
-                    <i class="fas fa-clock"></i> Joined ${new Date(user.createdAt).toLocaleDateString()}
+                    <i class="fas fa-clock"></i> ${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
                 </p>
             `;
             listEl.appendChild(card);
+            userCount++;
         });
+        
+        console.log('✅ Loaded', userCount, 'users');
         
     } catch (error) {
         console.error('Error loading users:', error);
-        listEl.innerHTML = '<div style="color:var(--accent-red);padding:20px;text-align:center;">Error loading users</div>';
+        listEl.innerHTML = '<div style="color:var(--accent-red);padding:20px;text-align:center;"><i class="fas fa-exclamation-triangle"></i><p>Error loading users</p></div>';
     }
 }
 
@@ -361,11 +455,22 @@ async function loadAllUsers() {
 function initAdminPanel() {
     console.log('🛡️ Initializing admin panel...');
     
-    // Admin button click handler
+    // Check if button exists in HTML
     const adminBtn = document.getElementById('admin-panel-btn');
-    if (adminBtn) {
-        adminBtn.addEventListener('click', openAdminPanel);
+    if (!adminBtn) {
+        console.error('❌ CRITICAL: Admin button (#admin-panel-btn) not found in HTML!');
+        console.log('💡 Make sure you added the admin button HTML in page toggle section');
+        return;
     }
+    
+    console.log('✅ Admin button found in DOM');
+    
+    // Add click handler
+    adminBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openAdminPanel();
+    });
     
     // Tab switching
     const tabs = document.querySelectorAll('.admin-tab');
@@ -405,6 +510,8 @@ function initAdminPanel() {
                 closeAdminPanel();
             }
         });
+    } else {
+        console.warn('⚠️ Admin panel modal not found in HTML');
     }
     
     // ESC key to close
@@ -417,23 +524,35 @@ function initAdminPanel() {
         }
     });
     
-    console.log('✅ Admin panel initialized');
+    // Start checking for admin status
+    startAdminCheck();
+    
+    console.log('✅ Admin panel initialized - checking for admin user...');
 }
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOM Content Loaded - waiting 1 second before init...');
     setTimeout(() => {
         initAdminPanel();
     }, 1000);
 });
 
-// Check admin status when user logs in
-if (typeof auth !== 'undefined') {
-    auth.onAuthStateChanged(user => {
+// CRITICAL: Check when auth state changes
+if (typeof firebase !== 'undefined' && firebase.auth) {
+    firebase.auth().onAuthStateChanged((user) => {
         if (user) {
+            console.log('🔐 Auth state changed - User logged in:', user.email);
             setTimeout(() => {
-                checkAdminStatus();
+                forceShowAdminButton();
             }, 1500);
+        } else {
+            console.log('🔐 Auth state changed - User logged out');
+            isAdmin = false;
+            const adminBtn = document.getElementById('admin-panel-btn');
+            if (adminBtn) {
+                adminBtn.style.display = 'none';
+            }
         }
     });
 }
@@ -444,5 +563,7 @@ window.closeAdminPanel = closeAdminPanel;
 window.approveUsernameRequest = approveUsernameRequest;
 window.declineUsernameRequest = declineUsernameRequest;
 window.checkAdminStatus = checkAdminStatus;
+window.forceShowAdminButton = forceShowAdminButton;
 
-console.log('✅ Admin panel module loaded');
+console.log('✅ Admin panel module loaded - COMPLETE FINAL VERSION');
+console.log('📧 Admin email configured: samiulhaquerafsan@gmail.com');
