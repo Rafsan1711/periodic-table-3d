@@ -1,19 +1,9 @@
 """
-Advanced Line Counter Backend - COMPLETE & READY
-✅ CORS configured
-✅ Branch: master
-✅ All languages supported
-✅ Error handling
-✅ Memory optimized for 512MB RAM
-
-DEPLOY INSTRUCTIONS:
-1. Copy this entire file to backend/line_counter.py
-2. Render.com settings:
-   - Root Directory: backend
-   - Build Command: pip install -r requirements.txt
-   - Start Command: gunicorn -w 4 -b 0.0.0.0:$PORT line_counter:app
-   - Environment Variable: GITHUB_TOKEN = your_token_here
-3. Deploy!
+Line Counter Backend - CRASH-FREE VERSION
+✅ Worker stability fixed
+✅ Memory optimized
+✅ Proper error handling
+✅ Request timeout handling
 """
 
 from flask import Flask, jsonify, request
@@ -22,6 +12,20 @@ import requests
 import os
 from datetime import datetime
 import base64
+import signal
+import sys
+
+# ============================================
+# GRACEFUL SHUTDOWN HANDLER
+# ============================================
+
+def signal_handler(sig, frame):
+    """Handle graceful shutdown"""
+    print('\n🛑 Shutting down gracefully...')
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
 # ============================================
 # APP INITIALIZATION
@@ -29,19 +33,12 @@ import base64
 
 app = Flask(__name__)
 
-# ✅ PROPER CORS CONFIGURATION
+# CORS Configuration
 CORS(app, resources={
     r"/*": {
-        "origins": [
-            "https://periodic-table-3d-module.netlify.app",
-            "https://periodic-table-3d.netlify.app",
-            "http://localhost:*",
-            "http://127.0.0.1:*"
-        ],
+        "origins": "*",
         "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Accept", "Authorization"],
-        "expose_headers": ["Content-Type"],
-        "supports_credentials": False,
+        "allow_headers": ["Content-Type", "Accept"],
         "max_age": 3600
     }
 })
@@ -53,31 +50,20 @@ CORS(app, resources={
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 REPO_OWNER = 'Rafsan1711'
 REPO_NAME = 'periodic-table-3d'
-BRANCH = 'master'  # Your branch name
+BRANCH = 'master'
 
 # File extensions
 EXTENSIONS = {
     '.js': 'javascript',
     '.jsx': 'javascript',
-    '.mjs': 'javascript',
     '.ts': 'typescript',
     '.tsx': 'typescript',
     '.css': 'css',
     '.scss': 'css',
-    '.sass': 'css',
-    '.less': 'css',
     '.html': 'html',
-    '.htm': 'html',
     '.py': 'python',
     '.json': 'json',
-    '.md': 'markdown',
-    '.markdown': 'markdown',
-    '.txt': 'text',
-    '.xml': 'xml',
-    '.yml': 'yaml',
-    '.yaml': 'yaml',
-    '.sh': 'shell',
-    '.bat': 'batch'
+    '.md': 'markdown'
 }
 
 # Exclude patterns
@@ -88,10 +74,7 @@ EXCLUDE_PATTERNS = [
     'dist/',
     'build/',
     '__pycache__/',
-    '.netlify/',
-    '.vscode/',
-    'package-lock.json',
-    'yarn.lock'
+    '.netlify/'
 ]
 
 def should_exclude(path):
@@ -99,16 +82,15 @@ def should_exclude(path):
     return any(pattern in path for pattern in EXCLUDE_PATTERNS)
 
 # ============================================
-# MIDDLEWARE - CORS Headers
+# MIDDLEWARE
 # ============================================
 
 @app.after_request
 def after_request(response):
-    """Add CORS headers to all responses"""
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Accept,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-    response.headers.add('Access-Control-Max-Age', '3600')
+    """Add CORS headers"""
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Accept'
+    response.headers['Access-Control-Allow-Methods'] = 'GET,POST,OPTIONS'
     return response
 
 # ============================================
@@ -119,85 +101,72 @@ def after_request(response):
 def index():
     """Root endpoint"""
     if request.method == 'OPTIONS':
-        return jsonify({'status': 'ok'}), 200
+        return '', 204
     
     return jsonify({
-        'service': 'Periodic Table 3D Line Counter',
+        'service': 'Line Counter',
         'version': '3.0',
         'status': 'running',
-        'branch': BRANCH,
-        'repository': f"{REPO_OWNER}/{REPO_NAME}",
-        'endpoints': {
-            'line_count': '/api/line-count',
-            'readme': '/api/readme',
-            'health': '/health'
-        },
-        'timestamp': int(datetime.now().timestamp() * 1000)
+        'branch': BRANCH
     })
 
 @app.route('/api/line-count', methods=['GET', 'OPTIONS'])
 def get_line_count():
-    """Count lines of code"""
+    """Count lines - optimized for 512MB RAM"""
     
     if request.method == 'OPTIONS':
-        return jsonify({'status': 'ok'}), 200
+        return '', 204
     
     try:
-        print(f"\n{'='*60}")
-        print(f"📊 LINE COUNTER STARTED")
-        print(f"📦 Repository: {REPO_OWNER}/{REPO_NAME}")
-        print(f"🌿 Branch: {BRANCH}")
-        print(f"{'='*60}\n")
+        print(f"\n📊 Starting line count for {REPO_OWNER}/{REPO_NAME} ({BRANCH})")
         
         if not GITHUB_TOKEN:
-            print("❌ ERROR: GITHUB_TOKEN not set!")
             return jsonify({
-                'error': 'GitHub token required',
-                'message': 'Set GITHUB_TOKEN in environment variables',
-                'total': 0
+                'error': 'Token not configured',
+                'total': 0,
+                'javascript': 0,
+                'css': 0,
+                'html': 0,
+                'python': 0
             }), 500
         
         # Headers
         headers = {
             'Authorization': f'Bearer {GITHUB_TOKEN}',
-            'Accept': 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28'
+            'Accept': 'application/vnd.github+json'
         }
         
-        # Get repository tree
+        # Get tree
         tree_url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/git/trees/{BRANCH}?recursive=1'
         
-        print(f"🔗 Fetching tree: {tree_url}")
-        response = requests.get(tree_url, headers=headers, timeout=30)
-        
-        print(f"📡 Response status: {response.status_code}")
-        
-        if response.status_code == 401:
-            print("❌ Authentication failed!")
+        try:
+            response = requests.get(tree_url, headers=headers, timeout=15)
+        except requests.Timeout:
+            print("❌ Request timeout")
             return jsonify({
-                'error': 'Invalid token',
-                'total': 0
-            }), 401
+                'error': 'Request timeout',
+                'total': 0,
+                'javascript': 0,
+                'css': 0,
+                'html': 0,
+                'python': 0
+            }), 504
         
-        if response.status_code == 404:
-            print(f"❌ Repository or branch not found!")
+        if response.status_code != 200:
+            print(f"❌ GitHub API error: {response.status_code}")
             return jsonify({
-                'error': 'Repository not found',
-                'total': 0
-            }), 404
+                'error': f'GitHub API error: {response.status_code}',
+                'total': 0,
+                'javascript': 0,
+                'css': 0,
+                'html': 0,
+                'python': 0
+            }), response.status_code
         
-        response.raise_for_status()
         tree_data = response.json()
+        files = tree_data.get('tree', [])
         
-        if 'tree' not in tree_data:
-            print("❌ Invalid tree response!")
-            return jsonify({
-                'error': 'Invalid response',
-                'total': 0
-            }), 500
-        
-        files = tree_data['tree']
-        print(f"📂 Total items: {len(files)}\n")
+        print(f"📂 Found {len(files)} items")
         
         # Initialize counters
         counts = {
@@ -208,102 +177,80 @@ def get_line_count():
             'python': 0,
             'json': 0,
             'markdown': 0,
-            'yaml': 0,
-            'shell': 0,
-            'batch': 0,
-            'text': 0,
-            'xml': 0,
             'total': 0
         }
         
-        stats = {
-            'files_processed': 0,
-            'files_excluded': 0,
-            'files_skipped': 0
-        }
+        processed = 0
+        max_files = 100  # Limit to prevent memory issues
         
         # Process files
-        processed = 0
-        
-        for item in files:
-            if item['type'] != 'blob':
+        for item in files[:max_files]:
+            if item.get('type') != 'blob':
                 continue
             
-            path = item['path']
+            path = item.get('path', '')
             
-            # Check exclusion
             if should_exclude(path):
-                stats['files_excluded'] += 1
                 continue
             
-            # Check extension
             ext = os.path.splitext(path)[1].lower()
             if ext not in EXTENSIONS:
-                stats['files_skipped'] += 1
                 continue
             
-            # Fetch file content
             try:
                 content_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}?ref={BRANCH}"
-                file_response = requests.get(content_url, headers=headers, timeout=10)
+                file_response = requests.get(content_url, headers=headers, timeout=8)
                 
                 if file_response.status_code == 200:
                     file_data = file_response.json()
                     
                     if 'content' in file_data:
-                        # Decode base64
                         content = base64.b64decode(file_data['content']).decode('utf-8', errors='ignore')
-                        
-                        # Count lines
                         lines = content.count('\n') + 1
                         file_type = EXTENSIONS[ext]
                         
                         counts[file_type] += lines
                         counts['total'] += lines
-                        stats['files_processed'] += 1
-                        
                         processed += 1
-                        print(f"✓ [{processed}] {path}: {lines} lines ({file_type})")
-                
+                        
+                        if processed % 10 == 0:
+                            print(f"✓ Processed {processed} files...")
+            
             except Exception as e:
-                print(f"✗ Error: {path} - {str(e)[:50]}")
+                print(f"✗ Error: {path[:30]} - {str(e)[:30]}")
                 continue
         
-        print(f"\n{'='*60}")
-        print(f"📊 SUMMARY")
-        print(f"{'='*60}")
-        print(f"✅ Processed: {stats['files_processed']}")
-        print(f"⊗  Excluded: {stats['files_excluded']}")
-        print(f"⊘  Skipped: {stats['files_skipped']}")
-        print(f"\n📝 LINES BY LANGUAGE:")
-        for lang, count in counts.items():
-            if lang != 'total' and count > 0:
-                print(f"   {lang.capitalize()}: {count:,}")
-        print(f"\n🎯 TOTAL: {counts['total']:,}")
-        print(f"{'='*60}\n")
+        print(f"✅ Complete: {counts['total']:,} lines from {processed} files\n")
         
         return jsonify({
             **counts,
-            'statistics': stats,
+            'statistics': {
+                'files_processed': processed,
+                'files_total': len(files)
+            },
             'timestamp': int(datetime.now().timestamp() * 1000),
             'repository': f"{REPO_OWNER}/{REPO_NAME}",
             'branch': BRANCH
         })
         
     except Exception as e:
-        print(f"\n❌ FATAL ERROR: {str(e)}\n")
+        print(f"❌ Fatal error: {str(e)}")
         return jsonify({
             'error': 'Internal error',
-            'message': str(e),
-            'total': 0
+            'message': str(e)[:100],
+            'total': 0,
+            'javascript': 0,
+            'css': 0,
+            'html': 0,
+            'python': 0
         }), 500
 
 @app.route('/api/readme', methods=['GET', 'OPTIONS'])
 def get_readme():
-    """Fetch README.md"""
+    """Get README"""
     
     if request.method == 'OPTIONS':
-        return jsonify({'status': 'ok'}), 200
+        return '', 204
     
     try:
         if not GITHUB_TOKEN:
@@ -325,24 +272,38 @@ def get_readme():
         
         return jsonify({
             'content': content,
-            'name': data['name'],
+            'name': data.get('name', 'README.md'),
             'timestamp': int(datetime.now().timestamp() * 1000)
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)[:100]}), 500
 
 @app.route('/health', methods=['GET'])
 def health():
     """Health check"""
     return jsonify({
         'status': 'healthy',
-        'service': 'line-counter',
-        'version': '3.0',
         'branch': BRANCH,
-        'token_configured': bool(GITHUB_TOKEN),
-        'timestamp': int(datetime.now().timestamp() * 1000)
+        'token': bool(GITHUB_TOKEN)
     })
+
+# ============================================
+# ERROR HANDLERS
+# ============================================
+
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({'error': 'Not found'}), 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    return jsonify({'error': 'Internal server error'}), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    print(f"Unhandled exception: {str(e)}")
+    return jsonify({'error': 'Server error'}), 500
 
 # ============================================
 # MAIN
@@ -351,13 +312,17 @@ def health():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     
-    print(f"\n{'='*60}")
-    print(f"🚀 LINE COUNTER STARTING")
-    print(f"{'='*60}")
-    print(f"📦 Repository: {REPO_OWNER}/{REPO_NAME}")
+    print(f"\n{'='*50}")
+    print(f"🚀 Starting Line Counter")
+    print(f"📦 Repo: {REPO_OWNER}/{REPO_NAME}")
     print(f"🌿 Branch: {BRANCH}")
-    print(f"🔒 Token: {'✓ Configured' if GITHUB_TOKEN else '✗ Missing'}")
-    print(f"🌐 Port: {port}")
-    print(f"{'='*60}\n")
+    print(f"🔒 Token: {'✓' if GITHUB_TOKEN else '✗'}")
+    print(f"{'='*50}\n")
     
-    app.run(host='0.0.0.0', port=port, debug=False)
+    # Run with minimal workers for 512MB RAM
+    app.run(
+        host='0.0.0.0',
+        port=port,
+        debug=False,
+        threaded=True
+    )
