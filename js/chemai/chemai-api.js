@@ -6,7 +6,7 @@
  */
 
 // Backend API URL (change for production)
-const API_URL = 'http://localhost:3000/api'; // Development
+const API_URL = 'https://periodic-table-3d-chemai.onrender.com/api'; // Development
 // const API_URL = 'https://your-backend.onrender.com/api'; // Production
 
 /**
