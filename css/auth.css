@@ -1,8 +1,9 @@
 /* ============================================
-   SECURE AUTHENTICATION SYSTEM - MOBILE OPTIMIZED
+   SECURE AUTHENTICATION SYSTEM - AUTH.CSS
+   Beautiful, Animated & Secure
    ============================================ */
 
-/* Auth Screen Container - FIXED for mobile */
+/* Auth Screen Container */
 #auth-screen {
     position: fixed;
     inset: 0;
@@ -11,25 +12,18 @@
     align-items: center;
     justify-content: center;
     z-index: 10000;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    /* CRITICAL FIX for mobile browsers */
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-    padding: 20px 10px;
+    overflow: hidden;
 }
 
 /* Animated Background Pattern */
 #auth-screen::before {
     content: '';
-    position: fixed;
+    position: absolute;
     inset: 0;
     background-image: 
         radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
         radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%);
     animation: bgFloat 20s ease-in-out infinite;
-    pointer-events: none;
 }
 
 @keyframes bgFloat {
@@ -37,18 +31,16 @@
     50% { transform: translate(20px, 20px); }
 }
 
-/* Container - FIXED for mobile */
+/* Container */
 .auth-container {
     width: 100%;
     max-width: 480px;
-    padding: 0;
+    padding: 20px;
     position: relative;
     z-index: 1;
-    margin: auto;
-    box-sizing: border-box;
 }
 
-/* Card - FIXED for mobile */
+/* Card */
 .auth-card {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
@@ -58,10 +50,6 @@
     animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
-    width: 100%;
-    box-sizing: border-box;
-    max-height: 90vh;
-    overflow-y: auto;
 }
 
 @keyframes slideUp {
@@ -339,6 +327,18 @@
     background: rgba(72, 187, 120, 0.1);
     border-radius: 8px;
     border-left: 4px solid #48bb78;
+    animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Footer */
@@ -427,7 +427,6 @@
     border-radius: 8px;
     margin: 15px 0;
     font-size: 1.1rem;
-    word-break: break-word;
 }
 
 .verify-instruction {
@@ -441,7 +440,6 @@
     gap: 10px;
     justify-content: center;
     margin-top: 20px;
-    flex-wrap: wrap;
 }
 
 .resend-btn, .change-email-btn {
@@ -483,16 +481,33 @@
     border-color: #cbd5e0;
 }
 
+.verify-timer {
+    margin-top: 15px;
+    color: #a0aec0;
+    font-size: 0.9rem;
+}
+
+.verify-timer span {
+    color: #667eea;
+    font-weight: 700;
+}
+
 /* Verification Success */
 .verification-success {
     text-align: center;
     padding: 40px 30px;
+    animation: fadeInScale 0.6s ease;
+}
+
+.success-animation {
+    margin-bottom: 30px;
 }
 
 .success-checkmark {
     width: 120px;
     height: 120px;
-    margin: 0 auto 30px;
+    margin: 0 auto;
+    position: relative;
 }
 
 .check-icon {
@@ -593,11 +608,18 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
+    50% { box-shadow: 0 0 0 15px rgba(72, 187, 120, 0); }
 }
 
 .continue-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(72, 187, 120, 0.4);
+    animation: none;
 }
 
 /* Divider */
@@ -702,27 +724,15 @@
     }
 }
 
-/* ============================================
-   MOBILE RESPONSIVE - COMPLETE FIX
-   ============================================ */
-
-/* Tablet (768px and below) */
+/* Responsive Design */
 @media (max-width: 768px) {
-    #auth-screen {
-        padding: 15px 10px;
-        align-items: flex-start;
-        padding-top: max(env(safe-area-inset-top), 20px);
-    }
-    
     .auth-container {
-        padding: 0;
-        margin: 0;
+        padding: 15px;
     }
     
     .auth-card {
-        padding: 25px 20px;
+        padding: 30px 25px;
         border-radius: 20px;
-        max-height: none;
     }
     
     .auth-logo {
@@ -739,16 +749,6 @@
         font-size: 0.85rem;
     }
     
-    .auth-tabs {
-        gap: 8px;
-        padding: 5px;
-    }
-    
-    .auth-tab-btn {
-        padding: 10px 15px;
-        font-size: 0.9rem;
-    }
-    
     .auth-title {
         font-size: 1.5rem;
     }
@@ -757,23 +757,18 @@
         font-size: 0.85rem;
     }
     
-    .auth-input {
-        padding: 12px 14px;
-        font-size: 0.95rem;
+    .auth-tab-btn {
+        padding: 10px 15px;
+        font-size: 0.9rem;
     }
     
-    .auth-submit-btn {
-        padding: 14px;
-        font-size: 1rem;
-    }
-    
-    .google-signin-btn {
-        padding: 12px;
-        font-size: 0.95rem;
+    .auth-tab-btn i {
+        display: none;
     }
     
     .auth-footer {
         flex-direction: column;
+        align-items: center;
         text-align: center;
     }
     
@@ -785,6 +780,11 @@
     
     .verify-notice h3 {
         font-size: 1.4rem;
+    }
+    
+    .verify-email {
+        font-size: 0.95rem;
+        padding: 10px 15px;
     }
     
     .verify-actions {
@@ -802,550 +802,67 @@
         height: 100px;
     }
     
-    .check-icon, .icon-circle {
+    .check-icon {
         width: 100px;
         height: 100px;
     }
+    
+    .icon-circle {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .verification-success h3 {
+        font-size: 1.5rem;
+    }
+    
+    .continue-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .floating-atom {
+        font-size: 2rem;
+    }
 }
 
-/* Mobile (480px and below) */
 @media (max-width: 480px) {
-    #auth-screen {
-        padding: 10px 8px;
-        padding-top: max(env(safe-area-inset-top), 15px);
-    }
-    
     .auth-card {
-        padding: 20px 15px;
-        border-radius: 16px;
-    }
-    
-    .auth-logo {
-        width: 60px;
-        height: 60px;
-        font-size: 1.8rem;
+        padding: 25px 20px;
     }
     
     .auth-brand {
-        margin-bottom: 20px;
-    }
-    
-    .auth-brand h1 {
-        font-size: 1.4rem;
-    }
-    
-    .auth-brand p {
-        font-size: 0.8rem;
-    }
-    
-    .auth-tabs {
-        gap: 6px;
-        padding: 4px;
-    }
-    
-    .auth-tab-btn {
-        padding: 8px 12px;
-        font-size: 0.85rem;
-        gap: 6px;
-    }
-    
-    .auth-tab-btn i {
-        font-size: 0.9rem;
+        margin-bottom: 25px;
     }
     
     .auth-title {
         font-size: 1.3rem;
     }
     
-    .auth-subtitle {
-        font-size: 0.8rem;
+    .auth-input {
+        padding: 12px 14px;
+        font-size: 0.95rem;
     }
     
-    .auth-form {
-        gap: 16px;
+    .auth-submit-btn {
+        padding: 14px;
+        font-size: 1rem;
     }
     
     .form-group label {
         font-size: 0.85rem;
-    }
-    
-    .auth-input {
-        padding: 10px 12px;
-        font-size: 0.9rem;
-    }
-    
-    .auth-submit-btn {
-        padding: 12px;
-        font-size: 0.95rem;
-    }
-    
-    .google-signin-btn {
-        padding: 10px;
-        font-size: 0.9rem;
     }
     
     .verify-notice {
         padding: 20px 15px;
     }
     
-    .verify-icon {
-        width: 70px;
-        height: 70px;
-        font-size: 2rem;
-    }
-    
-    .verify-notice h3 {
-        font-size: 1.2rem;
-    }
-    
-    .verify-email {
-        padding: 8px 12px;
-        font-size: 0.9rem;
-    }
-    
-    .floating-atom {
-        display: none;
+    .verification-success {
+        padding: 30px 20px;
     }
 }
 
-/* Extra Small (360px and below) */
-@media (max-width: 360px) {
-    .auth-card {
-        padding: 15px 12px;
-    }
-    
-    .auth-logo {
-        width: 50px;
-        height: 50px;
-        font-size: 1.6rem;
-    }
-    
-    .auth-brand h1 {
-        font-size: 1.2rem;
-    }
-    
-    .auth-title {
-        font-size: 1.2rem;
-    }
-    
-    .auth-tab-btn {
-        padding: 7px 10px;
-        font-size: 0.8rem;
-    }
-}
-
-/* iOS Safari Fix */
-@supports (-webkit-touch-callout: none) {
-    #auth-screen {
-        min-height: -webkit-fill-available;
-    }
-}
-
-/* Ensure no overflow */
-#auth-screen * {
-    box-sizing: border-box;
-}
-
-/* ============================================
-   PERFORMANCE OPTIMIZATION - NO LAG
-   ============================================ */
-
-/* Reduce animations on mobile for performance */
-@media (max-width: 768px) {
-    #auth-screen::before {
-        animation: none; /* Disable background animation */
-    }
-    
-    .auth-logo {
-        animation: none; /* Disable logo spin */
-    }
-    
-    .floating-atom {
-        animation: none; /* Disable floating animation */
-    }
-}
-
-/* Reduce motion for accessibility and performance */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
-/* GPU Acceleration for smooth scrolling */
-.auth-card {
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    will-change: scroll-position;
-}
-
-/* Smooth scroll behavior */
-#auth-screen {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Prevent layout shift */
-.auth-container {
-    contain: layout style;
-}
-
-/* ============================================
-   VIEWPORT FIX - Top & Bottom Visible
-   ============================================ */
-
-/* Critical fix for mobile viewport */
-html {
-    height: 100%;
-    height: -webkit-fill-available;
-}
-
-body {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-}
-
-/* Ensure content fits within viewport */
-@media (max-width: 768px) {
-    #auth-screen {
-        /* Force proper viewport height */
-        height: 100vh;
-        height: -webkit-fill-available;
-        min-height: 100vh;
-        min-height: -webkit-fill-available;
-        
-        /* Flexible alignment */
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: center;
-        
-        /* Safe area insets for notched devices */
-        padding-top: max(env(safe-area-inset-top), 10px);
-        padding-bottom: max(env(safe-area-inset-bottom), 10px);
-        padding-left: max(env(safe-area-inset-left), 10px);
-        padding-right: max(env(safe-area-inset-right), 10px);
-    }
-    
-    .auth-container {
-        width: 100%;
-        max-width: 100%;
-        flex: 0 1 auto;
-        margin: 0;
-    }
-    
-    .auth-card {
-        /* Prevent card from being too tall */
-        max-height: calc(100vh - 40px);
-        max-height: calc(-webkit-fill-available - 40px);
-        overflow-y: auto;
-        overflow-x: hidden;
-        
-        /* Smooth scrolling within card */
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        
-        /* Performance optimization */
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-    }
-}
-
-/* Landscape mode fix */
-@media (max-width: 768px) and (orientation: landscape) {
-    #auth-screen {
-        padding: 5px;
-    }
-    
-    .auth-card {
-        max-height: calc(100vh - 20px);
-        padding: 15px;
-    }
-    
-    .auth-logo {
-        width: 50px;
-        height: 50px;
-        font-size: 1.5rem;
-        margin-bottom: 10px;
-    }
-    
-    .auth-brand {
-        margin-bottom: 15px;
-    }
-    
-    .auth-brand h1 {
-        font-size: 1.2rem;
-        margin-bottom: 5px;
-    }
-    
-    .auth-brand p {
-        font-size: 0.75rem;
-    }
-    
-    .auth-tabs {
-        margin-bottom: 15px;
-        padding: 4px;
-    }
-    
-    .auth-tab-btn {
-        padding: 6px 10px;
-        font-size: 0.8rem;
-    }
-    
-    .auth-title {
-        font-size: 1.2rem;
-    }
-    
-    .auth-form {
-        gap: 12px;
-    }
-    
-    .form-group {
-        margin-bottom: 0;
-    }
-    
-    .form-group label {
-        font-size: 0.8rem;
-        margin-bottom: 4px;
-    }
-    
-    .auth-input {
-        padding: 8px 10px;
-        font-size: 0.85rem;
-    }
-    
-    .auth-submit-btn {
-        padding: 10px;
-        font-size: 0.9rem;
-    }
-    
-    .google-signin-btn {
-        padding: 8px;
-        font-size: 0.85rem;
-    }
-    
-    .auth-divider {
-        margin: 15px 0;
-    }
-}
-
-/* Ultra compact for very small screens */
-@media (max-width: 320px) {
-    .auth-card {
-        padding: 12px 10px;
-        border-radius: 12px;
-    }
-    
-    .auth-brand {
-        margin-bottom: 15px;
-    }
-    
-    .auth-logo {
-        width: 45px;
-        height: 45px;
-        font-size: 1.4rem;
-    }
-    
-    .auth-brand h1 {
-        font-size: 1.1rem;
-    }
-    
-    .auth-tabs {
-        gap: 4px;
-        padding: 3px;
-    }
-    
-    .auth-tab-btn {
-        padding: 6px 8px;
-        font-size: 0.75rem;
-    }
-    
-    .auth-title {
-        font-size: 1.1rem;
-    }
-    
-    .auth-form {
-        gap: 14px;
-    }
-}
-
-/* ============================================
-   SCROLL OPTIMIZATION
-   ============================================ */
-
-/* Optimize scroll performance */
-.auth-card::-webkit-scrollbar {
-    width: 6px;
-}
-
-.auth-card::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 3px;
-}
-
-.auth-card::-webkit-scrollbar-thumb {
-    background: rgba(102, 126, 234, 0.3);
-    border-radius: 3px;
-}
-
-.auth-card::-webkit-scrollbar-thumb:hover {
-    background: rgba(102, 126, 234, 0.5);
-}
-
-/* Prevent bounce scroll on iOS */
-@supports (-webkit-touch-callout: none) {
-    body {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-    }
-    
-    #auth-screen {
-        position: fixed;
-        overflow-y: scroll;
-        -webkit-overflow-scrolling: touch;
-    }
-}
-
-/* ============================================
-   TOUCH OPTIMIZATION
-   ============================================ */
-
-/* Better touch targets on mobile */
-@media (max-width: 768px) {
-    .auth-tab-btn,
-    .auth-submit-btn,
-    .google-signin-btn,
-    .resend-btn,
-    .change-email-btn,
-    .continue-btn,
-    .auth-link {
-        min-height: 44px; /* iOS minimum touch target */
-        touch-action: manipulation; /* Prevent double-tap zoom */
-    }
-    
-    /* Prevent text selection on buttons */
-    .auth-tab-btn,
-    .auth-submit-btn,
-    .google-signin-btn {
-        -webkit-user-select: none;
-        user-select: none;
-        -webkit-tap-highlight-color: transparent;
-    }
-}
-
-/* ============================================
-   PREVENT HORIZONTAL SCROLL
-   ============================================ */
-
-html, body {
-    overflow-x: hidden;
-    max-width: 100vw;
-}
-
-#auth-screen {
-    max-width: 100vw;
-    overflow-x: hidden;
-}
-
-.auth-container,
-.auth-card,
-.auth-form,
-.auth-form * {
-    max-width: 100%;
-    overflow-x: hidden;
-}
-
-/* Ensure inputs don't overflow */
-.auth-input,
-.auth-submit-btn,
-.google-signin-btn {
-    width: 100%;
-    max-width: 100%;
-}
-
-/* ============================================
-   LOADING STATE OPTIMIZATION
-   ============================================ */
-
-/* Optimize loading animations */
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.fa-circle-notch {
-    animation: spin 1s linear infinite;
-    will-change: transform;
-}
-
-/* Reduce animation on mobile */
-@media (max-width: 768px) {
-    .fa-circle-notch {
-        animation-duration: 0.8s;
-    }
-}
-
-/* ============================================
-   FONT SIZE ADJUSTMENTS FOR READABILITY
-   ============================================ */
-
-/* Prevent font size adjustment on orientation change */
-html {
-    -webkit-text-size-adjust: 100%;
-    -moz-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-}
-
-/* ============================================
-   FOCUS VISIBLE FOR ACCESSIBILITY
-   ============================================ */
-
-*:focus-visible {
-    outline: 3px solid rgba(102, 126, 234, 0.5);
-    outline-offset: 2px;
-}
-
-/* Remove outline on mouse click */
-*:focus:not(:focus-visible) {
-    outline: none;
-}
-
-/* ============================================
-   PRINT STYLES
-   ============================================ */
-
-@media print {
-    #auth-screen {
-        display: none !important;
-    }
-}
-
-/* ============================================
-   HIGH CONTRAST MODE
-   ============================================ */
-
-@media (prefers-contrast: high) {
-    .auth-card {
-        border: 3px solid #000;
-    }
-    
-    .auth-input {
-        border: 2px solid #000;
-    }
-    
-    .auth-submit-btn {
-        border: 2px solid #000;
-    }
-}
-
-/* ============================================
-   DARK MODE SUPPORT
-   ============================================ */
-
+/* Dark Mode Support (Optional) */
 @media (prefers-color-scheme: dark) {
     .auth-card {
         background: rgba(26, 32, 44, 0.95);
@@ -1373,8 +890,86 @@ html {
         color: #f7fafc;
         border-color: rgba(113, 128, 150, 0.3);
     }
+    
+    .verify-notice h3,
+    .verification-success h3 {
+        color: #f7fafc;
+    }
+}
+
+/* Loading State Animation */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.fa-circle-notch {
+    animation: spin 1s linear infinite;
+}
+
+/* Focus Visible for Accessibility */
+*:focus-visible {
+    outline: 3px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 2px;
+}
+
+/* Smooth Transitions */
+* {
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button, input, a {
+    transition-property: all;
+}
+
+/* Print Styles */
+@media print {
+    #auth-screen {
+        display: none !important;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .auth-card {
+        border: 3px solid #000;
+    }
+    
+    .auth-input {
+        border: 2px solid #000;
+    }
+    
+    .auth-submit-btn {
+        border: 2px solid #000;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .auth-logo {
+        animation: none;
+    }
+    
+    .floating-atom {
+        animation: none;
+    }
+    
+    .verify-icon {
+        animation: none;
+    }
+    
+    .continue-btn {
+        animation: none;
+    }
 }
 
 /* ============================================
-   END OF AUTH.CSS - COMPLETE MOBILE FIX
+   END OF AUTH.CSS
    ============================================ */
