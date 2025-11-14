@@ -1,0 +1,364 @@
+/* ============================================
+   BEAKER-GUIDE.CSS - Guide Modal Styles
+   ============================================ */
+
+.beaker-guide {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.4s ease;
+}
+
+.beaker-guide.hidden {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Guide Content */
+.guide-content {
+    background: linear-gradient(135deg, 
+        rgba(22, 27, 34, 0.98), 
+        rgba(13, 17, 23, 0.98)
+    );
+    border: 2px solid var(--accent-blue);
+    border-radius: 24px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 100px rgba(88, 166, 255, 0.3);
+    animation: guideSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+@keyframes guideSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Guide Header */
+.guide-header {
+    padding: 30px;
+    text-align: center;
+    background: linear-gradient(135deg, 
+        rgba(88, 166, 255, 0.1), 
+        rgba(124, 227, 139, 0.1)
+    );
+    border-bottom: 1px solid var(--border-primary);
+    position: relative;
+}
+
+.guide-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+    box-shadow: 0 8px 24px rgba(88, 166, 255, 0.4);
+    animation: guidePulse 2s ease-in-out infinite;
+}
+
+@keyframes guidePulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 8px 24px rgba(88, 166, 255, 0.4);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 12px 32px rgba(88, 166, 255, 0.6);
+    }
+}
+
+.guide-header h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 10px 0;
+}
+
+.guide-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.guide-close:hover {
+    background: var(--accent-red);
+    color: white;
+    transform: rotate(90deg) scale(1.1);
+    border-color: var(--accent-red);
+}
+
+/* Guide Body */
+.guide-body {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.guide-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    animation: guideItemSlide 0.5s ease backwards;
+}
+
+.guide-item:nth-child(1) { animation-delay: 0.1s; }
+.guide-item:nth-child(2) { animation-delay: 0.2s; }
+.guide-item:nth-child(3) { animation-delay: 0.3s; }
+.guide-item:nth-child(4) { animation-delay: 0.4s; }
+.guide-item:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes guideItemSlide {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.guide-item:hover {
+    background: var(--bg-primary);
+    border-color: var(--accent-blue);
+    transform: translateX(8px);
+    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
+}
+
+.guide-item > i {
+    font-size: 2rem;
+    color: var(--accent-blue);
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.2), rgba(124, 227, 139, 0.2));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.guide-item div {
+    flex: 1;
+}
+
+.guide-item strong {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+}
+
+.guide-item p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Start Button */
+.guide-start {
+    margin: 20px 30px 30px;
+    padding: 18px 40px;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    border: none;
+    border-radius: 16px;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 24px rgba(124, 227, 139, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    animation: guideButtonPulse 2s ease-in-out infinite;
+}
+
+@keyframes guideButtonPulse {
+    0%, 100% {
+        box-shadow: 0 8px 24px rgba(124, 227, 139, 0.4);
+    }
+    50% {
+        box-shadow: 0 12px 32px rgba(124, 227, 139, 0.6);
+    }
+}
+
+.guide-start:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 12px 32px rgba(124, 227, 139, 0.6);
+}
+
+.guide-start:active {
+    transform: translateY(-2px) scale(1.02);
+}
+
+.guide-start i {
+    font-size: 1.3rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .guide-content {
+        max-width: 100%;
+        margin: 0 10px;
+    }
+    
+    .guide-header {
+        padding: 25px 20px;
+    }
+    
+    .guide-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+    }
+    
+    .guide-header h2 {
+        font-size: 1.6rem;
+    }
+    
+    .guide-body {
+        padding: 20px;
+        gap: 15px;
+    }
+    
+    .guide-item {
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .guide-item > i {
+        font-size: 1.6rem;
+        width: 45px;
+        height: 45px;
+    }
+    
+    .guide-item strong {
+        font-size: 1rem;
+    }
+    
+    .guide-item p {
+        font-size: 0.9rem;
+    }
+    
+    .guide-start {
+        margin: 15px 20px 20px;
+        padding: 16px 32px;
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .beaker-guide {
+        padding: 10px;
+    }
+    
+    .guide-header {
+        padding: 20px 15px;
+    }
+    
+    .guide-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+    }
+    
+    .guide-header h2 {
+        font-size: 1.4rem;
+    }
+    
+    .guide-close {
+        top: 15px;
+        right: 15px;
+        width: 35px;
+        height: 35px;
+    }
+    
+    .guide-body {
+        padding: 15px;
+        gap: 12px;
+    }
+    
+    .guide-item {
+        padding: 12px;
+        gap: 12px;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .guide-item > i {
+        font-size: 1.5rem;
+        width: 40px;
+        height: 40px;
+        margin: 0 auto;
+    }
+    
+    .guide-item strong {
+        font-size: 0.95rem;
+    }
+    
+    .guide-item p {
+        font-size: 0.85rem;
+    }
+    
+    .guide-start {
+        margin: 12px 15px 15px;
+        padding: 14px 28px;
+        font-size: 1rem;
+    }
+}
