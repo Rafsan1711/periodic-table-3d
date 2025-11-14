@@ -270,6 +270,11 @@
                         <span class="d-none d-sm-inline">Reactions</span>
                         <span class="d-inline d-sm-none">React</span>
                     </button>
+                        <button id="toggleChemAI" class="toggle-btn" data-tippy-content="AI Chemistry Assistant">
+                      <i class="fas fa-robot me-2"></i>
+                       <span class="d-none d-sm-inline">ChemAI</span>
+                          <span class="d-inline d-sm-none">AI</span>
+                       </button>
                     <button id="toggleCommunity" class="toggle-btn" data-tippy-content="Community Discussions">
                         <i class="fas fa-users me-2"></i>
                         <span class="d-none d-sm-inline">Community</span>
@@ -436,6 +441,179 @@
             </div>
         </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ChemAI Page (FULL SCREEN) -->
+<div id="chemaiPage" class="chemai-page" style="display: none;">
+    <!-- Header -->
+    <div class="chemai-header">
+        <button id="chemaiBackBtn" class="chemai-back-btn">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Periodic Table</span>
+        </button>
+        <div class="chemai-logo">
+            <i class="fas fa-atom"></i>
+            <span>ChemAI</span>
+        </div>
+        <button id="chemaiMenuBtn" class="chemai-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="chemai-container">
+        <!-- Sidebar -->
+        <aside id="chemaiSidebar" class="chemai-sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-atom"></i> ChemAI</h2>
+                <button id="closeSidebarBtn" class="close-sidebar-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <button id="newChatBtn" class="new-chat-btn">
+                <i class="fas fa-plus"></i>
+                <span>New Chat</span>
+            </button>
+
+            <div class="chat-history-section">
+                <h3><i class="fas fa-history"></i> Recent Chats</h3>
+                <div id="chatHistoryList" class="chat-history-list">
+                    <!-- Chat items will be inserted here -->
+                </div>
+            </div>
+
+            <button id="settingsBtn" class="settings-btn">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </button>
+        </aside>
+
+        <!-- Chat Area -->
+        <main class="chemai-chat-area">
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-atom"></i>
+                </div>
+                <h2>Welcome to ChemAI</h2>
+                <p>Your AI-powered chemistry assistant</p>
+                <div class="example-questions">
+                    <button class="example-q" data-question="What is the molecular structure of water?">
+                        <i class="fas fa-flask"></i>
+                        What is the molecular structure of water?
+                    </button>
+                    <button class="example-q" data-question="Explain the periodic table">
+                        <i class="fas fa-table"></i>
+                        Explain the periodic table
+                    </button>
+                    <button class="example-q" data-question="What are chemical bonds?">
+                        <i class="fas fa-link"></i>
+                        What are chemical bonds?
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div id="messagesContainer" class="messages-container" style="display: none;">
+                <!-- Messages will be inserted here -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="chemai-input-area">
+                <!-- Model Selector (hidden when default model selected) -->
+                <div id="modelSelector" class="model-selector">
+                    <button class="model-btn" data-model="vicuna">
+                        <i class="fas fa-brain"></i>
+                        Vicuna 13B
+                    </button>
+                    <button class="model-btn" data-model="gpt-20b">
+                        <i class="fas fa-rocket"></i>
+                        GPT-OSS 20B
+                    </button>
+                    <button class="model-btn" data-model="gpt-120b">
+                        <i class="fas fa-star"></i>
+                        GPT-OSS 120B
+                    </button>
+                </div>
+
+                <!-- Input Box -->
+                <div class="input-wrapper">
+                    <textarea 
+                        id="chemaiInput" 
+                        placeholder="Ask about chemistry..." 
+                        rows="1"
+                        maxlength="2000"
+                    ></textarea>
+                    <button id="sendBtn" class="send-btn" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="chemaiSettingsModal" class="chemai-modal">
+    <div class="modal-content settings-modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-cog"></i> Settings</h3>
+            <button class="modal-close-btn" id="closeSettingsBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="setting-group">
+                <label>Default AI Model</label>
+                <select id="defaultModelSelect">
+                    <option value="">None (Show selector)</option>
+                    <option value="vicuna">Vicuna 13B (Fast)</option>
+                    <option value="gpt-20b">GPT-OSS 20B (Balanced)</option>
+                    <option value="gpt-120b">GPT-OSS 120B (Advanced)</option>
+                </select>
+                <small>Select a default model to hide the model selector</small>
+            </div>
+            
+            <div class="setting-group">
+                <label>Theme</label>
+                <select id="themeSelect">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light (Coming Soon)</option>
+                </select>
+            </div>
+
+            <button id="saveSettingsBtn" class="save-settings-btn">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
         <!-- Community/Forum Page -->
         <div id="communityPage" class="community-page" style="display:none;">
             <div class="forum-container">
@@ -980,6 +1158,10 @@
     <script src="js/settings/settings-modal.js"></script>
     <script src="js/auth/auth-handler.js"></script>
     <script src="js/admin/admin-panel.js"></script>
+    <!-- ChemAI Scripts -->
+    <script src="js/chemai/chemai-api.js"></script>
+    <script src="js/chemai/chemai-ui.js"></script>
+    <script src="js/chemai/chemai-main.js"></script>
     <script src="js/forum/forum-main.js"></script>
     <script src="js/forum/forum-create-post.js"></script>
     <script src="js/forum/forum-notifications.js"></script>
@@ -1014,6 +1196,7 @@
     </script>
 </body>
 </html>
+
 
 
 
