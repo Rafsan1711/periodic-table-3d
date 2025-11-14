@@ -156,7 +156,7 @@ async function handleSendMessage() {
     const typingId = addTypingIndicator();
 
     // Get current model
-    const model = window.ChemAIModels.currentModel;
+    const model = window.ChemAIModels ? window.ChemAIModels.currentModel : 'vicuna';
 
     // Send to API
     const response = await window.ChemAIAPI.sendMessage(
@@ -299,6 +299,12 @@ function toggleSidebar() {
  * Select model
  */
 function selectModel(modelId) {
+    // Check if Models module is loaded
+    if (!window.ChemAIModels) {
+        console.warn('⚠️ ChemAIModels not loaded yet');
+        return;
+    }
+
     window.ChemAIModels.setCurrentModel(modelId);
 
     // Update UI
@@ -424,6 +430,18 @@ async function saveChatToFirebase() {
  * Load chat history
  */
 async function loadChatHistory() {
+    // Check if Firebase module is loaded
+    if (!window.ChemAIFirebase) {
+        console.warn('⚠️ ChemAIFirebase not loaded yet');
+        chatHistoryList.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                <i class="fas fa-comments" style="font-size: 2rem; opacity: 0.3;"></i>
+                <p style="margin-top: 0.5rem;">Loading chats...</p>
+            </div>
+        `;
+        return;
+    }
+
     const chats = await window.ChemAIFirebase.loadUserChats();
 
     chatHistoryList.innerHTML = '';
@@ -488,13 +506,17 @@ async function saveUserSettings() {
     // Update model selector visibility
     if (defaultModel) {
         modelSelector.style.display = 'none';
-        window.ChemAIModels.setCurrentModel(defaultModel);
+        if (window.ChemAIModels) {
+            window.ChemAIModels.setCurrentModel(defaultModel);
+        }
     } else {
         modelSelector.style.display = 'flex';
     }
 
     // Save to Firebase
-    await window.ChemAIFirebase.saveSettings(userSettings);
+    if (window.ChemAIFirebase) {
+        await window.ChemAIFirebase.saveSettings(userSettings);
+    }
 
     // Close modal
     closeSettings();
@@ -506,13 +528,24 @@ async function saveUserSettings() {
  * Load user settings
  */
 async function loadUserSettings() {
+    // Check if Firebase module is loaded
+    if (!window.ChemAIFirebase) {
+        console.warn('⚠️ ChemAIFirebase not loaded yet');
+        userSettings = { defaultModel: null, theme: 'dark' };
+        modelSelector.style.display = 'flex';
+        selectModel('vicuna');
+        return;
+    }
+
     const settings = await window.ChemAIFirebase.loadSettings();
     userSettings = settings;
 
     // Apply settings
     if (settings.defaultModel) {
         modelSelector.style.display = 'none';
-        window.ChemAIModels.setCurrentModel(settings.defaultModel);
+        if (window.ChemAIModels) {
+            window.ChemAIModels.setCurrentModel(settings.defaultModel);
+        }
         selectModel(settings.defaultModel);
     } else {
         modelSelector.style.display = 'flex';
