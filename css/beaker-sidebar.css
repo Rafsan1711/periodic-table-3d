@@ -1,0 +1,399 @@
+/* ============================================
+   BEAKER-SIDEBAR.CSS - Sidebar Styles
+   ============================================ */
+
+.beaker-sidebar {
+    position: fixed;
+    top: 0;
+    right: -600px;
+    width: 550px;
+    height: 100vh;
+    background: rgba(22, 27, 34, 0.98);
+    backdrop-filter: blur(20px);
+    border-left: 1px solid var(--border-primary);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.beaker-sidebar.active {
+    right: 0;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    padding: 25px 30px;
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(124, 227, 139, 0.1));
+}
+
+.sidebar-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+}
+
+.sidebar-header i {
+    color: var(--accent-blue);
+    font-size: 1.6rem;
+}
+
+.sidebar-close {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-close:hover {
+    background: var(--accent-red);
+    color: white;
+    transform: rotate(90deg) scale(1.1);
+    border-color: var(--accent-red);
+}
+
+/* Search Bar */
+.sidebar-search {
+    padding: 20px 30px;
+    position: relative;
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.sidebar-search i {
+    position: absolute;
+    left: 45px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.sidebar-search input {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-primary);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.sidebar-search input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background: var(--bg-primary);
+    box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.1);
+}
+
+.sidebar-search input::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Tabs */
+.sidebar-tabs {
+    display: flex;
+    padding: 15px 30px;
+    gap: 10px;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.sidebar-tab {
+    flex: 1;
+    padding: 12px 20px;
+    background: transparent;
+    border: 2px solid var(--border-primary);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.sidebar-tab:hover {
+    background: var(--bg-primary);
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.sidebar-tab.active {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 15px rgba(88, 166, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.sidebar-tab i {
+    font-size: 1.1rem;
+}
+
+/* Content */
+.sidebar-content {
+    flex: 1;
+    padding: 20px 30px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+    border-radius: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* Element Grid */
+.element-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+}
+
+/* Element Card */
+.element-card {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-primary);
+    border-radius: 12px;
+    padding: 15px;
+    cursor: grab;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.element-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(124, 227, 139, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.element-card:hover::before {
+    opacity: 1;
+}
+
+.element-card:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 
+        0 8px 24px rgba(88, 166, 255, 0.3),
+        0 0 60px rgba(88, 166, 255, 0.2);
+}
+
+.element-card:active {
+    cursor: grabbing;
+    transform: translateY(-4px) scale(1.02);
+}
+
+.element-card img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.element-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 1;
+}
+
+.element-state {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
+    padding: 4px 10px;
+    border-radius: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Liquid Cards */
+.liquid-card .liquid-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.3),
+        inset 0 4px 12px rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.liquid-icon i {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Gas Cards */
+.gas-card .gas-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.2), rgba(188, 140, 255, 0.2));
+    border: 2px dashed var(--accent-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: var(--accent-blue);
+    position: relative;
+    z-index: 1;
+    animation: gasFloat 3s ease-in-out infinite;
+}
+
+@keyframes gasFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Dragging State */
+.element-card.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg) scale(0.9);
+    cursor: grabbing;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .beaker-sidebar {
+        width: 100%;
+        right: -100%;
+    }
+    
+    .beaker-sidebar.active {
+        right: 0;
+    }
+    
+    .sidebar-header {
+        padding: 20px 20px;
+    }
+    
+    .sidebar-header h3 {
+        font-size: 1.3rem;
+    }
+    
+    .sidebar-search {
+        padding: 15px 20px;
+    }
+    
+    .sidebar-tabs {
+        padding: 12px 20px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+    
+    .sidebar-tab {
+        white-space: nowrap;
+        min-width: 100px;
+        padding: 10px 15px;
+        font-size: 0.85rem;
+    }
+    
+    .sidebar-content {
+        padding: 15px 20px;
+    }
+    
+    .element-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+    }
+    
+    .element-card {
+        padding: 12px;
+    }
+    
+    .element-card img,
+    .liquid-icon,
+    .gas-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .element-name {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .element-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+    
+    .element-card {
+        padding: 10px;
+    }
+    
+    .element-card img,
+    .liquid-icon,
+    .gas-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .element-name {
+        font-size: 0.8rem;
+    }
+    
+    .element-state {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+}
