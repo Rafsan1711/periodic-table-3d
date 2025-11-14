@@ -270,6 +270,11 @@
                         <span class="d-none d-sm-inline">Reactions</span>
                         <span class="d-inline d-sm-none">React</span>
                     </button>
+                   <button id="toggleBeaker" class="toggle-btn" data-tippy-content="Virtual Lab">
+                       <i class="fas fa-vial me-2"></i>
+                    <span class="d-none d-sm-inline">Virtual Lab</span>
+                     <span class="d-inline d-sm-none">Lab</span>
+                   </button>
                     <button id="toggleCommunity" class="toggle-btn" data-tippy-content="Community Discussions">
                         <i class="fas fa-users me-2"></i>
                         <span class="d-none d-sm-inline">Community</span>
@@ -436,6 +441,266 @@
             </div>
         </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="beakerPage" class="beaker-page" style="display:none;">
+    <div class="beaker-container">
+        <!-- Guide Modal -->
+        <div id="beaker-guide" class="beaker-guide">
+            <div class="guide-content">
+                <div class="guide-header">
+                    <div class="guide-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <h2>Virtual Chemistry Lab</h2>
+                    <button class="guide-close" onclick="closeBeakerGuide()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="guide-body">
+                    <div class="guide-item">
+                        <i class="fas fa-hand-pointer"></i>
+                        <div>
+                            <strong>Add Elements</strong>
+                            <p>Click or drag elements into the beaker</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <i class="fas fa-mobile-alt"></i>
+                        <div>
+                            <strong>Motion Control</strong>
+                            <p>Shake your phone to mix the contents</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <i class="fas fa-sync-alt"></i>
+                        <div>
+                            <strong>Better Performance</strong>
+                            <p>Turn off auto-rotate for smooth experience</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <i class="fas fa-flask"></i>
+                        <div>
+                            <strong>Watch Reactions</strong>
+                            <p>Chemical reactions happen in real-time</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <strong>Live Equations</strong>
+                            <p>Equation appears above beaker during reactions</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="guide-start" onclick="startBeakerLab()">
+                    <i class="fas fa-play"></i>
+                    Start Experiment
+                </button>
+            </div>
+        </div>
+
+        <!-- Equation Display -->
+        <div id="beaker-equation" class="beaker-equation" style="display:none;">
+            <div class="equation-content">
+                <i class="fas fa-atom"></i>
+                <span id="equation-text"></span>
+            </div>
+        </div>
+
+        <!-- Main Beaker -->
+        <div class="beaker-wrapper">
+            <canvas id="beakerCanvas"></canvas>
+            <div class="beaker-glass">
+                <div class="glass-shine"></div>
+                <div class="beaker-markings">
+                    <div class="marking" style="bottom: 80%;">500ml</div>
+                    <div class="marking" style="bottom: 60%;">400ml</div>
+                    <div class="marking" style="bottom: 40%;">300ml</div>
+                    <div class="marking" style="bottom: 20%;">200ml</div>
+                    <div class="marking" style="bottom: 10%;">100ml</div>
+                </div>
+            </div>
+            <div class="beaker-liquid" id="beakerLiquid"></div>
+            <div class="beaker-gas" id="beakerGas"></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="beaker-controls">
+            <button id="toggle-sidebar" class="control-btn" data-tippy-content="Elements Library">
+                <i class="fas fa-atom"></i>
+            </button>
+            <button id="reset-beaker" class="control-btn reset" data-tippy-content="Reset Beaker">
+                <i class="fas fa-redo"></i>
+            </button>
+            <button id="beaker-info" class="control-btn info" data-tippy-content="Show Guide">
+                <i class="fas fa-question"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar -->
+        <div id="beaker-sidebar" class="beaker-sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-flask"></i> Elements Library</h3>
+                <button class="sidebar-close" onclick="closeSidebar()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-search">
+                <i class="fas fa-search"></i>
+                <input type="search" id="element-search" placeholder="Search elements...">
+            </div>
+
+            <div class="sidebar-tabs">
+                <button class="sidebar-tab active" data-tab="solids">
+                    <i class="fas fa-cube"></i>
+                    Solids
+                </button>
+                <button class="sidebar-tab" data-tab="liquids">
+                    <i class="fas fa-tint"></i>
+                    Liquids
+                </button>
+                <button class="sidebar-tab" data-tab="gases">
+                    <i class="fas fa-wind"></i>
+                    Gases
+                </button>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- Solids -->
+                <div class="element-grid" data-category="solids">
+                    <div class="element-card" data-element="Na" data-type="solid" draggable="true">
+                        <img src="assets/elements/Na.png" alt="Sodium" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect fill=%27%23FFA657%27 width=%27100%27 height=%27100%27/%3E%3Ctext x=%2750%27 y=%2755%27 font-size=%2740%27 text-anchor=%27middle%27 fill=%27white%27%3ENa%3C/text%3E%3C/svg%3E'">
+                        <span class="element-name">Sodium (Na)</span>
+                        <span class="element-state">Solid</span>
+                    </div>
+                    <div class="element-card" data-element="Ca" data-type="solid" draggable="true">
+                        <img src="assets/elements/Ca.png" alt="Calcium" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect fill=%27%23A0AEC0%27 width=%27100%27 height=%27100%27/%3E%3Ctext x=%2750%27 y=%2755%27 font-size=%2740%27 text-anchor=%27middle%27 fill=%27white%27%3ECa%3C/text%3E%3C/svg%3E'">
+                        <span class="element-name">Calcium (Ca)</span>
+                        <span class="element-state">Solid</span>
+                    </div>
+                    <div class="element-card" data-element="Fe" data-type="solid" draggable="true">
+                        <img src="assets/elements/Fe.png" alt="Iron" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect fill=%27%23718096%27 width=%27100%27 height=%27100%27/%3E%3Ctext x=%2750%27 y=%2755%27 font-size=%2740%27 text-anchor=%27middle%27 fill=%27white%27%3EFe%3C/text%3E%3C/svg%3E'">
+                        <span class="element-name">Iron (Fe)</span>
+                        <span class="element-state">Solid</span>
+                    </div>
+                    <div class="element-card" data-element="Mg" data-type="solid" draggable="true">
+                        <img src="assets/elements/Mg.png" alt="Magnesium" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect fill=%27%2381E6D9%27 width=%27100%27 height=%27100%27/%3E%3Ctext x=%2750%27 y=%2755%27 font-size=%2740%27 text-anchor=%27middle%27 fill=%27white%27%3EMg%3C/text%3E%3C/svg%3E'">
+                        <span class="element-name">Magnesium (Mg)</span>
+                        <span class="element-state">Solid</span>
+                    </div>
+                    <div class="element-card" data-element="Zn" data-type="solid" draggable="true">
+                        <img src="assets/elements/Zn.png" alt="Zinc" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect fill=%27%23A0AEC0%27 width=%27100%27 height=%27100%27/%3E%3Ctext x=%2750%27 y=%2755%27 font-size=%2740%27 text-anchor=%27middle%27 fill=%27white%27%3EZn%3C/text%3E%3C/svg%3E'">
+                        <span class="element-name">Zinc (Zn)</span>
+                        <span class="element-state">Solid</span>
+                    </div>
+                    <div class="element-card" data-element="Al" data-type="solid" draggable="true">
+                        <img src="assets/elements/Al.png" alt="Aluminum" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect fill=%27%23CBD5E0%27 width=%27100%27 height=%27100%27/%3E%3Ctext x=%2750%27 y=%2755%27 font-size=%2740%27 text-anchor=%27middle%27 fill=%27white%27%3EAl%3C/text%3E%3C/svg%3E'">
+                        <span class="element-name">Aluminum (Al)</span>
+                        <span class="element-state">Solid</span>
+                    </div>
+                </div>
+
+                <!-- Liquids -->
+                <div class="element-grid" data-category="liquids" style="display:none;">
+                    <div class="element-card liquid-card" data-element="H2O" data-type="liquid" draggable="true">
+                        <div class="liquid-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <span class="element-name">Water (H₂O)</span>
+                        <span class="element-state">Liquid</span>
+                    </div>
+                    <div class="element-card liquid-card" data-element="HCl" data-type="liquid" draggable="true">
+                        <div class="liquid-icon" style="background: linear-gradient(135deg, #ff6b6b, #ee5a6f);">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <span class="element-name">Hydrochloric Acid</span>
+                        <span class="element-state">Liquid</span>
+                    </div>
+                    <div class="element-card liquid-card" data-element="H2SO4" data-type="liquid" draggable="true">
+                        <div class="liquid-icon" style="background: linear-gradient(135deg, #ffd93d, #ff6b6b);">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <span class="element-name">Sulfuric Acid</span>
+                        <span class="element-state">Liquid</span>
+                    </div>
+                    <div class="element-card liquid-card" data-element="Ethanol" data-type="liquid" draggable="true">
+                        <div class="liquid-icon" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <span class="element-name">Ethanol (C₂H₅OH)</span>
+                        <span class="element-state">Liquid</span>
+                    </div>
+                </div>
+
+                <!-- Gases -->
+                <div class="element-grid" data-category="gases" style="display:none;">
+                    <div class="element-card gas-card" data-element="O2" data-type="gas" draggable="true">
+                        <div class="gas-icon">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <span class="element-name">Oxygen (O₂)</span>
+                        <span class="element-state">Gas</span>
+                    </div>
+                    <div class="element-card gas-card" data-element="H2" data-type="gas" draggable="true">
+                        <div class="gas-icon">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <span class="element-name">Hydrogen (H₂)</span>
+                        <span class="element-state">Gas</span>
+                    </div>
+                    <div class="element-card gas-card" data-element="Cl2" data-type="gas" draggable="true">
+                        <div class="gas-icon" style="color: #7ce38b;">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <span class="element-name">Chlorine (Cl₂)</span>
+                        <span class="element-state">Gas</span>
+                    </div>
+                    <div class="element-card gas-card" data-element="N2" data-type="gas" draggable="true">
+                        <div class="gas-icon" style="color: #bc8cff;">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <span class="element-name">Nitrogen (N₂)</span>
+                        <span class="element-state">Gas</span>
+                    </div>
+                    <div class="element-card gas-card" data-element="CO2" data-type="gas" draggable="true">
+                        <div class="gas-icon" style="color: #ffa657;">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <span class="element-name">Carbon Dioxide (CO₂)</span>
+                        <span class="element-state">Gas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+        
         <!-- Community/Forum Page -->
         <div id="communityPage" class="community-page" style="display:none;">
             <div class="forum-container">
@@ -983,10 +1248,18 @@
     <script src="js/forum/forum-main.js"></script>
     <script src="js/forum/forum-create-post.js"></script>
     <script src="js/forum/forum-notifications.js"></script>
-    
+    <script src="js/beaker/beaker-data.js"></script>
+    <script src="js/beaker/beaker-renderer.js"></script>
+    <script src="js/beaker/beaker-physics.js"></script>
+    <script src="js/beaker/beaker-sidebar.js"></script>
+    <script src="js/beaker/beaker-reactions.js"></script>
+    <script src="js/beaker/beaker-effects.js"></script>
+    <script src="js/beaker/beaker-motion.js"></script>
+    <script src="js/beaker/beaker-guide.js"></script>
+    <script src="js/beaker/beaker-main.js"></script>
     <script src="js/core/page-toggle.js"></script>
     <script src="js/core/app-init.js"></script>
-    
+     
   <script>
         window.addEventListener('load', function() {
             setTimeout(() => {
@@ -1014,6 +1287,7 @@
     </script>
 </body>
 </html>
+
 
 
 
