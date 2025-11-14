@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: chemai-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: HF_TOKEN
+        sync: false
+      - key: PORT
+        value: 3000
+      - key: FRONTEND_URL
+        value: https://your-frontend-domain.com
