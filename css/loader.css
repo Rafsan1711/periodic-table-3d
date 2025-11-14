@@ -1,344 +1,98 @@
-/* ============================================
-   LOADER.CSS - COMPLETE FIX
-   ✅ No orbit displacement
-   ✅ Perfect centering always
-   ✅ Isolated from other CSS
-   ============================================ */
-
-/* CRITICAL: Loader Overlay (Highest Priority) */
 .loader-overlay {
-    /* Fixed positioning - never moves */
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    
-    /* Centering */
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    
-    /* Background */
-    background: var(--bg-primary) !important;
-    
-    /* Highest z-index */
-    z-index: 99999 !important;
-    
-    /* Smooth fade */
-    transition: opacity 0.5s ease !important;
-    
-    /* Reset any inherited properties */
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    box-sizing: border-box !important;
-    
-    /* Prevent scrolling */
-    overflow: hidden !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease;
 }
 
-/* Loader Content Container */
 .loader-content {
     text-align: center;
-    position: relative;
-    z-index: 1;
-    
-    /* Reset any inherited properties */
-    margin: 0;
-    padding: 0;
-    border: none;
-    box-sizing: border-box;
 }
 
-/* CRITICAL: Atom Loader Container (Perfect Centering) */
 .atom-loader {
-    /* Fixed dimensions */
-    width: 120px !important;
-    height: 120px !important;
-    
-    /* Center in parent */
-    margin: 0 auto 20px !important;
-    
-    /* Relative positioning for children */
-    position: relative !important;
-    
-    /* Reset any inherited properties */
-    padding: 0 !important;
-    border: none !important;
-    box-sizing: border-box !important;
-    
-    /* Prevent any external influence */
-    transform: none !important;
-    transform-origin: center center !important;
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
 }
 
-/* Nucleus (Center Point) */
 .nucleus {
-    /* CRITICAL: Absolute centering */
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    
-    /* Fixed size */
-    width: 20px !important;
-    height: 20px !important;
-    
-    /* Styling */
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)) !important;
-    border-radius: 50% !important;
-    box-shadow: 0 0 20px var(--accent-blue) !important;
-    
-    /* Animation */
-    animation: pulse 1.5s ease-in-out infinite !important;
-    
-    /* Reset */
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 20px var(--accent-blue);
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* CRITICAL: Electron Orbits (Perfect Circle) */
 .electron-orbit {
-    /* CRITICAL: Absolute centering from parent center */
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    
-    /* Border circle */
-    border: 2px solid rgba(88, 166, 255, 0.3) !important;
-    border-radius: 50% !important;
-    
-    /* No background */
-    background: none !important;
-    
-    /* Reset */
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border: 2px solid rgba(88, 166, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
 }
 
-/* Orbit 1 (Innermost) */
 .orbit-1 {
-    width: 60px !important;
-    height: 60px !important;
-    transform: translate(-50%, -50%) !important;
-    animation: rotate 2s linear infinite !important;
+    width: 60px;
+    height: 60px;
+    animation: rotate 2s linear infinite;
 }
 
-/* Orbit 2 (Middle) */
 .orbit-2 {
-    width: 90px !important;
-    height: 90px !important;
-    transform: translate(-50%, -50%) !important;
-    animation: rotate 3s linear infinite reverse !important;
+    width: 90px;
+    height: 90px;
+    animation: rotate 3s linear infinite reverse;
 }
 
-/* Orbit 3 (Outermost) */
 .orbit-3 {
-    width: 120px !important;
-    height: 120px !important;
-    transform: translate(-50%, -50%) !important;
-    animation: rotate 4s linear infinite !important;
+    width: 120px;
+    height: 120px;
+    animation: rotate 4s linear infinite;
 }
 
-/* Electrons (Small Dots) */
 .electron {
-    /* CRITICAL: Positioned at top of orbit */
-    position: absolute !important;
-    top: 0 !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    
-    /* Fixed size */
-    width: 8px !important;
-    height: 8px !important;
-    
-    /* Styling */
-    background: var(--accent-green) !important;
-    border-radius: 50% !important;
-    box-shadow: 0 0 10px var(--accent-green) !important;
-    
-    /* Reset */
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px var(--accent-green);
 }
 
-/* Loader Text */
 .loader-text {
     color: var(--text-secondary);
     font-size: 1.1rem;
     font-weight: 500;
     animation: fadeInOut 1.5s ease-in-out infinite;
-    
-    /* Reset */
-    margin: 0;
-    padding: 0;
-    border: none;
 }
 
-/* ============================================
-   ANIMATIONS
-   ============================================ */
-
-/* Rotate Animation (Orbits) */
 @keyframes rotate {
-    from { 
-        transform: translate(-50%, -50%) rotate(0deg); 
-    }
-    to { 
-        transform: translate(-50%, -50%) rotate(360deg); 
-    }
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-/* Pulse Animation (Nucleus) */
 @keyframes pulse {
-    0%, 100% { 
-        transform: translate(-50%, -50%) scale(1); 
-    }
-    50% { 
-        transform: translate(-50%, -50%) scale(1.2); 
-    }
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.2); }
 }
 
-/* Fade In/Out Animation (Text) */
 @keyframes fadeInOut {
-    0%, 100% { 
-        opacity: 0.5; 
-    }
-    50% { 
-        opacity: 1; 
-    }
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
-
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
-
-@media (max-width: 768px) {
-    .atom-loader {
-        width: 100px !important;
-        height: 100px !important;
-    }
-    
-    .nucleus {
-        width: 16px !important;
-        height: 16px !important;
-    }
-    
-    .orbit-1 {
-        width: 50px !important;
-        height: 50px !important;
-    }
-    
-    .orbit-2 {
-        width: 75px !important;
-        height: 75px !important;
-    }
-    
-    .orbit-3 {
-        width: 100px !important;
-        height: 100px !important;
-    }
-    
-    .electron {
-        width: 6px !important;
-        height: 6px !important;
-    }
-    
-    .loader-text {
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .atom-loader {
-        width: 80px !important;
-        height: 80px !important;
-        margin-bottom: 15px !important;
-    }
-    
-    .nucleus {
-        width: 14px !important;
-        height: 14px !important;
-    }
-    
-    .orbit-1 {
-        width: 40px !important;
-        height: 40px !important;
-    }
-    
-    .orbit-2 {
-        width: 60px !important;
-        height: 60px !important;
-    }
-    
-    .orbit-3 {
-        width: 80px !important;
-        height: 80px !important;
-    }
-    
-    .electron {
-        width: 5px !important;
-        height: 5px !important;
-    }
-    
-    .loader-text {
-        font-size: 0.9rem;
-    }
-}
-
-/* ============================================
-   ACCESSIBILITY
-   ============================================ */
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-    .electron-orbit {
-        animation: none !important;
-    }
-    
-    .nucleus {
-        animation: none !important;
-    }
-    
-    .loader-text {
-        animation: none !important;
-        opacity: 1 !important;
-    }
-}
-
-/* High contrast mode */
-@media (prefers-contrast: high) {
-    .nucleus {
-        background: #fff !important;
-        border: 2px solid #000 !important;
-    }
-    
-    .electron-orbit {
-        border-color: #fff !important;
-        border-width: 3px !important;
-    }
-    
-    .electron {
-        background: #fff !important;
-        border: 2px solid #000 !important;
-    }
-}
-
-/* ============================================
-   PRINT STYLES
-   ============================================ */
-
-@media print {
-    .loader-overlay {
-        display: none !important;
-    }
-}
-
-/* ============================================
-   END OF LOADER.CSS - COMPLETE FIX
-   ✅ Orbits will NEVER displace now
-   ============================================ */
