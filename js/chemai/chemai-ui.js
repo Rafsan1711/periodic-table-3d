@@ -15,6 +15,7 @@ let defaultModelSelect;
 let currentChatId = null;
 let currentMessages = [];
 let userSettings = { defaultModel: null, theme: 'dark' };
+let isSending = false; // NEW: Prevent double send
 
 /**
  * Initialize UI
@@ -129,74 +130,85 @@ function handleInputKeydown(e) {
 }
 
 /**
- * Handle send message
+ * Handle send message - FIXED DOUBLE MESSAGE
  */
 async function handleSendMessage() {
     const message = chemaiInput.value.trim();
     if (!message) return;
 
-    // Prevent double-sending
-    if (sendBtn.disabled) return;
+    // CRITICAL: Prevent double-sending
+    if (isSending) {
+        console.warn('⚠️ Already sending a message, ignoring');
+        return;
+    }
+    
+    isSending = true;
 
     // Disable input immediately
     chemaiInput.disabled = true;
     sendBtn.disabled = true;
 
-    // Hide empty state, show messages
-    if (emptyState && emptyState.style.display !== 'none') {
-        emptyState.style.display = 'none';
-        if (messagesContainer) {
-            messagesContainer.style.display = 'flex';
+    try {
+        // Hide empty state, show messages
+        if (emptyState && emptyState.style.display !== 'none') {
+            emptyState.style.display = 'none';
+            if (messagesContainer) {
+                messagesContainer.style.display = 'flex';
+            }
         }
-    }
 
-    // Add user message
-    addMessage(message, 'user');
+        // Add user message ONCE
+        addMessage(message, 'user');
 
-    // Clear input
-    chemaiInput.value = '';
-    handleInputChange();
+        // Clear input
+        chemaiInput.value = '';
+        handleInputChange();
 
-    // Show typing indicator
-    const typingId = addTypingIndicator();
+        // Show typing indicator
+        const typingId = addTypingIndicator();
 
-    // Get current model
-    const model = window.ChemAIModels ? window.ChemAIModels.currentModel : 'vicuna';
+        // Get current model
+        const model = window.ChemAIModels ? window.ChemAIModels.currentModel : 'vicuna';
 
-    // Check if API module is loaded
-    if (!window.ChemAIAPI) {
-        console.error('❌ ChemAIAPI not loaded');
+        // Check if API module is loaded
+        if (!window.ChemAIAPI) {
+            console.error('❌ ChemAIAPI not loaded');
+            removeTypingIndicator(typingId);
+            addMessage('Error: API module not loaded. Please refresh the page.', 'ai', model, true);
+            return;
+        }
+
+        // Send to API - THIS ONLY HAPPENS ONCE
+        const response = await window.ChemAIAPI.sendMessage(
+            message,
+            window.ChemAIAPI.formatChatHistory(currentMessages),
+            model
+        );
+
+        // Remove typing indicator
         removeTypingIndicator(typingId);
-        addMessage('Error: API module not loaded. Please refresh the page.', 'ai', model, true);
+
+        // Add AI response ONCE
+        if (response.success) {
+            addMessage(response.message, 'ai', response.model);
+        } else {
+            addMessage(response.message, 'ai', model, true);
+        }
+
+        // Save chat
+        await saveChatToFirebase();
+
+    } catch (error) {
+        console.error('❌ Error in handleSendMessage:', error);
+        removeTypingIndicator('typing-indicator');
+        addMessage('An error occurred. Please try again.', 'ai', 'vicuna', true);
+    } finally {
+        // Re-enable input
+        isSending = false;
         chemaiInput.disabled = false;
         sendBtn.disabled = false;
-        return;
+        chemaiInput.focus();
     }
-
-    // Send to API
-    const response = await window.ChemAIAPI.sendMessage(
-        message,
-        window.ChemAIAPI.formatChatHistory(currentMessages),
-        model
-    );
-
-    // Remove typing indicator
-    removeTypingIndicator(typingId);
-
-    // Add AI response
-    if (response.success) {
-        addMessage(response.message, 'ai', response.model);
-    } else {
-        addMessage(response.message, 'ai', model, true);
-    }
-
-    // Save chat
-    await saveChatToFirebase();
-
-    // Re-enable input
-    chemaiInput.disabled = false;
-    sendBtn.disabled = false;
-    chemaiInput.focus();
 }
 
 /**
