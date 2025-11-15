@@ -57,7 +57,17 @@
 @import url('scrollbar-tippy.css');
 
 @import url('settings.css');
+
 @import url('admin-panel.css');
+
+@import url('beaker-animations.css');
+
+@import url('beaker-sidebar.css');
+
+@import url('beaker-guide.css');
+
+@import url('beaker.css');
+
 /* 19. Responsive Design */
 @import url('responsive.css');
 
