@@ -1,7 +1,7 @@
 /**
  * ============================================
- * PAGE-TOGGLE.JS UPDATE - Add Beaker Support
- * Replace the existing initPageToggle function with this
+ * PAGE-TOGGLE.JS - COMPLETE FILE WITH BEAKER
+ * js/core/page-toggle.js
  * ============================================
  */
 
@@ -9,19 +9,36 @@ function initPageToggle() {
     const togglePeriodic = document.getElementById('togglePeriodic');
     const toggleMolecules = document.getElementById('toggleMolecules');
     const toggleReactions = document.getElementById('toggleReactions');
-    const toggleBeaker = document.getElementById('toggleBeaker'); // NEW
+    const toggleBeaker = document.getElementById('toggleBeaker');
     const toggleCommunity = document.getElementById('toggleCommunity');
     
-    // Get page elements
+    // FIXED: Get correct page elements
+    const periodicPage = document.querySelector('.periodic-table-wrapper')?.parentElement || document.getElementById('periodic-page');
+    const moleculesPage = document.getElementById('moleculesPage');
+    const reactionsPage = document.getElementById('reactionsPage');
+    const beakerPage = document.getElementById('beakerPage');
+    const communityPage = document.getElementById('communityPage');
+    
+    // Also get individual periodic table elements
     const periodicTableWrapper = document.querySelector('.periodic-table-wrapper');
     const legend = document.querySelector('.legend');
     const seriesRows = document.querySelector('.periodic-table-wrapper')?.parentElement?.querySelector('.row.g-3.mt-3');
-    const moleculesPage = document.getElementById('moleculesPage');
-    const reactionsPage = document.getElementById('reactionsPage');
-    const beakerPage = document.getElementById('beakerPage'); // NEW
-    const communityPage = document.getElementById('communityPage');
     
     console.log('🔄 Initializing page toggle with Beaker...');
+    console.log('✅ Buttons found:', {
+        periodic: !!togglePeriodic,
+        molecules: !!toggleMolecules,
+        reactions: !!toggleReactions,
+        beaker: !!toggleBeaker,
+        community: !!toggleCommunity
+    });
+    console.log('✅ Pages found:', {
+        periodic: !!periodicTableWrapper,
+        molecules: !!moleculesPage,
+        reactions: !!reactionsPage,
+        beaker: !!beakerPage,
+        community: !!communityPage
+    });
     
     function hideAllPages() {
         // Hide periodic table elements
@@ -38,7 +55,7 @@ function initPageToggle() {
             reactionsPage.style.display = 'none';
             reactionsPage.setAttribute('aria-hidden', 'true');
         }
-        if (beakerPage) { // NEW
+        if (beakerPage) {
             beakerPage.style.display = 'none';
             beakerPage.setAttribute('aria-hidden', 'true');
         }
@@ -62,7 +79,11 @@ function initPageToggle() {
             hideAllPages();
             updateButtonStates(togglePeriodic);
             
-            if (periodicTableWrapper) periodicTableWrapper.style.display = 'block';
+            // Show periodic table elements
+            if (periodicTableWrapper) {
+                periodicTableWrapper.style.display = 'block';
+                console.log('✅ Periodic table shown');
+            }
             if (legend) legend.style.display = 'flex';
             if (seriesRows) seriesRows.style.display = 'block';
             
@@ -82,9 +103,14 @@ function initPageToggle() {
             if (moleculesPage) {
                 moleculesPage.style.display = 'block';
                 moleculesPage.setAttribute('aria-hidden', 'false');
+                console.log('✅ Molecules page shown');
                 
+                // FIXED: Render molecules list properly
                 setTimeout(() => {
-                    if (typeof renderMoleculesList === 'function') {
+                    const moleculesList = document.getElementById('moleculesList');
+                    if (moleculesList && typeof renderMoleculesList === 'function') {
+                        // Always render to ensure content shows
+                        console.log('🔄 Rendering molecules list...');
                         renderMoleculesList();
                     }
                 }, 100);
@@ -106,9 +132,12 @@ function initPageToggle() {
             if (reactionsPage) {
                 reactionsPage.style.display = 'block';
                 reactionsPage.setAttribute('aria-hidden', 'false');
+                console.log('✅ Reactions page shown');
                 
+                // FIXED: Initialize theatre properly
                 setTimeout(() => {
                     if (typeof theatreRenderer === 'undefined' || !theatreRenderer) {
+                        console.log('🎬 Initializing theatre...');
                         if (typeof initTheatre === 'function') {
                             initTheatre();
                         }
@@ -122,10 +151,10 @@ function initPageToggle() {
         });
     }
     
-    // Show Beaker (NEW)
+    // Show Beaker (Virtual Lab)
     if (toggleBeaker) {
         toggleBeaker.addEventListener('click', () => {
-            console.log('🧪 Switching to Virtual Lab');
+            console.log('🧪 Switching to Virtual Lab (Beaker)');
             hideAllPages();
             updateButtonStates(toggleBeaker);
             
@@ -134,18 +163,28 @@ function initPageToggle() {
                 beakerPage.setAttribute('aria-hidden', 'false');
                 console.log('✅ Beaker page shown');
                 
-                // Initialize beaker on first show
+                // Initialize beaker lab
                 setTimeout(() => {
                     if (typeof initBeakerLab === 'function') {
+                        console.log('🧪 Initializing beaker lab...');
                         initBeakerLab();
+                    } else {
+                        console.error('❌ initBeakerLab function not found!');
+                        console.log('💡 Make sure beaker-main.js is loaded');
                     }
-                }, 100);
+                }, 150);
+            } else {
+                console.error('❌ Beaker page not found!');
+                console.log('💡 Add <div id="beakerPage"> to index.html');
             }
             
             if (typeof AOS !== 'undefined') {
                 setTimeout(() => AOS.refresh(), 100);
             }
         });
+    } else {
+        console.warn('⚠️ Beaker toggle button not found!');
+        console.log('💡 Add <button id="toggleBeaker"> to page-toggle section');
     }
     
     // Show Community
@@ -158,7 +197,9 @@ function initPageToggle() {
             if (communityPage) {
                 communityPage.style.display = 'block';
                 communityPage.setAttribute('aria-hidden', 'false');
+                console.log('✅ Community page shown');
                 
+                // Load forum feed
                 setTimeout(() => {
                     if (typeof loadForumFeed === 'function') {
                         loadForumFeed();
@@ -181,39 +222,86 @@ function initPageToggle() {
         if (seriesRows) seriesRows.style.display = 'block';
     }
     
-    console.log('✅ Page toggle initialized with Beaker support');
+    console.log('✅ Page toggle initialized successfully with 5 pages');
 }
 
-// Helper functions
+/**
+ * Helper function to show specific page
+ */
 function showPeriodicPage() {
     const btn = document.getElementById('togglePeriodic');
-    if (btn) btn.click();
+    if (btn) {
+        btn.click();
+    } else {
+        console.error('Periodic button not found');
+    }
 }
 
 function showMoleculesPage() {
     const btn = document.getElementById('toggleMolecules');
-    if (btn) btn.click();
+    if (btn) {
+        btn.click();
+    } else {
+        console.error('Molecules button not found');
+    }
 }
 
 function showReactionsPage() {
     const btn = document.getElementById('toggleReactions');
-    if (btn) btn.click();
+    if (btn) {
+        btn.click();
+    } else {
+        console.error('Reactions button not found');
+    }
 }
 
-function showBeakerPage() { // NEW
+function showBeakerPage() {
     const btn = document.getElementById('toggleBeaker');
-    if (btn) btn.click();
+    if (btn) {
+        btn.click();
+        console.log('✅ Beaker page activated');
+    } else {
+        console.error('❌ Beaker button not found!');
+        console.log('💡 Check if button exists in HTML:');
+        console.log('   <button id="toggleBeaker" class="toggle-btn">');
+    }
 }
 
 function showCommunityPage() {
     const btn = document.getElementById('toggleCommunity');
-    if (btn) btn.click();
+    if (btn) {
+        btn.click();
+    } else {
+        console.error('Community button not found');
+    }
 }
 
-// Export
+// Export functions globally
 window.initPageToggle = initPageToggle;
 window.showPeriodicPage = showPeriodicPage;
 window.showMoleculesPage = showMoleculesPage;
 window.showReactionsPage = showReactionsPage;
-window.showBeakerPage = showBeakerPage; // NEW
+window.showBeakerPage = showBeakerPage;
 window.showCommunityPage = showCommunityPage;
+
+// Debug helper
+window.debugPageToggle = function() {
+    console.log('🔍 Page Toggle Debug Info:');
+    console.log('Buttons:', {
+        periodic: document.getElementById('togglePeriodic'),
+        molecules: document.getElementById('toggleMolecules'),
+        reactions: document.getElementById('toggleReactions'),
+        beaker: document.getElementById('toggleBeaker'),
+        community: document.getElementById('toggleCommunity')
+    });
+    console.log('Pages:', {
+        periodic: document.querySelector('.periodic-table-wrapper'),
+        molecules: document.getElementById('moleculesPage'),
+        reactions: document.getElementById('reactionsPage'),
+        beaker: document.getElementById('beakerPage'),
+        community: document.getElementById('communityPage')
+    });
+};
+
+console.log('✅ Page toggle module loaded');
+console.log('💡 Run debugPageToggle() to check setup');
