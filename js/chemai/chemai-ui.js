@@ -135,14 +135,19 @@ async function handleSendMessage() {
     const message = chemaiInput.value.trim();
     if (!message) return;
 
-    // Disable input
+    // Prevent double-sending
+    if (sendBtn.disabled) return;
+
+    // Disable input immediately
     chemaiInput.disabled = true;
     sendBtn.disabled = true;
 
     // Hide empty state, show messages
-    if (emptyState.style.display !== 'none') {
+    if (emptyState && emptyState.style.display !== 'none') {
         emptyState.style.display = 'none';
-        messagesContainer.style.display = 'flex';
+        if (messagesContainer) {
+            messagesContainer.style.display = 'flex';
+        }
     }
 
     // Add user message
@@ -157,6 +162,16 @@ async function handleSendMessage() {
 
     // Get current model
     const model = window.ChemAIModels ? window.ChemAIModels.currentModel : 'vicuna';
+
+    // Check if API module is loaded
+    if (!window.ChemAIAPI) {
+        console.error('❌ ChemAIAPI not loaded');
+        removeTypingIndicator(typingId);
+        addMessage('Error: API module not loaded. Please refresh the page.', 'ai', model, true);
+        chemaiInput.disabled = false;
+        sendBtn.disabled = false;
+        return;
+    }
 
     // Send to API
     const response = await window.ChemAIAPI.sendMessage(
@@ -180,6 +195,7 @@ async function handleSendMessage() {
 
     // Re-enable input
     chemaiInput.disabled = false;
+    sendBtn.disabled = false;
     chemaiInput.focus();
 }
 
