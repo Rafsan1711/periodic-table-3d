@@ -2,6 +2,304 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Periodic Table 3D - Interactive Chemistry Learning Platform</title>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚛️</text></svg>">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+   <link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/line-counter-animations.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-atom"></i>
+                <span>Periodic Table 3D</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#stats">Statistics</a>
+                <a href="#about">About</a>
+                <a href="download/" target="_blank">Download</a>
+                <button id="auth-btn" class="auth-button">Get Started</button>
+            </div>
+            <button class="mobile-menu-btn" id="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+        <button class="close-menu-btn" id="close-menu-btn">
+            <i class="fas fa-times"></i>
+        </button>
+        <a href="#features">Features</a>
+        <a href="#stats">Statistics</a>
+        <a href="#about">About</a>
+        <a href="download/" target="_blank">Download</a>
+        <button id="mobile-auth-btn" class="auth-button">Get Started</button>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-background">
+            <div class="atom-animation"></div>
+            <div class="atom-animation"></div>
+            <div class="atom-animation"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-flask"></i>
+                <span>Interactive Chemistry Platform</span>
+            </div>
+            <h1 class="hero-title">
+                Explore the Periodic Table<br>
+                <span class="gradient-text">in 3D</span>
+            </h1>
+            <p class="hero-subtitle">
+                Discover 118 elements, 100+ molecules, and chemical reactions with stunning 3D visualizations. Join thousands of chemistry enthusiasts worldwide.
+            </p>
+            <div class="hero-buttons">
+                <button class="btn-primary" id="hero-get-started">
+                    <i class="fas fa-rocket"></i>
+                    Get Started Free
+                </button>
+                <button class="btn-secondary" id="view-readme">
+                    <i class="fas fa-book"></i>
+                    Documentation
+                </button>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <i class="fas fa-atom"></i>
+                    <span class="stat-value">118</span>
+                    <span class="stat-label">Elements</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-flask"></i>
+                    <span class="stat-value">100+</span>
+                    <span class="stat-label">Molecules</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-fire"></i>
+                    <span class="stat-value">50+</span>
+                    <span class="stat-label">Reactions</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2 class="section-title">Powerful Features</h2>
+            <p class="section-subtitle">Everything you need to explore chemistry</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-atom"></i>
+                </div>
+                <h3>3D Atomic Models</h3>
+                <p>Interactive 3D visualization of all 118 elements with electron configurations</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <h3>Molecular Structures</h3>
+                <p>Explore 100+ molecules with detailed 3D structures and properties</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <h3>Chemical Reactions</h3>
+                <p>Watch chemical reactions with stunning animations and balanced equations</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>Community Forum</h3>
+                <p>Connect with chemistry enthusiasts and share knowledge</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Reactivity Charts</h3>
+                <p>Understand element reactivity patterns with interactive visualizations</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3>Cross-Platform</h3>
+                <p>Available on web, mobile, and desktop with offline support</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Line Counter Section -->
+    <section class="line-counter-section" id="stats">
+        <div class="section-header">
+            <h2 class="section-title">Built with Precision</h2>
+            <p class="section-subtitle">Real-time project statistics</p>
+        </div>
+        <div class="line-counter-container">
+            <div class="line-counter-card">
+                <div class="counter-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <div class="counter-content">
+                    <div class="counter-label">Total Lines of Code</div>
+                    <div class="counter-value" id="line-count">
+                        <div class="counting-animation">
+                            <span class="digit">0</span>
+                        </div>
+                    </div>
+                    <div class="counter-subtitle">Calculating in real-time...</div>
+                </div>
+                <div class="counter-pulse"></div>
+            </div>
+            <div class="code-breakdown">
+                <div class="breakdown-item">
+                    <span class="breakdown-label">
+                        <i class="fab fa-js"></i> JavaScript
+                    </span>
+                    <span class="breakdown-value" id="js-lines">-</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-label">
+                        <i class="fab fa-css3"></i> CSS
+                    </span>
+                    <span class="breakdown-value" id="css-lines">-</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-label">
+                        <i class="fab fa-html5"></i> HTML
+                    </span>
+                    <span class="breakdown-value" id="html-lines">-</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-label">
+                        <i class="fab fa-python"></i> Python
+                    </span>
+                    <span class="breakdown-value" id="python-lines">-</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="tech-stack" id="about">
+        <div class="section-header">
+            <h2 class="section-title">Built With Modern Technologies</h2>
+            <p class="section-subtitle">Powered by industry-leading frameworks</p>
+        </div>
+        <div class="tech-grid">
+            <div class="tech-item">
+                <i class="fab fa-js"></i>
+                <span>Three.js</span>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-fire"></i>
+                <span>Firebase</span>
+            </div>
+            <div class="tech-item">
+                <i class="fab fa-node-js"></i>
+                <span>D3.js</span>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-bolt"></i>
+                <span>GSAP</span>
+            </div>
+            <div class="tech-item">
+                <i class="fab fa-bootstrap"></i>
+                <span>Bootstrap</span>
+            </div>
+            <div class="tech-item">
+                <i class="fab fa-python"></i>
+                <span>Python</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Ready to Explore Chemistry?</h2>
+            <p>Join thousands of students, teachers, and chemistry enthusiasts</p>
+            <button class="btn-primary btn-large" id="cta-get-started">
+                <i class="fas fa-rocket"></i>
+                Start Exploring Now
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3><i class="fas fa-atom"></i> Periodic Table 3D</h3>
+                <p>Making chemistry accessible and fun for everyone</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="app.html">Web App</a>
+                <a href="download/">Download</a>
+                <a href="download/privacy-policy.html">Privacy Policy</a>
+                <a href="download/terms-of-service.html">Terms of Service</a>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <a href="#" id="footer-readme">Documentation</a>
+                <a href="https://github.com/Rafsan1711/periodic-table-3d" target="_blank">GitHub</a>
+                <a href="mailto:support@periodictable3d.com">Contact</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Periodic Table 3D. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- README Modal -->
+    <div class="modal" id="readme-modal">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-book"></i> Documentation</h2>
+                <button class="modal-close" id="close-readme">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="readme-content">
+                <div class="loader">
+                    <div class="spinner"></div>
+                    <p>Loading documentation...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/home/home-init.js"></script>
+    <script src="js/home/line-counter.js"></script>
+    <script src="js/home/readme-viewer.js"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Interactive Periodic Table - 3D Chemistry</title>
     
