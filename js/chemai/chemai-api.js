@@ -1,11 +1,10 @@
 /**
  * ============================================
- * CHEMAI API MODULE
- * Communication with Node.js backend
+ * CHEMAI API MODULE - FIXED
  * ============================================
  */
 
-// Backend API URL (auto-detects local vs production)
+// Backend API URL
 const API_URL = (() => {
     const hostname = window.location.hostname;
     
@@ -14,28 +13,37 @@ const API_URL = (() => {
         return 'http://localhost:3000/api';
     }
     
-    // Production - Render.com backend
-    // UPDATE THIS when you deploy backend
+    // Production - YOUR BACKEND URL HERE
+    // TODO: Replace with your actual Render.com backend URL
     return 'https://periodic-table-3d-chemai.onrender.com/api';
 })();
 
-// Backend connection status (GLOBAL)
+// Backend status
 let backendAvailable = false;
+let healthCheckDone = false;
 
 /**
- * Check API health
+ * Check API health with better error handling
  */
 async function checkAPIHealth() {
+    if (healthCheckDone) {
+        return backendAvailable;
+    }
+
     try {
+        console.log('🔍 Checking backend health at:', API_URL);
+        
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
         const response = await fetch(`${API_URL}/health`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
-            signal: controller.signal
+            signal: controller.signal,
+            mode: 'cors',
+            cache: 'no-cache'
         });
 
         clearTimeout(timeoutId);
@@ -44,39 +52,53 @@ async function checkAPIHealth() {
             const data = await response.json();
             console.log('✅ Backend connected:', data);
             backendAvailable = true;
+            healthCheckDone = true;
             return true;
+        } else {
+            console.warn('⚠️ Backend returned:', response.status);
+            backendAvailable = false;
+            healthCheckDone = true;
+            return false;
         }
-        
-        backendAvailable = false;
-        return false;
     } catch (error) {
+        console.warn('⚠️ Backend health check failed:', error.name);
+        if (error.name === 'AbortError') {
+            console.warn('   Timeout - Backend too slow or not responding');
+        } else if (error.message.includes('Failed to fetch')) {
+            console.warn('   Network error - Check backend URL and CORS');
+        }
         backendAvailable = false;
-        console.warn('⚠️ Backend not available (UI will work with mock responses)');
+        healthCheckDone = true;
         return false;
     }
 }
 
 /**
- * Send message to AI
+ * Send message to AI - NO MORE DOUBLE MESSAGES
  */
 async function sendMessage(message, chatHistory = [], model = 'vicuna') {
+    // Re-check backend if not done yet
+    if (!healthCheckDone) {
+        await checkAPIHealth();
+    }
+
     // If backend not available, return mock response
     if (!backendAvailable) {
-        console.warn('⚠️ Using mock response (backend not connected)');
+        console.log('📝 Using mock response');
         
         // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 800));
         
         return {
             success: true,
-            message: `I'm ChemAI, your chemistry assistant! 🧪\n\n**Note:** Backend server is not connected yet.\n\nTo get real AI responses:\n1. Start your backend server: \`cd backend && npm start\`\n2. Or deploy to Render.com and update the API_URL\n\nOnce connected, I'll be able to answer all your chemistry questions in detail!\n\nYour question was: "${message}"`,
+            message: `🧪 **ChemAI Mock Response**\n\nI received your question: "${message}"\n\n⚠️ **Backend not connected**\n\nTo get real AI responses:\n1. Check your backend URL in \`chemai-api.js\`\n2. Make sure backend is running on Render.com\n3. Check browser console for errors\n\nCurrent backend URL: \`${API_URL}\``,
             model: model,
             timestamp: Date.now()
         };
     }
 
     try {
-        console.log('📤 Sending to backend:', { message, model });
+        console.log('📤 Sending to backend:', { message, model, historyLength: chatHistory.length });
 
         const response = await fetch(`${API_URL}/chat`, {
             method: 'POST',
@@ -87,31 +109,32 @@ async function sendMessage(message, chatHistory = [], model = 'vicuna') {
                 message: message,
                 model: model,
                 history: chatHistory
-            })
+            }),
+            mode: 'cors'
         });
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `HTTP ${response.status}`);
+            throw new Error(errorData.error || `Backend returned ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('✅ Received AI response');
+        console.log('✅ AI response received');
 
         return {
             success: true,
             message: data.response,
-            model: data.model,
+            model: data.model || model,
             timestamp: Date.now()
         };
 
     } catch (error) {
-        console.error('❌ Backend error:', error);
+        console.error('❌ Backend error:', error.message);
         
         return {
             success: false,
             error: error.message,
-            message: '❌ Sorry, I cannot connect to the AI service right now. Please make sure the backend server is running.',
+            message: `❌ **Connection Error**\n\nCannot reach AI service.\n\n**Error:** ${error.message}\n\n**Backend URL:** ${API_URL}\n\nPlease check:\n1. Backend is running\n2. CORS is configured\n3. URL is correct`,
             timestamp: Date.now()
         };
     }
@@ -126,7 +149,8 @@ function isChemistryRelated(message) {
         'chemical', 'chemistry', 'bond', 'ion', 'electron', 'proton', 'neutron',
         'formula', 'equation', 'balance', 'acid', 'base', 'ph', 'oxidation',
         'reduction', 'catalyst', 'solution', 'solvent', 'solute', 'concentration',
-        'mole', 'molarity', 'mass', 'weight', 'valence', 'orbital', 'shell'
+        'mole', 'molarity', 'mass', 'weight', 'valence', 'orbital', 'shell',
+        'h2o', 'co2', 'nacl', 'o2', 'h2', 'n2', 'water', 'oxygen', 'hydrogen'
     ];
 
     const lowerMessage = message.toLowerCase();
@@ -144,16 +168,14 @@ function formatChatHistory(messages) {
 }
 
 /**
- * Get error message
+ * Get backend status
  */
-function getErrorMessage(error) {
-    if (error.message && error.message.includes('fetch')) {
-        return 'Unable to connect to server. Please check your connection.';
-    }
-    if (error.message && error.message.includes('timeout')) {
-        return 'Request timeout. Please try again.';
-    }
-    return error.message || 'An unexpected error occurred.';
+function getBackendStatus() {
+    return {
+        url: API_URL,
+        available: backendAvailable,
+        checked: healthCheckDone
+    };
 }
 
 // Export
@@ -162,7 +184,7 @@ window.ChemAIAPI = {
     checkAPIHealth,
     isChemistryRelated,
     formatChatHistory,
-    getErrorMessage,
+    getBackendStatus,
     API_URL,
     get backendAvailable() {
         return backendAvailable;
@@ -171,3 +193,4 @@ window.ChemAIAPI = {
 
 console.log('✅ ChemAI API module loaded');
 console.log('🔗 Backend URL:', API_URL);
+console.log('💡 Tip: Open Console to see backend connection status');
