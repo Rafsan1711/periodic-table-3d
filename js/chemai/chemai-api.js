@@ -5,14 +5,35 @@
  * ============================================
  */
 
-// Backend API URL (change for production)
-const API_URL = 'https://periodic-table-3d-chemai.onrender.com/api'; // Development
-// const API_URL = 'https://your-backend.onrender.com/api'; // Production
+// Backend API URL (auto-detects local vs production)
+const API_URL = (() => {
+    const hostname = window.location.hostname;
+    
+    // Local development
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:3000/api';
+    }
+    
+    // Production (Render.com or Netlify)
+    // UPDATE THIS URL when you deploy backend to Render.com
+    return 'https://your-backend.onrender.com/api';
+})();
 
 /**
  * Send message to AI
  */
 async function sendMessage(message, chatHistory = [], model = 'vicuna') {
+    // If backend not available, return mock response
+    if (!backendAvailable) {
+        console.warn('⚠️ Using mock response (backend not connected)');
+        return {
+            success: true,
+            message: "I'm ChemAI, your chemistry assistant! (Note: Backend is not connected yet. Please start the backend server or deploy to Render.com to get real AI responses.)\n\nFor now, I can tell you that chemistry is fascinating! Once the backend is connected, I'll be able to answer all your chemistry questions in detail.",
+            model: model,
+            timestamp: Date.now()
+        };
+    }
+
     try {
         console.log('📤 Sending message to AI:', { message, model, historyLength: chatHistory.length });
 
@@ -50,7 +71,7 @@ async function sendMessage(message, chatHistory = [], model = 'vicuna') {
         return {
             success: false,
             error: error.message || 'Failed to get response from AI',
-            message: 'Sorry, I encountered an error. Please try again.',
+            message: 'Sorry, I encountered an error connecting to the AI service. Please make sure the backend server is running.',
             timestamp: Date.now()
         };
     }
