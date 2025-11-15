@@ -27,11 +27,13 @@ async function initChemAI() {
             return;
         }
 
-        // Check API health
+        // Check API health (don't fail if unavailable)
         const isHealthy = await window.ChemAIAPI.checkAPIHealth();
         if (!isHealthy) {
-            console.warn('⚠️ Backend API is not reachable');
-            showNotification('Backend server is not available. Some features may not work.', 'error');
+            console.warn('⚠️ Backend API is not reachable - UI will work, but AI responses will be mocked');
+            showNotification('Backend not connected. UI is ready, but start backend for AI responses.', 'info');
+        } else {
+            console.log('✅ Backend connected successfully');
         }
 
         // Initialize UI
