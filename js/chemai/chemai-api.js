@@ -16,7 +16,7 @@ const API_URL = (() => {
     
     // Production (Render.com or Netlify)
     // UPDATE THIS URL when you deploy backend to Render.com
-    return 'https://your-backend.onrender.com/api';
+    return 'https://periodic-table-3d-chemai.onrender.com/api';
 })();
 
 /**
