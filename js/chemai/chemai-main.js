@@ -23,28 +23,41 @@ async function initChemAI() {
         const user = firebase.auth().currentUser;
         if (!user) {
             console.error('❌ User not logged in');
-            showNotification('Please log in to use ChemAI', 'error');
+            if (typeof showNotification === 'function') {
+                showNotification('Please log in to use ChemAI', 'error');
+            }
             return;
         }
 
         // Check API health (don't fail if unavailable)
-        const isHealthy = await window.ChemAIAPI.checkAPIHealth();
-        if (!isHealthy) {
-            console.warn('⚠️ Backend API is not reachable - UI will work, but AI responses will be mocked');
-            showNotification('Backend not connected. UI is ready, but start backend for AI responses.', 'info');
-        } else {
-            console.log('✅ Backend connected successfully');
+        if (window.ChemAIAPI && typeof window.ChemAIAPI.checkAPIHealth === 'function') {
+            const isHealthy = await window.ChemAIAPI.checkAPIHealth();
+            if (!isHealthy) {
+                console.warn('⚠️ Backend not connected - Mock responses will be used');
+                if (typeof showNotification === 'function') {
+                    showNotification('UI ready! Start backend for AI responses.', 'info');
+                }
+            } else {
+                console.log('✅ Backend connected');
+            }
         }
 
         // Initialize UI
-        window.ChemAIUI.init();
+        if (window.ChemAIUI && typeof window.ChemAIUI.init === 'function') {
+            window.ChemAIUI.init();
+        } else {
+            console.error('❌ ChemAIUI not loaded');
+            return;
+        }
 
         chemaiInitialized = true;
         console.log('✅ ChemAI initialized successfully');
 
     } catch (error) {
         console.error('❌ ChemAI initialization error:', error);
-        showNotification('Failed to initialize ChemAI', 'error');
+        if (typeof showNotification === 'function') {
+            showNotification('Failed to initialize ChemAI', 'error');
+        }
     }
 }
 
