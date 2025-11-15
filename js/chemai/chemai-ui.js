@@ -293,6 +293,31 @@ function scrollToBottom() {
  */
 function toggleSidebar() {
     chemaiSidebar.classList.toggle('active');
+    
+    // Add/remove overlay
+    let overlay = document.getElementById('chemaiOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'chemaiOverlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        `;
+        overlay.addEventListener('click', toggleSidebar);
+        document.body.appendChild(overlay);
+    }
+    
+    if (chemaiSidebar.classList.contains('active')) {
+        overlay.style.display = 'block';
+    } else {
+        overlay.style.display = 'none';
+    }
 }
 
 /**
@@ -532,7 +557,7 @@ async function loadUserSettings() {
     if (!window.ChemAIFirebase) {
         console.warn('⚠️ ChemAIFirebase not loaded yet');
         userSettings = { defaultModel: null, theme: 'dark' };
-        modelSelector.style.display = 'flex';
+        if (modelSelector) modelSelector.style.display = 'flex';
         selectModel('vicuna');
         return;
     }
@@ -542,13 +567,13 @@ async function loadUserSettings() {
 
     // Apply settings
     if (settings.defaultModel) {
-        modelSelector.style.display = 'none';
+        if (modelSelector) modelSelector.style.display = 'none';
         if (window.ChemAIModels) {
             window.ChemAIModels.setCurrentModel(settings.defaultModel);
         }
         selectModel(settings.defaultModel);
     } else {
-        modelSelector.style.display = 'flex';
+        if (modelSelector) modelSelector.style.display = 'flex';
         selectModel('vicuna'); // Default
     }
 
