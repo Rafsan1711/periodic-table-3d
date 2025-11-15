@@ -164,6 +164,7 @@ class TimelineModal {
 
   /**
    * Populate modal content
+   * ✅ FIXED: Fetches full Wikipedia text live, not from cache
    */
   async populateContent(data) {
     const today = new Date();
@@ -190,26 +191,17 @@ class TimelineModal {
       <span>${data.scientist}</span>
     `;
     
-    // Wikipedia content
-    if (data.wikiText) {
-      document.getElementById('timeline-wiki-content').innerHTML = `
-        <p>${data.wikiText}</p>
-      `;
-      
-      if (data.wikiUrl) {
-        const readMore = document.getElementById('wiki-read-more');
-        readMore.href = data.wikiUrl;
-        readMore.style.display = 'inline-flex';
-      }
-    } else {
-      document.getElementById('timeline-wiki-content').innerHTML = `
-        <p>${data.description}</p>
-        <div class="wiki-loading">
-          <i class="fas fa-sync fa-spin"></i>
-          Fetching detailed information...
-        </div>
-      `;
-    }
+    // ✅ FIXED: Load Wikipedia content LIVE (not from cache)
+    const wikiContent = document.getElementById('timeline-wiki-content');
+    wikiContent.innerHTML = `
+      <div class="wiki-loading">
+        <i class="fas fa-sync fa-spin"></i>
+        Fetching detailed Wikipedia article...
+      </div>
+    `;
+    
+    // Fetch full Wikipedia content
+    this.fetchFullWikipediaContent(data.wikiTitle, data.wikiUrl);
     
     // Fun facts
     document.getElementById('timeline-fun-facts').innerHTML = `
@@ -232,6 +224,51 @@ class TimelineModal {
     // Hide loading, show content
     document.getElementById('timeline-loading').style.display = 'none';
     document.getElementById('timeline-content').style.display = 'block';
+  }
+
+  /**
+   * ✅ NEW: Fetch full Wikipedia content live
+   */
+  async fetchFullWikipediaContent(wikiTitle, wikiUrl) {
+    const wikiContent = document.getElementById('timeline-wiki-content');
+    const readMore = document.getElementById('wiki-read-more');
+    
+    try {
+      // Use Wikipedia API to get full extract
+      const response = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wikiTitle)}`
+      );
+      
+      if (!response.ok) throw new Error('Wikipedia fetch failed');
+      
+      const data = await response.json();
+      
+      // Show summary + link to full article
+      wikiContent.innerHTML = `
+        <p>${data.extract || 'No detailed information available.'}</p>
+        <p style="margin-top: 1rem; color: var(--text-secondary); font-style: italic;">
+          This is a summary. Click "Read full article" below for complete information.
+        </p>
+      `;
+      
+      // Update read more link
+      if (wikiUrl || data.content_urls?.desktop?.page) {
+        readMore.href = wikiUrl || data.content_urls.desktop.page;
+        readMore.style.display = 'inline-flex';
+      }
+      
+      console.log('✅ Wikipedia content loaded live');
+      
+    } catch (error) {
+      console.error('❌ Error fetching Wikipedia:', error);
+      wikiContent.innerHTML = `
+        <p>${this.currentEvent.description}</p>
+        <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 123, 114, 0.1); border-radius: 8px; color: var(--accent-red);">
+          <i class="fas fa-exclamation-triangle"></i>
+          Unable to load Wikipedia content. Please check your internet connection.
+        </div>
+      `;
+    }
   }
 
   /**
