@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
    <link rel="stylesheet" href="css/home.css">
 <link rel="stylesheet" href="css/line-counter-animations.css">
+    <!-- NEW: Timeline CSS -->
+    <link rel="stylesheet" href="css/timeline.css">
+    <link rel="stylesheet" href="css/timeline-modal.css">
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -294,5 +297,21 @@
     <script src="js/home/home-init.js"></script>
     <script src="js/home/line-counter.js"></script>
     <script src="js/home/readme-viewer.js"></script>
+    <!-- NEW: Timeline Scripts (Add in this order) -->
+    <script src="js/home/timeline-events.js"></script>
+    <script src="js/home/timeline-preview.js"></script>
+    <script src="js/home/timeline-modal.js"></script>
+<script>
+        // Make elementsData available for timeline
+        if (typeof elementsData === 'undefined') {
+            // Fetch from your elements-data.js or define inline
+            console.warn('⚠️ elementsData not loaded');
+        }
+        
+        if (typeof moleculesData === 'undefined') {
+            // Fetch from your molecules-data.js or define inline
+            console.warn('⚠️ moleculesData not loaded');
+        }
+</script>
 </body>
 </html>
