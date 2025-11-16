@@ -138,7 +138,7 @@ async function handleSendMessage() {
 
     // CRITICAL: Prevent double-sending
     if (isSending) {
-        console.warn('⚠️ Already sending a message, ignoring');
+        console.log('⏳ Message already being sent...');
         return;
     }
     
