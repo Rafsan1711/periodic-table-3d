@@ -8,9 +8,10 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚛️</text></svg>">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-   <link rel="stylesheet" href="css/home.css">
-<link rel="stylesheet" href="css/line-counter-animations.css">
-    <!-- NEW: Timeline CSS -->
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/line-counter-animations.css">
+    
+    <!-- ✅ Timeline CSS -->
     <link rel="stylesheet" href="css/timeline.css">
     <link rel="stylesheet" href="css/timeline-modal.css">
     
@@ -151,6 +152,11 @@
             </div>
         </div>
     </section>
+
+    <!-- ============================================
+         🎯 TIMELINE SECTION APPEARS HERE
+         (Automatically created by timeline-preview.js)
+         ============================================ -->
 
     <!-- Line Counter Section -->
     <section class="line-counter-section" id="stats">
@@ -294,24 +300,19 @@
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="js/home/home-init.js"></script>
     <script src="js/home/line-counter.js"></script>
     <script src="js/home/readme-viewer.js"></script>
-    <!-- NEW: Timeline Scripts (Add in this order) -->
+    
+    <!-- ✅ Data Files (Required for Timeline) -->
+    <script src="js/data/elements-data.js"></script>
+    <script src="js/data/molecules-data.js"></script>
+    
+    <!-- ✅ Timeline Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="js/home/timeline-events.js"></script>
     <script src="js/home/timeline-preview.js"></script>
     <script src="js/home/timeline-modal.js"></script>
-<script>
-        // Make elementsData available for timeline
-        if (typeof elementsData === 'undefined') {
-            // Fetch from your elements-data.js or define inline
-            console.warn('⚠️ elementsData not loaded');
-        }
-        
-        if (typeof moleculesData === 'undefined') {
-            // Fetch from your molecules-data.js or define inline
-            console.warn('⚠️ moleculesData not loaded');
-        }
-</script>
 </body>
-</html>
+    </html>
