@@ -13,8 +13,7 @@ const API_URL = (() => {
         return 'http://localhost:3000/api';
     }
     
-    // Production - YOUR BACKEND URL HERE
-    // TODO: Replace with your actual Render.com backend URL
+    // Production - YOUR ACTUAL BACKEND URL
     return 'https://periodic-table-3d-chemai.onrender.com/api';
 })();
 
