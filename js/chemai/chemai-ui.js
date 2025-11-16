@@ -1,7 +1,10 @@
 /**
  * ============================================
- * CHEMAI UI MODULE
- * Complete UI management and interactions
+ * CHEMAI UI MODULE - ENHANCED
+ * ✅ Professional formatting
+ * ✅ Context-appropriate emojis
+ * ✅ Wikipedia integration
+ * ✅ 3D atom/molecule models
  * ============================================
  */
 
@@ -15,13 +18,13 @@ let defaultModelSelect;
 let currentChatId = null;
 let currentMessages = [];
 let userSettings = { defaultModel: null, theme: 'dark' };
-let isSending = false; // NEW: Prevent double send
+let isSending = false;
 
 /**
  * Initialize UI
  */
 function initChemAIUI() {
-    console.log('🎨 Initializing ChemAI UI...');
+    console.log('🎨 Initializing ChemAI UI (Enhanced)...');
 
     // Get DOM elements
     chemaiInput = document.getElementById('chemaiInput');
@@ -41,32 +44,26 @@ function initChemAIUI() {
     saveSettingsBtn = document.getElementById('saveSettingsBtn');
     defaultModelSelect = document.getElementById('defaultModelSelect');
 
-    // Setup event listeners
     setupEventListeners();
-
-    // Load settings and chats
     loadUserSettings();
     loadChatHistory();
 
-    console.log('✅ ChemAI UI initialized');
+    console.log('✅ ChemAI UI initialized (Enhanced)');
 }
 
 /**
- * Setup all event listeners
+ * Setup event listeners
  */
 function setupEventListeners() {
-    // Input events
     chemaiInput.addEventListener('input', handleInputChange);
     chemaiInput.addEventListener('keydown', handleInputKeydown);
     sendBtn.addEventListener('click', handleSendMessage);
 
-    // Sidebar events
     chemaiMenuBtn?.addEventListener('click', toggleSidebar);
     closeSidebarBtn?.addEventListener('click', toggleSidebar);
     newChatBtn?.addEventListener('click', createNewChat);
     settingsBtn?.addEventListener('click', openSettings);
 
-    // Model selector
     modelBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const model = btn.dataset.model;
@@ -74,11 +71,9 @@ function setupEventListeners() {
         });
     });
 
-    // Settings modal
     closeSettingsBtn?.addEventListener('click', closeSettings);
     saveSettingsBtn?.addEventListener('click', saveUserSettings);
 
-    // Example questions
     document.querySelectorAll('.example-q').forEach(btn => {
         btn.addEventListener('click', () => {
             const question = btn.dataset.question;
@@ -88,20 +83,10 @@ function setupEventListeners() {
         });
     });
 
-    // Back button
     const backBtn = document.getElementById('chemaiBackBtn');
     backBtn?.addEventListener('click', () => {
         const toggleBtn = document.getElementById('togglePeriodic');
         if (toggleBtn) toggleBtn.click();
-    });
-
-    // Click outside sidebar to close (mobile)
-    document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768 && chemaiSidebar.classList.contains('active')) {
-            if (!chemaiSidebar.contains(e.target) && !chemaiMenuBtn.contains(e.target)) {
-                toggleSidebar();
-            }
-        }
     });
 }
 
@@ -112,7 +97,6 @@ function handleInputChange() {
     const value = chemaiInput.value.trim();
     sendBtn.disabled = value.length === 0;
 
-    // Auto-resize textarea
     chemaiInput.style.height = 'auto';
     chemaiInput.style.height = Math.min(chemaiInput.scrollHeight, 150) + 'px';
 }
@@ -130,26 +114,17 @@ function handleInputKeydown(e) {
 }
 
 /**
- * Handle send message - FIXED DOUBLE MESSAGE
+ * ✅ Handle send message - ENHANCED
  */
 async function handleSendMessage() {
     const message = chemaiInput.value.trim();
-    if (!message) return;
-
-    // CRITICAL: Prevent double-sending
-    if (isSending) {
-        console.log('⏳ Message already being sent...');
-        return;
-    }
+    if (!message || isSending) return;
     
     isSending = true;
-
-    // Disable input immediately
     chemaiInput.disabled = true;
     sendBtn.disabled = true;
 
     try {
-        // Hide empty state, show messages
         if (emptyState && emptyState.style.display !== 'none') {
             emptyState.style.display = 'none';
             if (messagesContainer) {
@@ -157,7 +132,7 @@ async function handleSendMessage() {
             }
         }
 
-        // Add user message ONCE
+        // Add user message
         addMessage(message, 'user');
 
         // Clear input
@@ -170,27 +145,31 @@ async function handleSendMessage() {
         // Get current model
         const model = window.ChemAIModels ? window.ChemAIModels.currentModel : 'vicuna';
 
-        // Check if API module is loaded
         if (!window.ChemAIAPI) {
             console.error('❌ ChemAIAPI not loaded');
             removeTypingIndicator(typingId);
-            addMessage('Error: API module not loaded. Please refresh the page.', 'ai', model, true);
+            addMessage('Error: API module not loaded. Please refresh.', 'ai', model, true);
             return;
         }
 
-        // Send to API - THIS ONLY HAPPENS ONCE
+        // Send to API
         const response = await window.ChemAIAPI.sendMessage(
             message,
             window.ChemAIAPI.formatChatHistory(currentMessages),
             model
         );
 
-        // Remove typing indicator
         removeTypingIndicator(typingId);
 
-        // Add AI response ONCE
+        // ✅ Add AI response (ENHANCED)
         if (response.success) {
-            addMessage(response.message, 'ai', response.model);
+            // Show fallback warning if applicable
+            if (response.fallback && response.fallbackMessage) {
+                addMessage(response.fallbackMessage, 'ai', 'system', false);
+            }
+            
+            // Add main response with enhancements
+            await addEnhancedMessage(response.message, message, response.model);
         } else {
             addMessage(response.message, 'ai', model, true);
         }
@@ -203,7 +182,6 @@ async function handleSendMessage() {
         removeTypingIndicator('typing-indicator');
         addMessage('An error occurred. Please try again.', 'ai', 'vicuna', true);
     } finally {
-        // Re-enable input
         isSending = false;
         chemaiInput.disabled = false;
         sendBtn.disabled = false;
@@ -212,7 +190,431 @@ async function handleSendMessage() {
 }
 
 /**
- * Add message to UI
+ * ✅ Add enhanced message (WITH WIKIPEDIA + 3D MODELS)
+ */
+async function addEnhancedMessage(aiResponse, userQuestion, model) {
+    // Detect chemistry entities (atoms, molecules)
+    const entities = detectChemistryEntities(userQuestion + ' ' + aiResponse);
+    
+    // Format AI response with emojis
+    const formattedResponse = formatWithEmojis(aiResponse);
+    
+    // Create message container
+    const messageData = {
+        content: formattedResponse,
+        role: 'ai',
+        model: model,
+        timestamp: Date.now()
+    };
+    currentMessages.push(messageData);
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message ai-message enhanced-message';
+    
+    let messageHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+            <div class="message-bubble">
+                ${formatMessageContent(formattedResponse)}
+            </div>
+    `;
+
+    // ✅ Add Wikipedia info if entity found
+    if (entities.length > 0) {
+        for (const entity of entities.slice(0, 2)) { // Max 2 entities
+            const wikiInfo = await fetchWikipediaSnippet(entity.name);
+            if (wikiInfo) {
+                messageHTML += `
+                    <div class="wiki-snippet">
+                        <div class="wiki-header">
+                            <i class="fab fa-wikipedia-w"></i>
+                            <span>${entity.name}</span>
+                        </div>
+                        <div class="wiki-text">${wikiInfo}</div>
+                        <div class="wiki-source">Source: Wikipedia</div>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // ✅ Add 3D models if applicable
+    if (entities.length > 0) {
+        messageHTML += `<div class="models-container">`;
+        
+        for (const entity of entities.slice(0, 2)) {
+            if (entity.type === 'atom') {
+                messageHTML += create3DAtomPreview(entity.data);
+            } else if (entity.type === 'molecule') {
+                messageHTML += create3DMoleculePreview(entity.data);
+            }
+        }
+        
+        messageHTML += `</div>`;
+    }
+
+    messageHTML += `
+            <div class="message-time">
+                ${formatTime(messageData.timestamp)}
+                • ${window.ChemAIModels.getModelDisplayName(model)}
+            </div>
+        </div>
+    `;
+
+    messageDiv.innerHTML = messageHTML;
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
+
+    // Animate 3D models
+    animateModels(messageDiv);
+}
+
+/**
+ * ✅ Detect chemistry entities (atoms, molecules)
+ */
+function detectChemistryEntities(text) {
+    const entities = [];
+    
+    // Check for elements
+    if (typeof elementsData !== 'undefined') {
+        elementsData.forEach(element => {
+            const regex = new RegExp(`\\b${element.name}\\b`, 'gi');
+            if (regex.test(text)) {
+                entities.push({
+                    type: 'atom',
+                    name: element.name,
+                    data: element
+                });
+            }
+        });
+    }
+    
+    // Check for molecules
+    if (typeof moleculesData !== 'undefined') {
+        moleculesData.forEach(molecule => {
+            const regex = new RegExp(`\\b${molecule.name}\\b`, 'gi');
+            if (regex.test(text)) {
+                entities.push({
+                    type: 'molecule',
+                    name: molecule.name,
+                    data: molecule
+                });
+            }
+        });
+    }
+    
+    return entities;
+}
+
+/**
+ * ✅ Format text with context-appropriate emojis
+ */
+function formatWithEmojis(text) {
+    // Context-based emoji mapping
+    const emojiMap = {
+        'water': '💧',
+        'oxygen': '🫁',
+        'hydrogen': '💨',
+        'carbon': '⚫',
+        'nitrogen': '🌫️',
+        'fire': '🔥',
+        'explosion': '💥',
+        'reaction': '⚗️',
+        'molecule': '🧬',
+        'atom': '⚛️',
+        'bond': '🔗',
+        'structure': '🏗️',
+        'electron': '⚡',
+        'proton': '➕',
+        'neutron': '⚪',
+        'energy': '⚡',
+        'gas': '💨',
+        'liquid': '💧',
+        'solid': '🧊',
+        'temperature': '🌡️',
+        'pressure': '🔘',
+        'important': '⚠️',
+        'note': '📝',
+        'example': '💡',
+        'tip': '💡',
+        'warning': '⚠️'
+    };
+
+    let formatted = text;
+    
+    // Add emojis based on context
+    Object.keys(emojiMap).forEach(keyword => {
+        const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+        formatted = formatted.replace(regex, `${keyword} ${emojiMap[keyword]}`);
+    });
+
+    return formatted;
+}
+
+/**
+ * ✅ Fetch Wikipedia snippet
+ */
+async function fetchWikipediaSnippet(title) {
+    try {
+        const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+        if (!response.ok) return null;
+        
+        const data = await response.json();
+        return data.extract ? data.extract.substring(0, 200) + '...' : null;
+    } catch (error) {
+        console.warn('Failed to fetch Wikipedia:', error);
+        return null;
+    }
+}
+
+/**
+ * ✅ Create 3D atom preview
+ */
+function create3DAtomPreview(element) {
+    const uniqueId = 'atom-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    
+    return `
+        <div class="model-preview atom-preview">
+            <div class="model-header">
+                <i class="fas fa-atom"></i>
+                <span>${element.name} (${element.symbol})</span>
+            </div>
+            <div class="model-canvas" id="${uniqueId}" data-element='${JSON.stringify(element)}'></div>
+            <div class="model-info">
+                <span>Atomic #: ${element.number}</span>
+                <span>Weight: ${element.weight} u</span>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * ✅ Create 3D molecule preview
+ */
+function create3DMoleculePreview(molecule) {
+    const uniqueId = 'mol-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    
+    return `
+        <div class="model-preview molecule-preview">
+            <div class="model-header">
+                <i class="fas fa-flask"></i>
+                <span>${molecule.name}</span>
+            </div>
+            <div class="model-canvas" id="${uniqueId}" data-molecule='${JSON.stringify(molecule)}'></div>
+            <div class="model-info">
+                <span>Formula: ${molecule.formula}</span>
+                <span>Atoms: ${molecule.atoms.length}</span>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * ✅ Animate 3D models in message
+ */
+function animateModels(messageDiv) {
+    const modelCanvases = messageDiv.querySelectorAll('.model-canvas');
+    
+    modelCanvases.forEach(canvas => {
+        const elementData = canvas.getAttribute('data-element');
+        const moleculeData = canvas.getAttribute('data-molecule');
+        
+        if (elementData) {
+            const element = JSON.parse(elementData);
+            renderMini3DAtom(canvas, element);
+        } else if (moleculeData) {
+            const molecule = JSON.parse(moleculeData);
+            renderMini3DMolecule(canvas, molecule);
+        }
+    });
+}
+
+/**
+ * ✅ Render mini 3D atom
+ */
+function renderMini3DAtom(container, element) {
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0d1117);
+
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
+    camera.position.set(0, 0, 8);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(200, 200);
+    container.appendChild(renderer.domElement);
+
+    // Nucleus
+    const nucleus = new THREE.Mesh(
+        new THREE.SphereGeometry(0.5, 24, 24),
+        new THREE.MeshPhongMaterial({ color: 0xff4444, emissive: 0x330000 })
+    );
+    scene.add(nucleus);
+
+    // Electron shells
+    const shells = calculateElectronShells(element.number);
+    const shellColors = [0x00ff00, 0x0099ff, 0xffff00];
+    
+    shells.forEach((count, shellIndex) => {
+        const radius = (shellIndex + 1) * 1.5;
+        
+        for (let i = 0; i < count; i++) {
+            const electron = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 16, 16),
+                new THREE.MeshPhongMaterial({ 
+                    color: shellColors[shellIndex % 3],
+                    emissive: shellColors[shellIndex % 3]
+                })
+            );
+            
+            const angle = (i / count) * Math.PI * 2;
+            electron.position.set(
+                Math.cos(angle) * radius,
+                Math.sin(angle) * radius,
+                0
+            );
+            
+            scene.add(electron);
+        }
+    });
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0x404040, 0.8));
+    scene.add(new THREE.DirectionalLight(0xffffff, 1));
+
+    // Animation
+    function animate() {
+        requestAnimationFrame(animate);
+        nucleus.rotation.y += 0.01;
+        renderer.render(scene, camera);
+    }
+    animate();
+}
+
+/**
+ * ✅ Render mini 3D molecule
+ */
+function renderMini3DMolecule(container, molecule) {
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0d1117);
+
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
+    camera.position.set(0, 0, 8);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(200, 200);
+    container.appendChild(renderer.domElement);
+
+    const group = new THREE.Group();
+    
+    // Center calculation
+    let centerX = 0, centerY = 0, centerZ = 0;
+    molecule.atoms.forEach(a => {
+        centerX += (a.x || 0);
+        centerY += (a.y || 0);
+        centerZ += (a.z || 0);
+    });
+    centerX /= molecule.atoms.length;
+    centerY /= molecule.atoms.length;
+    centerZ /= molecule.atoms.length;
+
+    // Add atoms
+    molecule.atoms.forEach(atom => {
+        const color = getAtomColor(atom.el);
+        const radius = 0.3;
+        
+        const sphere = new THREE.Mesh(
+            new THREE.SphereGeometry(radius, 16, 16),
+            new THREE.MeshPhongMaterial({ color: color, shininess: 80 })
+        );
+        
+        sphere.position.set(
+            ((atom.x || 0) - centerX) * 1.5,
+            ((atom.y || 0) - centerY) * 1.5,
+            ((atom.z || 0) - centerZ) * 1.5
+        );
+        
+        group.add(sphere);
+    });
+
+    // Add bonds
+    molecule.bonds.forEach(bond => {
+        const a1 = molecule.atoms[bond[0]];
+        const a2 = molecule.atoms[bond[1]];
+        if (!a1 || !a2) return;
+        
+        const start = new THREE.Vector3(
+            ((a1.x || 0) - centerX) * 1.5,
+            ((a1.y || 0) - centerY) * 1.5,
+            ((a1.z || 0) - centerZ) * 1.5
+        );
+        const end = new THREE.Vector3(
+            ((a2.x || 0) - centerX) * 1.5,
+            ((a2.y || 0) - centerY) * 1.5,
+            ((a2.z || 0) - centerZ) * 1.5
+        );
+        
+        const distance = start.distanceTo(end);
+        
+        const cylinder = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.05, 0.05, distance, 8),
+            new THREE.MeshPhongMaterial({ color: 0x999999 })
+        );
+        
+        const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+        cylinder.position.copy(midpoint);
+        cylinder.lookAt(end);
+        cylinder.rotateX(Math.PI / 2);
+        
+        group.add(cylinder);
+    });
+
+    scene.add(group);
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0x808080, 0.6));
+    scene.add(new THREE.DirectionalLight(0xffffff, 0.8));
+
+    // Animation
+    function animate() {
+        requestAnimationFrame(animate);
+        group.rotation.y += 0.01;
+        renderer.render(scene, camera);
+    }
+    animate();
+}
+
+/**
+ * Get atom color
+ */
+function getAtomColor(symbol) {
+    const colors = {
+        H: 0xffffff, C: 0x333333, O: 0xff4444, N: 0x3050f8,
+        S: 0xffff66, P: 0xff8c00, Cl: 0x1ff01f
+    };
+    return colors[symbol] || 0x888888;
+}
+
+/**
+ * Calculate electron shells (existing function)
+ */
+function calculateElectronShells(atomicNumber) {
+    const maxElectronsPerShell = [2, 8, 18, 32, 32, 18, 8];
+    const shells = [];
+    let remainingElectrons = atomicNumber;
+
+    for (let i = 0; i < maxElectronsPerShell.length && remainingElectrons > 0; i++) {
+        const electronsInShell = Math.min(remainingElectrons, maxElectronsPerShell[i]);
+        shells.push(electronsInShell);
+        remainingElectrons -= electronsInShell;
+    }
+
+    return shells;
+}
+
+/**
+ * Add message (basic version)
  */
 function addMessage(content, role, model = null, isError = false) {
     const messageData = {
@@ -248,25 +650,17 @@ function addMessage(content, role, model = null, isError = false) {
 }
 
 /**
- * Format message content (support markdown-like formatting)
+ * Format message content
  */
 function formatMessageContent(content) {
-    // Escape HTML
     let formatted = content
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 
-    // Convert line breaks
     formatted = formatted.replace(/\n/g, '<br>');
-
-    // Bold
     formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
-    // Italic
     formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
-
-    // Code
     formatted = formatted.replace(/`(.+?)`/g, '<code>$1</code>');
 
     return formatted;
@@ -317,25 +711,18 @@ function scrollToBottom() {
 }
 
 /**
- * Toggle sidebar (mobile)
+ * Toggle sidebar
  */
 function toggleSidebar() {
     chemaiSidebar.classList.toggle('active');
     
-    // Add/remove overlay
     let overlay = document.getElementById('chemaiOverlay');
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'chemaiOverlay';
         overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); z-index: 999; display: none;
         `;
         overlay.addEventListener('click', toggleSidebar);
         document.body.appendChild(overlay);
@@ -352,20 +739,12 @@ function toggleSidebar() {
  * Select model
  */
 function selectModel(modelId) {
-    // Check if Models module is loaded
-    if (!window.ChemAIModels) {
-        console.warn('⚠️ ChemAIModels not loaded yet');
-        return;
-    }
-
+    if (!window.ChemAIModels) return;
     window.ChemAIModels.setCurrentModel(modelId);
 
-    // Update UI
     modelBtns.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.model === modelId);
     });
-
-    console.log('✅ Model selected:', modelId);
 }
 
 /**
@@ -375,17 +754,14 @@ function createNewChat() {
     currentChatId = null;
     currentMessages = [];
 
-    // Clear messages
     messagesContainer.innerHTML = '';
     messagesContainer.style.display = 'none';
     emptyState.style.display = 'flex';
 
-    // Update chat history UI
     document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.remove('active');
     });
 
-    // Close sidebar on mobile
     if (window.innerWidth <= 768) {
         toggleSidebar();
     }
@@ -403,27 +779,21 @@ async function loadSpecificChat(chatId) {
     currentChatId = chatId;
     currentMessages = chat.messages || [];
 
-    // Clear and show messages
     messagesContainer.innerHTML = '';
     messagesContainer.style.display = 'flex';
     emptyState.style.display = 'none';
 
-    // Add messages
     currentMessages.forEach(msg => {
         addMessageToUI(msg);
     });
 
-    // Update active chat
     document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.toggle('active', item.dataset.chatId === chatId);
     });
 
-    // Close sidebar on mobile
     if (window.innerWidth <= 768) {
         toggleSidebar();
     }
-
-    console.log('✅ Chat loaded:', chatId);
 }
 
 /**
@@ -456,12 +826,10 @@ function addMessageToUI(messageData) {
 async function saveChatToFirebase() {
     if (currentMessages.length === 0) return;
 
-    // Generate chat ID if new
     if (!currentChatId) {
         currentChatId = 'chat_' + Date.now();
     }
 
-    // Get chat title (first user message)
     const firstUserMsg = currentMessages.find(m => m.role === 'user');
     const title = firstUserMsg ? firstUserMsg.content.substring(0, 50) : 'New Chat';
 
@@ -474,8 +842,6 @@ async function saveChatToFirebase() {
     };
 
     await window.ChemAIFirebase.saveChat(currentChatId, chatData);
-
-    // Reload chat history
     await loadChatHistory();
 }
 
@@ -483,9 +849,7 @@ async function saveChatToFirebase() {
  * Load chat history
  */
 async function loadChatHistory() {
-    // Check if Firebase module is loaded
     if (!window.ChemAIFirebase) {
-        console.warn('⚠️ ChemAIFirebase not loaded yet');
         chatHistoryList.innerHTML = `
             <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
                 <i class="fas fa-comments" style="font-size: 2rem; opacity: 0.3;"></i>
@@ -553,10 +917,8 @@ function closeSettings() {
  */
 async function saveUserSettings() {
     const defaultModel = defaultModelSelect.value;
-
     userSettings.defaultModel = defaultModel || null;
 
-    // Update model selector visibility
     if (defaultModel) {
         modelSelector.style.display = 'none';
         if (window.ChemAIModels) {
@@ -566,24 +928,18 @@ async function saveUserSettings() {
         modelSelector.style.display = 'flex';
     }
 
-    // Save to Firebase
     if (window.ChemAIFirebase) {
         await window.ChemAIFirebase.saveSettings(userSettings);
     }
 
-    // Close modal
     closeSettings();
-
-    console.log('✅ Settings saved:', userSettings);
 }
 
 /**
  * Load user settings
  */
 async function loadUserSettings() {
-    // Check if Firebase module is loaded
     if (!window.ChemAIFirebase) {
-        console.warn('⚠️ ChemAIFirebase not loaded yet');
         userSettings = { defaultModel: null, theme: 'dark' };
         if (modelSelector) modelSelector.style.display = 'flex';
         selectModel('vicuna');
@@ -593,7 +949,6 @@ async function loadUserSettings() {
     const settings = await window.ChemAIFirebase.loadSettings();
     userSettings = settings;
 
-    // Apply settings
     if (settings.defaultModel) {
         if (modelSelector) modelSelector.style.display = 'none';
         if (window.ChemAIModels) {
@@ -602,10 +957,8 @@ async function loadUserSettings() {
         selectModel(settings.defaultModel);
     } else {
         if (modelSelector) modelSelector.style.display = 'flex';
-        selectModel('vicuna'); // Default
+        selectModel('vicuna');
     }
-
-    console.log('✅ Settings loaded:', settings);
 }
 
 /**
@@ -616,30 +969,10 @@ function formatTime(timestamp) {
     const now = new Date();
     const diff = now - date;
 
-    // Less than 1 minute
-    if (diff < 60000) {
-        return 'Just now';
-    }
-
-    // Less than 1 hour
-    if (diff < 3600000) {
-        const minutes = Math.floor(diff / 60000);
-        return `${minutes}m ago`;
-    }
-
-    // Less than 24 hours
-    if (diff < 86400000) {
-        const hours = Math.floor(diff / 3600000);
-        return `${hours}h ago`;
-    }
-
-    // Less than 7 days
-    if (diff < 604800000) {
-        const days = Math.floor(diff / 86400000);
-        return `${days}d ago`;
-    }
-
-    // More than 7 days
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
     return date.toLocaleDateString();
 }
 
@@ -650,4 +983,4 @@ window.ChemAIUI = {
     loadSpecificChat
 };
 
-console.log('✅ ChemAI UI module loaded');
+console.log('✅ ChemAI UI module loaded (Enhanced)');
