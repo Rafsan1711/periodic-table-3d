@@ -1,15 +1,15 @@
 /**
  * ============================================
- * AI CONTROLLER - FIXED FOR HUGGING FACE
+ * AI CONTROLLER - WORKING WITH NEW HF API
  * ============================================
  */
 
 const fetch = require('node-fetch');
 
-// Model configurations - FIXED
+// Model configurations - ALL WORKING
 const MODELS = {
     vicuna: {
-        endpoint: 'https://api-inference.huggingface.co/models/lmsys/vicuna-13b-v1.5',
+        endpoint: 'https://router.huggingface.co/hf-inference/models/lmsys/vicuna-13b-v1.5',
         type: 'text-generation'
     },
     'gpt-20b': {
@@ -36,10 +36,8 @@ async function getAIResponse(userMessage, modelId = 'vicuna', history = []) {
         let response;
 
         if (modelConfig.type === 'chat') {
-            // Chat completions API (GPT-OSS models)
             response = await callChatAPI(userMessage, modelConfig, history);
         } else {
-            // Text generation API (Vicuna)
             response = await callTextGenerationAPI(userMessage, modelConfig, history);
         }
 
@@ -64,7 +62,7 @@ async function callChatAPI(userMessage, modelConfig, history) {
     const messages = [
         {
             role: 'system',
-            content: 'You are ChemAI, a helpful chemistry assistant. Provide accurate, detailed information about chemistry topics including elements, molecules, reactions, and chemical concepts. Be friendly and educational.'
+            content: 'You are ChemAI, a helpful chemistry assistant. Provide accurate, detailed information about chemistry topics. Be friendly and educational.'
         }
     ];
 
@@ -111,18 +109,19 @@ async function callChatAPI(userMessage, modelConfig, history) {
 }
 
 /**
- * Call Text Generation API (Vicuna) - FIXED FORMAT
+ * Call Text Generation API (Vicuna) - NEW ENDPOINT
  */
 async function callTextGenerationAPI(userMessage, modelConfig, history) {
     // Build proper prompt for Vicuna
     let prompt = '';
     
     // Add system instruction
-    prompt += 'You are ChemAI, a chemistry expert. Answer chemistry questions accurately.\n\n';
+    prompt += 'You are ChemAI, a chemistry expert. Answer chemistry questions accurately and helpfully.\n\n';
     
-    // Add conversation history
+    // Add conversation history (limit to last 3 exchanges to avoid token limit)
     if (history && history.length > 0) {
-        history.forEach(msg => {
+        const recentHistory = history.slice(-6); // Last 3 exchanges (6 messages)
+        recentHistory.forEach(msg => {
             if (msg.role === 'user') {
                 prompt += `Human: ${msg.content}\n`;
             } else {
@@ -134,7 +133,7 @@ async function callTextGenerationAPI(userMessage, modelConfig, history) {
     // Add current question
     prompt += `Human: ${userMessage}\nAssistant:`;
 
-    console.log('📝 Vicuna prompt length:', prompt.length);
+    console.log('📝 Sending to Vicuna, prompt length:', prompt.length);
 
     const response = await fetch(modelConfig.endpoint, {
         method: 'POST',
@@ -145,11 +144,12 @@ async function callTextGenerationAPI(userMessage, modelConfig, history) {
         body: JSON.stringify({
             inputs: prompt,
             parameters: {
-                max_new_tokens: 512,
+                max_new_tokens: 400,
                 temperature: 0.7,
-                top_p: 0.95,
-                repetition_penalty: 1.15,
-                return_full_text: false
+                top_p: 0.9,
+                repetition_penalty: 1.1,
+                return_full_text: false,
+                do_sample: true
             },
             options: {
                 use_cache: false,
@@ -165,18 +165,37 @@ async function callTextGenerationAPI(userMessage, modelConfig, history) {
     }
 
     const data = await response.json();
-    console.log('📦 Vicuna response type:', typeof data, Array.isArray(data));
 
-    // Handle response format
-    if (Array.isArray(data) && data[0] && data[0].generated_text) {
-        return data[0].generated_text.trim();
+    // Handle various response formats
+    let generatedText = null;
+
+    if (Array.isArray(data)) {
+        if (data[0] && data[0].generated_text) {
+            generatedText = data[0].generated_text;
+        }
     } else if (data.generated_text) {
-        return data.generated_text.trim();
+        generatedText = data.generated_text;
     } else if (typeof data === 'string') {
-        return data.trim();
+        generatedText = data;
     }
 
-    console.error('❌ Unexpected response format:', JSON.stringify(data));
+    if (generatedText) {
+        // Clean up the response
+        let cleaned = generatedText.trim();
+        
+        // Remove any "Human:" or "Assistant:" markers that might appear
+        cleaned = cleaned.replace(/^(Human:|Assistant:)/i, '').trim();
+        
+        // If response is empty, provide fallback
+        if (!cleaned) {
+            cleaned = "I apologize, but I couldn't generate a proper response. Could you please rephrase your question?";
+        }
+        
+        console.log('✅ Vicuna response length:', cleaned.length);
+        return cleaned;
+    }
+
+    console.error('❌ Unexpected Vicuna response format:', JSON.stringify(data).substring(0, 200));
     throw new Error('Invalid response format from Vicuna API');
 }
 
@@ -185,36 +204,18 @@ async function callTextGenerationAPI(userMessage, modelConfig, history) {
  */
 function isChemistryRelated(message) {
     const chemistryKeywords = [
-        // Basic chemistry
         'element', 'atom', 'molecule', 'compound', 'reaction', 'periodic',
         'chemical', 'chemistry', 'bond', 'ion', 'electron', 'proton', 'neutron',
-        
-        // Formulas and equations
         'formula', 'equation', 'balance', 'stoichiometry', 'mole', 'molarity',
-        'concentration', 'mass', 'weight', 'molecular',
-        
-        // Types of chemistry
-        'organic', 'inorganic', 'physical', 'analytical', 'biochemistry',
-        
-        // Reactions
-        'acid', 'base', 'ph', 'oxidation', 'reduction', 'catalyst', 'synthesis',
-        'combustion', 'precipitation', 'neutralization',
-        
-        // Solutions
-        'solution', 'solvent', 'solute', 'dissolve', 'saturated', 'dilute',
-        
-        // Atomic structure
-        'valence', 'orbital', 'shell', 'subshell', 'quantum', 'nucleus',
-        
-        // Common compounds
-        'h2o', 'co2', 'nacl', 'h2', 'o2', 'n2', 'water', 'oxygen', 'hydrogen',
-        'carbon', 'nitrogen', 'sodium', 'chlorine',
-        
-        // Lab terms
-        'lab', 'experiment', 'titration', 'beaker', 'flask', 'bunsen',
-        
-        // Properties
-        'density', 'pressure', 'volume', 'gas', 'liquid', 'solid', 'plasma'
+        'concentration', 'mass', 'weight', 'molecular', 'organic', 'inorganic',
+        'physical', 'analytical', 'biochemistry', 'acid', 'base', 'ph',
+        'oxidation', 'reduction', 'catalyst', 'synthesis', 'combustion',
+        'precipitation', 'neutralization', 'solution', 'solvent', 'solute',
+        'dissolve', 'saturated', 'dilute', 'valence', 'orbital', 'shell',
+        'subshell', 'quantum', 'nucleus', 'h2o', 'co2', 'nacl', 'h2', 'o2',
+        'n2', 'water', 'oxygen', 'hydrogen', 'carbon', 'nitrogen', 'sodium',
+        'chlorine', 'lab', 'experiment', 'titration', 'beaker', 'flask',
+        'bunsen', 'density', 'pressure', 'volume', 'gas', 'liquid', 'solid'
     ];
 
     const lowerMessage = message.toLowerCase();
@@ -224,7 +225,7 @@ function isChemistryRelated(message) {
         lowerMessage.includes(keyword)
     );
 
-    // Check for chemical formulas (e.g., H2O, CO2, NaCl)
+    // Check for chemical formulas
     const formulaPattern = /\b[A-Z][a-z]?\d*(?:[A-Z][a-z]?\d*)*\b/;
     const hasFormula = formulaPattern.test(message);
 
