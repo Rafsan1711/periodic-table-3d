@@ -1,45 +1,38 @@
 /**
  * ============================================
  * CHEMAI API MODULE - FIXED
+ * ✅ Auto fallback: Vicuna → GPT-OSS 20B
+ * ✅ Better error handling
  * ============================================
  */
 
 // Backend API URL
 const API_URL = (() => {
     const hostname = window.location.hostname;
-    
-    // Local development
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return 'http://localhost:3000/api';
     }
-    
-    // Production - YOUR ACTUAL BACKEND URL
     return 'https://periodic-table-3d-chemai.onrender.com/api';
 })();
 
-// Backend status
 let backendAvailable = false;
 let healthCheckDone = false;
 
 /**
- * Check API health with better error handling
+ * Check API health
  */
 async function checkAPIHealth() {
-    if (healthCheckDone) {
-        return backendAvailable;
-    }
+    if (healthCheckDone) return backendAvailable;
 
     try {
-        console.log('🔍 Checking backend health (this may take up to 60s on first load)...');
+        console.log('🔍 Checking backend health...');
         
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout for cold start
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
 
         const response = await fetch(`${API_URL}/health`, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             signal: controller.signal,
             mode: 'cors',
             cache: 'no-cache'
@@ -60,14 +53,7 @@ async function checkAPIHealth() {
             return false;
         }
     } catch (error) {
-        console.warn('⚠️ Backend health check failed:', error.name);
-        if (error.name === 'AbortError') {
-            console.warn('   ⏰ Timeout after 60s - Backend may be sleeping (Render free tier)');
-            console.warn('   💡 Try sending a message anyway - it might wake up!');
-        } else if (error.message.includes('Failed to fetch')) {
-            console.warn('   🌐 Network error - Check backend URL and CORS');
-            console.warn('   📍 Current URL:', API_URL);
-        }
+        console.warn('⚠️ Backend health check failed');
         backendAvailable = false;
         healthCheckDone = true;
         return false;
@@ -75,31 +61,22 @@ async function checkAPIHealth() {
 }
 
 /**
- * Send message to AI - WITH RETRY FOR COLD START
+ * ✅ Send message with AUTO FALLBACK
  */
 async function sendMessage(message, chatHistory = [], model = 'vicuna') {
-    // Re-check backend if not done yet
     if (!healthCheckDone) {
         await checkAPIHealth();
     }
 
-    // If backend not available, TRY ANYWAY (might wake it up)
-    if (!backendAvailable) {
-        console.log('⏰ Backend appears offline - Attempting to wake it up...');
-    }
-
     try {
-        console.log('📤 Sending to backend:', { message, model, historyLength: chatHistory.length });
+        console.log(`📤 Sending to backend (${model}):`, message);
 
-        // Longer timeout for first request (cold start)
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s for cold start
+        const timeoutId = setTimeout(() => controller.abort(), 90000);
 
         const response = await fetch(`${API_URL}/chat`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 message: message,
                 model: model,
@@ -111,15 +88,50 @@ async function sendMessage(message, chatHistory = [], model = 'vicuna') {
 
         clearTimeout(timeoutId);
 
+        // ✅ CRITICAL: If Vicuna fails (404/500), try GPT-OSS 20B
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
+            
+            // If Vicuna failed and we haven't tried fallback yet
+            if (model === 'vicuna' && (response.status === 404 || response.status === 500)) {
+                console.warn('⚠️ Vicuna failed, trying GPT-OSS 20B...');
+                
+                // Retry with GPT-OSS 20B
+                const fallbackResponse = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        model: 'gpt-20b',
+                        history: chatHistory
+                    }),
+                    mode: 'cors'
+                });
+
+                if (fallbackResponse.ok) {
+                    const data = await fallbackResponse.json();
+                    console.log('✅ Fallback successful (GPT-OSS 20B)');
+                    
+                    backendAvailable = true;
+                    healthCheckDone = true;
+
+                    return {
+                        success: true,
+                        message: data.response,
+                        model: 'gpt-20b',
+                        timestamp: Date.now(),
+                        fallback: true, // ✅ Indicator
+                        fallbackMessage: '⚠️ Vicuna মডেল কাজ করছে না, GPT-OSS 20B ব্যবহার করা হয়েছে।'
+                    };
+                }
+            }
+            
             throw new Error(errorData.error || `Backend returned ${response.status}`);
         }
 
         const data = await response.json();
         console.log('✅ AI response received');
 
-        // Mark backend as available for future requests
         backendAvailable = true;
         healthCheckDone = true;
 
@@ -127,18 +139,18 @@ async function sendMessage(message, chatHistory = [], model = 'vicuna') {
             success: true,
             message: data.response,
             model: data.model || model,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            fallback: false
         };
 
     } catch (error) {
         console.error('❌ Backend error:', error.message);
         
-        // If timeout, show helpful message
         if (error.name === 'AbortError') {
             return {
                 success: false,
                 error: 'Timeout',
-                message: `⏰ **Request Timeout**\n\nThe backend took too long to respond (>90s).\n\n**This usually means:**\n1. Backend is waking up from sleep (Render free tier)\n2. Try again in 30 seconds\n3. Or upgrade to paid Render plan\n\n**Your question:** "${message}"`,
+                message: `⏰ **Request Timeout**\n\nBackend took too long (>90s).\n\n**Try:**\n1. Wait 30 seconds\n2. Try again\n\n**Your question:** "${message}"`,
                 timestamp: Date.now()
             };
         }
@@ -146,7 +158,7 @@ async function sendMessage(message, chatHistory = [], model = 'vicuna') {
         return {
             success: false,
             error: error.message,
-            message: `❌ **Connection Error**\n\nCannot reach AI service.\n\n**Error:** ${error.message}\n\n**Backend URL:** ${API_URL}\n\nPlease check:\n1. Backend is deployed on Render.com\n2. CORS is configured\n3. HF_TOKEN is set`,
+            message: `❌ **Connection Error**\n\nCannot reach AI service.\n\n**Error:** ${error.message}\n\n**Backend:** ${API_URL}\n\nCheck:\n1. Backend deployed on Render\n2. CORS configured\n3. HF_TOKEN set`,
             timestamp: Date.now()
         };
     }
@@ -170,7 +182,7 @@ function isChemistryRelated(message) {
 }
 
 /**
- * Format chat history for API
+ * Format chat history
  */
 function formatChatHistory(messages) {
     return messages.map(msg => ({
@@ -203,6 +215,5 @@ window.ChemAIAPI = {
     }
 };
 
-console.log('✅ ChemAI API module loaded');
+console.log('✅ ChemAI API module loaded (with auto fallback)');
 console.log('🔗 Backend URL:', API_URL);
-console.log('💡 Tip: Open Console to see backend connection status');
