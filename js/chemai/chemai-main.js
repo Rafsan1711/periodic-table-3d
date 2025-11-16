@@ -29,20 +29,7 @@ async function initChemAI() {
             return;
         }
 
-        // Check API health (don't fail if unavailable)
-        if (window.ChemAIAPI && typeof window.ChemAIAPI.checkAPIHealth === 'function') {
-            const isHealthy = await window.ChemAIAPI.checkAPIHealth();
-            if (!isHealthy) {
-                console.warn('⚠️ Backend not connected - Mock responses will be used');
-                if (typeof showNotification === 'function') {
-                    showNotification('UI ready! Start backend for AI responses.', 'info');
-                }
-            } else {
-                console.log('✅ Backend connected');
-            }
-        }
-
-        // Initialize UI
+        // Initialize UI first (don't wait for backend)
         if (window.ChemAIUI && typeof window.ChemAIUI.init === 'function') {
             window.ChemAIUI.init();
         } else {
@@ -51,7 +38,23 @@ async function initChemAI() {
         }
 
         chemaiInitialized = true;
-        console.log('✅ ChemAI initialized successfully');
+        console.log('✅ ChemAI UI initialized');
+
+        // Check backend health in background (non-blocking)
+        if (window.ChemAIAPI && typeof window.ChemAIAPI.checkAPIHealth === 'function') {
+            console.log('⏳ Checking backend in background...');
+            window.ChemAIAPI.checkAPIHealth().then(isHealthy => {
+                if (isHealthy) {
+                    console.log('✅ Backend is ready!');
+                    if (typeof showNotification === 'function') {
+                        showNotification('ChemAI connected! 🎉', 'success');
+                    }
+                } else {
+                    console.warn('⚠️ Backend not responding (may be sleeping)');
+                    console.log('💡 Send a message to wake it up!');
+                }
+            });
+        }
 
     } catch (error) {
         console.error('❌ ChemAI initialization error:', error);
