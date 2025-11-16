@@ -30,10 +30,10 @@ async function checkAPIHealth() {
     }
 
     try {
-        console.log('🔍 Checking backend health at:', API_URL);
+        console.log('🔍 Checking backend health (this may take up to 60s on first load)...');
         
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout for cold start
 
         const response = await fetch(`${API_URL}/health`, {
             method: 'GET',
@@ -62,9 +62,11 @@ async function checkAPIHealth() {
     } catch (error) {
         console.warn('⚠️ Backend health check failed:', error.name);
         if (error.name === 'AbortError') {
-            console.warn('   Timeout - Backend too slow or not responding');
+            console.warn('   ⏰ Timeout after 60s - Backend may be sleeping (Render free tier)');
+            console.warn('   💡 Try sending a message anyway - it might wake up!');
         } else if (error.message.includes('Failed to fetch')) {
-            console.warn('   Network error - Check backend URL and CORS');
+            console.warn('   🌐 Network error - Check backend URL and CORS');
+            console.warn('   📍 Current URL:', API_URL);
         }
         backendAvailable = false;
         healthCheckDone = true;
@@ -73,7 +75,7 @@ async function checkAPIHealth() {
 }
 
 /**
- * Send message to AI - NO MORE DOUBLE MESSAGES
+ * Send message to AI - WITH RETRY FOR COLD START
  */
 async function sendMessage(message, chatHistory = [], model = 'vicuna') {
     // Re-check backend if not done yet
@@ -81,23 +83,17 @@ async function sendMessage(message, chatHistory = [], model = 'vicuna') {
         await checkAPIHealth();
     }
 
-    // If backend not available, return mock response
+    // If backend not available, TRY ANYWAY (might wake it up)
     if (!backendAvailable) {
-        console.log('📝 Using mock response');
-        
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        return {
-            success: true,
-            message: `🧪 **ChemAI Mock Response**\n\nI received your question: "${message}"\n\n⚠️ **Backend not connected**\n\nTo get real AI responses:\n1. Check your backend URL in \`chemai-api.js\`\n2. Make sure backend is running on Render.com\n3. Check browser console for errors\n\nCurrent backend URL: \`${API_URL}\``,
-            model: model,
-            timestamp: Date.now()
-        };
+        console.log('⏰ Backend appears offline - Attempting to wake it up...');
     }
 
     try {
         console.log('📤 Sending to backend:', { message, model, historyLength: chatHistory.length });
+
+        // Longer timeout for first request (cold start)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s for cold start
 
         const response = await fetch(`${API_URL}/chat`, {
             method: 'POST',
@@ -109,8 +105,11 @@ async function sendMessage(message, chatHistory = [], model = 'vicuna') {
                 model: model,
                 history: chatHistory
             }),
-            mode: 'cors'
+            mode: 'cors',
+            signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -119,6 +118,10 @@ async function sendMessage(message, chatHistory = [], model = 'vicuna') {
 
         const data = await response.json();
         console.log('✅ AI response received');
+
+        // Mark backend as available for future requests
+        backendAvailable = true;
+        healthCheckDone = true;
 
         return {
             success: true,
@@ -130,10 +133,20 @@ async function sendMessage(message, chatHistory = [], model = 'vicuna') {
     } catch (error) {
         console.error('❌ Backend error:', error.message);
         
+        // If timeout, show helpful message
+        if (error.name === 'AbortError') {
+            return {
+                success: false,
+                error: 'Timeout',
+                message: `⏰ **Request Timeout**\n\nThe backend took too long to respond (>90s).\n\n**This usually means:**\n1. Backend is waking up from sleep (Render free tier)\n2. Try again in 30 seconds\n3. Or upgrade to paid Render plan\n\n**Your question:** "${message}"`,
+                timestamp: Date.now()
+            };
+        }
+        
         return {
             success: false,
             error: error.message,
-            message: `❌ **Connection Error**\n\nCannot reach AI service.\n\n**Error:** ${error.message}\n\n**Backend URL:** ${API_URL}\n\nPlease check:\n1. Backend is running\n2. CORS is configured\n3. URL is correct`,
+            message: `❌ **Connection Error**\n\nCannot reach AI service.\n\n**Error:** ${error.message}\n\n**Backend URL:** ${API_URL}\n\nPlease check:\n1. Backend is deployed on Render.com\n2. CORS is configured\n3. HF_TOKEN is set`,
             timestamp: Date.now()
         };
     }
