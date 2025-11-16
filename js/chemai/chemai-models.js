@@ -1,24 +1,24 @@
 /**
  * ============================================
- * CHEMAI MODELS MODULE
- * AI Model configurations and management
+ * CHEMAI MODELS MODULE - FIXED ENDPOINTS
+ * Matches backend configuration exactly
  * ============================================
  */
 
-// Model Configurations
 const CHEMAI_MODELS = {
     vicuna: {
         id: 'vicuna',
-        name: 'Vicuna 13B',
-        displayName: 'Vicuna 13B',
+        name: 'Vicuna 7B',
+        displayName: 'Vicuna 7B',
         description: 'Fast and efficient - Best for quick questions',
-        endpoint: 'https://router.huggingface.co/featherless-ai/v1/completions',
-        type: 'completion', // completion API
+        endpoint: 'https://api-inference.huggingface.co/models/lmsys/vicuna-7b-v1.5',
+        type: 'text-generation',
         icon: 'fa-brain',
         color: '#58a6ff',
-        maxTokens: 2048,
+        maxTokens: 800,
         temperature: 0.7,
-        default: true
+        default: true,
+        fallback: 'gpt-20b'
     },
     'gpt-20b': {
         id: 'gpt-20b',
@@ -26,13 +26,14 @@ const CHEMAI_MODELS = {
         displayName: 'GPT-OSS 20B',
         description: 'Balanced performance - Good for detailed answers',
         endpoint: 'https://router.huggingface.co/v1/chat/completions',
-        type: 'chat', // chat completions API
+        type: 'chat',
         model: 'openai/gpt-oss-20b:novita',
         icon: 'fa-rocket',
         color: '#7ce38b',
-        maxTokens: 4096,
-        temperature: 0.8,
-        default: false
+        maxTokens: 2048,
+        temperature: 0.7,
+        default: false,
+        fallback: 'gpt-120b'
     },
     'gpt-120b': {
         id: 'gpt-120b',
@@ -40,29 +41,23 @@ const CHEMAI_MODELS = {
         displayName: 'GPT-OSS 120B',
         description: 'Most advanced - Best for complex chemistry',
         endpoint: 'https://router.huggingface.co/v1/chat/completions',
-        type: 'chat', // chat completions API
+        type: 'chat',
         model: 'openai/gpt-oss-120b:novita',
         icon: 'fa-star',
         color: '#bc8cff',
-        maxTokens: 8192,
-        temperature: 0.9,
-        default: false
+        maxTokens: 2048,
+        temperature: 0.7,
+        default: false,
+        fallback: null
     }
 };
 
-// Current selected model
-let currentModel = 'vicuna'; // Default
+let currentModel = 'vicuna';
 
-/**
- * Get model configuration
- */
 function getModel(modelId) {
     return CHEMAI_MODELS[modelId] || CHEMAI_MODELS.vicuna;
 }
 
-/**
- * Set current model
- */
 function setCurrentModel(modelId) {
     if (CHEMAI_MODELS[modelId]) {
         currentModel = modelId;
@@ -73,45 +68,29 @@ function setCurrentModel(modelId) {
     return false;
 }
 
-/**
- * Get current model
- */
 function getCurrentModel() {
     return getModel(currentModel);
 }
 
-/**
- * Get all models
- */
 function getAllModels() {
     return Object.values(CHEMAI_MODELS);
 }
 
-/**
- * Format model display name
- */
 function getModelDisplayName(modelId) {
     const model = getModel(modelId);
     return model.displayName;
 }
 
-/**
- * Get model icon
- */
 function getModelIcon(modelId) {
     const model = getModel(modelId);
     return model.icon;
 }
 
-/**
- * Get model color
- */
 function getModelColor(modelId) {
     const model = getModel(modelId);
     return model.color;
 }
 
-// Export
 window.ChemAIModels = {
     MODELS: CHEMAI_MODELS,
     getModel,
@@ -128,3 +107,4 @@ window.ChemAIModels = {
 
 console.log('✅ ChemAI Models module loaded');
 console.log('📊 Available models:', Object.keys(CHEMAI_MODELS));
+console.log('🔄 Auto-fallback enabled for all models');
