@@ -1,17 +1,16 @@
 /**
  * ============================================
- * AI CONTROLLER
- * Hugging Face API integration and logic
+ * AI CONTROLLER - FIXED FOR HUGGING FACE
  * ============================================
  */
 
 const fetch = require('node-fetch');
 
-// Model configurations
+// Model configurations - FIXED
 const MODELS = {
     vicuna: {
-        endpoint: 'https://router.huggingface.co/featherless-ai/v1/completions',
-        type: 'completion'
+        endpoint: 'https://api-inference.huggingface.co/models/lmsys/vicuna-13b-v1.5',
+        type: 'text-generation'
     },
     'gpt-20b': {
         endpoint: 'https://router.huggingface.co/v1/chat/completions',
@@ -40,8 +39,8 @@ async function getAIResponse(userMessage, modelId = 'vicuna', history = []) {
             // Chat completions API (GPT-OSS models)
             response = await callChatAPI(userMessage, modelConfig, history);
         } else {
-            // Completion API (Vicuna)
-            response = await callCompletionAPI(userMessage, modelConfig, history);
+            // Text generation API (Vicuna)
+            response = await callTextGenerationAPI(userMessage, modelConfig, history);
         }
 
         console.log('✅ AI response received');
@@ -65,7 +64,7 @@ async function callChatAPI(userMessage, modelConfig, history) {
     const messages = [
         {
             role: 'system',
-            content: 'You are ChemAI, a helpful chemistry assistant. You provide accurate, detailed information about chemistry topics including elements, molecules, reactions, and chemical concepts. Always be friendly and educational.'
+            content: 'You are ChemAI, a helpful chemistry assistant. Provide accurate, detailed information about chemistry topics including elements, molecules, reactions, and chemical concepts. Be friendly and educational.'
         }
     ];
 
@@ -104,7 +103,6 @@ async function callChatAPI(userMessage, modelConfig, history) {
 
     const data = await response.json();
     
-    // Extract response
     if (data.choices && data.choices[0] && data.choices[0].message) {
         return data.choices[0].message.content.trim();
     }
@@ -113,23 +111,30 @@ async function callChatAPI(userMessage, modelConfig, history) {
 }
 
 /**
- * Call Completion API (Vicuna)
+ * Call Text Generation API (Vicuna) - FIXED FORMAT
  */
-async function callCompletionAPI(userMessage, modelConfig, history) {
-    // Build prompt with history
-    let prompt = 'You are ChemAI, a helpful chemistry assistant.\n\n';
-
-    // Add history
-    history.forEach(msg => {
-        if (msg.role === 'user') {
-            prompt += `Human: ${msg.content}\n`;
-        } else {
-            prompt += `Assistant: ${msg.content}\n`;
-        }
-    });
-
-    // Add current message
+async function callTextGenerationAPI(userMessage, modelConfig, history) {
+    // Build proper prompt for Vicuna
+    let prompt = '';
+    
+    // Add system instruction
+    prompt += 'You are ChemAI, a chemistry expert. Answer chemistry questions accurately.\n\n';
+    
+    // Add conversation history
+    if (history && history.length > 0) {
+        history.forEach(msg => {
+            if (msg.role === 'user') {
+                prompt += `Human: ${msg.content}\n`;
+            } else {
+                prompt += `Assistant: ${msg.content}\n`;
+            }
+        });
+    }
+    
+    // Add current question
     prompt += `Human: ${userMessage}\nAssistant:`;
+
+    console.log('📝 Vicuna prompt length:', prompt.length);
 
     const response = await fetch(modelConfig.endpoint, {
         method: 'POST',
@@ -142,28 +147,37 @@ async function callCompletionAPI(userMessage, modelConfig, history) {
             parameters: {
                 max_new_tokens: 512,
                 temperature: 0.7,
-                top_p: 0.9,
-                do_sample: true
+                top_p: 0.95,
+                repetition_penalty: 1.15,
+                return_full_text: false
+            },
+            options: {
+                use_cache: false,
+                wait_for_model: true
             }
         })
     });
 
     if (!response.ok) {
         const errorText = await response.text();
+        console.error('❌ Vicuna API error:', errorText);
         throw new Error(`Hugging Face API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('📦 Vicuna response type:', typeof data, Array.isArray(data));
 
-    // Extract response
+    // Handle response format
     if (Array.isArray(data) && data[0] && data[0].generated_text) {
-        const fullText = data[0].generated_text;
-        // Extract only the assistant's response
-        const assistantResponse = fullText.split('Assistant:').pop().trim();
-        return assistantResponse;
+        return data[0].generated_text.trim();
+    } else if (data.generated_text) {
+        return data.generated_text.trim();
+    } else if (typeof data === 'string') {
+        return data.trim();
     }
 
-    throw new Error('Invalid response format from API');
+    console.error('❌ Unexpected response format:', JSON.stringify(data));
+    throw new Error('Invalid response format from Vicuna API');
 }
 
 /**
@@ -192,12 +206,15 @@ function isChemistryRelated(message) {
         // Atomic structure
         'valence', 'orbital', 'shell', 'subshell', 'quantum', 'nucleus',
         
-        // Specific elements (partial list)
-        'hydrogen', 'oxygen', 'carbon', 'nitrogen', 'sodium', 'chlorine',
-        'h2o', 'co2', 'nacl', 'h2', 'o2', 'n2',
+        // Common compounds
+        'h2o', 'co2', 'nacl', 'h2', 'o2', 'n2', 'water', 'oxygen', 'hydrogen',
+        'carbon', 'nitrogen', 'sodium', 'chlorine',
         
         // Lab terms
-        'lab', 'experiment', 'titration', 'beaker', 'flask', 'bunsen'
+        'lab', 'experiment', 'titration', 'beaker', 'flask', 'bunsen',
+        
+        // Properties
+        'density', 'pressure', 'volume', 'gas', 'liquid', 'solid', 'plasma'
     ];
 
     const lowerMessage = message.toLowerCase();
