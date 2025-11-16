@@ -276,7 +276,10 @@ class TimelineModal {
    */
   init3DViewer() {
     const container = document.getElementById('timeline-3d-viewer');
-    if (!container || !this.currentEvent.relatedMolecules) return;
+    if (!container || !this.currentEvent.relatedMolecules || this.currentEvent.relatedMolecules.length === 0) {
+      console.log('⚠️ No molecules to display');
+      return;
+    }
     
     container.innerHTML = '';
     
@@ -284,16 +287,19 @@ class TimelineModal {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x0d1117);
     
+    const width = container.clientWidth || 800;
+    const height = 400;
+    
     this.camera = new THREE.PerspectiveCamera(
-      75,
-      container.clientWidth / 400,
+      60,
+      width / height,
       0.1,
       1000
     );
-    this.camera.position.z = 5;
+    this.camera.position.z = 8;
     
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setSize(container.clientWidth, 400);
+    this.renderer.setSize(width, height);
     container.appendChild(this.renderer.domElement);
     
     // Lighting
@@ -304,13 +310,23 @@ class TimelineModal {
     directionalLight.position.set(5, 5, 5);
     this.scene.add(directionalLight);
     
+    const pointLight = new THREE.PointLight(0x4488ff, 0.5);
+    pointLight.position.set(-5, -5, 5);
+    this.scene.add(pointLight);
+    
     // Load molecule from our data
     const moleculeName = this.currentEvent.relatedMolecules[0];
     
     // ✅ Check if moleculesData exists
     if (typeof moleculesData === 'undefined') {
       console.warn('⚠️ moleculesData not loaded, 3D viewer disabled');
-      container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--text-secondary);">3D molecule data not available</p>';
+      container.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:400px;text-align:center;color:var(--text-secondary);">
+          <i class="fas fa-flask" style="font-size:4rem;margin-bottom:1rem;opacity:0.5;"></i>
+          <p style="font-size:1.1rem;">3D molecule viewer requires data files</p>
+          <p style="font-size:0.9rem;opacity:0.7;">Add molecules-data.js to enable this feature</p>
+        </div>
+      `;
       return;
     }
     
@@ -318,16 +334,23 @@ class TimelineModal {
     
     if (molecule) {
       this.create3DMoleculeFromData(molecule);
+      
+      // Create controls
+      this.createMoleculeControls();
+      
+      // Start animation
+      this.animate3D();
+      
+      console.log('✅ 3D molecule viewer initialized');
     } else {
       console.warn('⚠️ Molecule not found:', moleculeName);
-      container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--text-secondary);">Molecule not found</p>';
+      container.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:400px;text-align:center;color:var(--text-secondary);">
+          <i class="fas fa-exclamation-circle" style="font-size:4rem;margin-bottom:1rem;opacity:0.5;"></i>
+          <p style="font-size:1.1rem;">Molecule "${moleculeName}" not found</p>
+        </div>
+      `;
     }
-    
-    // Create controls
-    this.createMoleculeControls();
-    
-    // Animation loop
-    this.animate3D();
   }
 
   /**
@@ -337,45 +360,100 @@ class TimelineModal {
     const group = new THREE.Group();
     
     const colorMap = {
-      C: 0x222222, O: 0xff4444, H: 0xffffff, N: 0x3050f8
+      C: 0x222222, O: 0xff4444, H: 0xffffff, N: 0x3050f8,
+      Na: 0xAB5CF2, Cl: 0x1FF01F, S: 0xFFFF66, P: 0xFF8C00
     };
     
     const radiusMap = {
-      H: 0.25, C: 0.4, O: 0.38, N: 0.37
+      H: 0.25, C: 0.4, O: 0.38, N: 0.37,
+      Na: 0.55, Cl: 0.55, S: 0.45, P: 0.45
     };
     
     // ✅ Check if molecule data exists
-    if (!molecule || !molecule.atoms) {
+    if (!molecule || !molecule.atoms || molecule.atoms.length === 0) {
       console.warn('⚠️ Molecule data not available');
       return;
     }
+    
+    // Calculate center of molecule
+    let centerX = 0, centerY = 0, centerZ = 0;
+    molecule.atoms.forEach(atom => {
+      centerX += (atom.x || 0);
+      centerY += (atom.y || 0);
+      centerZ += (atom.z || 0);
+    });
+    centerX /= molecule.atoms.length;
+    centerY /= molecule.atoms.length;
+    centerZ /= molecule.atoms.length;
     
     // Add atoms
     molecule.atoms.forEach(atom => {
       const color = colorMap[atom.el] || 0x888888;
       const radius = radiusMap[atom.el] || 0.35;
       
-      const geometry = new THREE.SphereGeometry(radius, 32, 32);
-      const material = new THREE.MeshPhongMaterial({ color, shininess: 80 });
+      const geometry = new THREE.SphereGeometry(radius, 24, 24);
+      const material = new THREE.MeshPhongMaterial({ 
+        color, 
+        shininess: 80,
+        specular: 0x444444
+      });
       const sphere = new THREE.Mesh(geometry, material);
       
-      sphere.position.set(atom.x || 0, atom.y || 0, atom.z || 0);
+      // Center the molecule
+      sphere.position.set(
+        (atom.x || 0) - centerX, 
+        (atom.y || 0) - centerY, 
+        (atom.z || 0) - centerZ
+      );
       group.add(sphere);
+      
+      // Add atom label
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = 'bold 32px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(atom.el, 32, 32);
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMaterial = new THREE.SpriteMaterial({ 
+        map: texture, 
+        transparent: true 
+      });
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.scale.set(0.6, 0.6, 0.6);
+      sprite.position.set(
+        (atom.x || 0) - centerX, 
+        (atom.y || 0) - centerY + 0.8, 
+        (atom.z || 0) - centerZ
+      );
+      group.add(sprite);
     });
     
     // Add bonds
-    if (molecule.bonds) {
+    if (molecule.bonds && molecule.bonds.length > 0) {
       molecule.bonds.forEach(bond => {
         const atom1 = molecule.atoms[bond[0]];
         const atom2 = molecule.atoms[bond[1]];
         
         if (!atom1 || !atom2) return;
         
-        const start = new THREE.Vector3(atom1.x || 0, atom1.y || 0, atom1.z || 0);
-        const end = new THREE.Vector3(atom2.x || 0, atom2.y || 0, atom2.z || 0);
+        const start = new THREE.Vector3(
+          (atom1.x || 0) - centerX, 
+          (atom1.y || 0) - centerY, 
+          (atom1.z || 0) - centerZ
+        );
+        const end = new THREE.Vector3(
+          (atom2.x || 0) - centerX, 
+          (atom2.y || 0) - centerY, 
+          (atom2.z || 0) - centerZ
+        );
         const distance = start.distanceTo(end);
         
-        const geometry = new THREE.CylinderGeometry(0.08, 0.08, distance, 12);
+        const geometry = new THREE.CylinderGeometry(0.1, 0.1, distance, 8);
         const material = new THREE.MeshPhongMaterial({ color: 0x999999 });
         const cylinder = new THREE.Mesh(geometry, material);
         
@@ -390,6 +468,8 @@ class TimelineModal {
     
     this.scene.add(group);
     this.molecules.push(group);
+    
+    console.log('✅ 3D molecule created with', molecule.atoms.length, 'atoms');
   }
 
   /**
@@ -406,20 +486,47 @@ class TimelineModal {
       <button class="molecule-control-btn" id="reset-view">
         <i class="fas fa-redo"></i> Reset View
       </button>
+      <button class="molecule-control-btn" id="zoom-in">
+        <i class="fas fa-search-plus"></i> Zoom In
+      </button>
+      <button class="molecule-control-btn" id="zoom-out">
+        <i class="fas fa-search-minus"></i> Zoom Out
+      </button>
     `;
     
     // Auto rotate toggle
-    let autoRotate = true;
-    document.getElementById('rotate-toggle').addEventListener('click', (e) => {
-      autoRotate = !autoRotate;
-      e.target.innerHTML = autoRotate ? 
+    this.autoRotate = true;
+    const rotateBtn = document.getElementById('rotate-toggle');
+    rotateBtn.addEventListener('click', () => {
+      this.autoRotate = !this.autoRotate;
+      rotateBtn.innerHTML = this.autoRotate ? 
         '<i class="fas fa-sync"></i> Auto Rotate' : 
         '<i class="fas fa-pause"></i> Paused';
+      rotateBtn.style.background = this.autoRotate ? '' : 'var(--accent-red)';
     });
     
     // Reset view
     document.getElementById('reset-view').addEventListener('click', () => {
-      this.camera.position.set(0, 0, 5);
+      if (this.camera) {
+        this.camera.position.set(0, 0, 8);
+        this.camera.lookAt(0, 0, 0);
+      }
+      this.molecules.forEach(mol => {
+        mol.rotation.set(0, 0, 0);
+      });
+    });
+    
+    // Zoom controls
+    document.getElementById('zoom-in').addEventListener('click', () => {
+      if (this.camera) {
+        this.camera.position.z = Math.max(this.camera.position.z - 1, 2);
+      }
+    });
+    
+    document.getElementById('zoom-out').addEventListener('click', () => {
+      if (this.camera) {
+        this.camera.position.z = Math.min(this.camera.position.z + 1, 15);
+      }
     });
   }
 
@@ -431,10 +538,13 @@ class TimelineModal {
     
     requestAnimationFrame(() => this.animate3D());
     
-    // Rotate molecules
-    this.molecules.forEach(mol => {
-      mol.rotation.y += 0.005;
-    });
+    // Rotate molecules only if autoRotate is enabled
+    if (this.autoRotate !== false) {
+      this.molecules.forEach(mol => {
+        mol.rotation.x += 0.003;
+        mol.rotation.y += 0.005;
+      });
+    }
     
     this.renderer.render(this.scene, this.camera);
   }
