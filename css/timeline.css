@@ -1,12 +1,14 @@
 /* ============================================
    TIMELINE PREVIEW SECTION
+   File: css/timeline.css
    ============================================ */
 
 .timeline-preview-section {
   background: linear-gradient(135deg, rgba(88, 166, 255, 0.03), rgba(188, 140, 255, 0.03));
   border-radius: 24px;
   padding: 4rem 2rem;
-  margin: 4rem 0;
+  margin: 4rem auto;
+  max-width: 1400px;
   position: relative;
   overflow: hidden;
 }
@@ -260,10 +262,7 @@
   font-weight: 700;
 }
 
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
-
+/* Responsive */
 @media (max-width: 992px) {
   .timeline-preview-card {
     grid-template-columns: 1fr;
@@ -300,15 +299,6 @@
   .timeline-preview-description {
     font-size: 1rem;
   }
-  
-  .timeline-preview-meta {
-    gap: 1rem;
-  }
-  
-  .timeline-fun-fact {
-    padding: 1.25rem 1.5rem;
-    font-size: 0.95rem;
-  }
 }
 
 @media (max-width: 480px) {
@@ -326,28 +316,4 @@
   .timeline-preview-title {
     font-size: 1.3rem;
   }
-  
-  .timeline-view-full-btn {
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
-  }
-  
-  .timeline-fun-fact {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
 }
-
-/* ============================================
-   LOADING STATE
-   ============================================ */
-
-.timeline-preview-skeleton {
-  animation: skeletonPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes skeletonPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-  }
