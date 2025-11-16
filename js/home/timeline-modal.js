@@ -306,10 +306,21 @@ class TimelineModal {
     
     // Load molecule from our data
     const moleculeName = this.currentEvent.relatedMolecules[0];
+    
+    // ✅ Check if moleculesData exists
+    if (typeof moleculesData === 'undefined') {
+      console.warn('⚠️ moleculesData not loaded, 3D viewer disabled');
+      container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--text-secondary);">3D molecule data not available</p>';
+      return;
+    }
+    
     const molecule = moleculesData.find(m => m.id === moleculeName);
     
     if (molecule) {
       this.create3DMoleculeFromData(molecule);
+    } else {
+      console.warn('⚠️ Molecule not found:', moleculeName);
+      container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--text-secondary);">Molecule not found</p>';
     }
     
     // Create controls
@@ -333,6 +344,12 @@ class TimelineModal {
       H: 0.25, C: 0.4, O: 0.38, N: 0.37
     };
     
+    // ✅ Check if molecule data exists
+    if (!molecule || !molecule.atoms) {
+      console.warn('⚠️ Molecule data not available');
+      return;
+    }
+    
     // Add atoms
     molecule.atoms.forEach(atom => {
       const color = colorMap[atom.el] || 0x888888;
@@ -347,27 +364,29 @@ class TimelineModal {
     });
     
     // Add bonds
-    molecule.bonds.forEach(bond => {
-      const atom1 = molecule.atoms[bond[0]];
-      const atom2 = molecule.atoms[bond[1]];
-      
-      if (!atom1 || !atom2) return;
-      
-      const start = new THREE.Vector3(atom1.x || 0, atom1.y || 0, atom1.z || 0);
-      const end = new THREE.Vector3(atom2.x || 0, atom2.y || 0, atom2.z || 0);
-      const distance = start.distanceTo(end);
-      
-      const geometry = new THREE.CylinderGeometry(0.08, 0.08, distance, 12);
-      const material = new THREE.MeshPhongMaterial({ color: 0x999999 });
-      const cylinder = new THREE.Mesh(geometry, material);
-      
-      const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-      cylinder.position.copy(midpoint);
-      cylinder.lookAt(end);
-      cylinder.rotateX(Math.PI / 2);
-      
-      group.add(cylinder);
-    });
+    if (molecule.bonds) {
+      molecule.bonds.forEach(bond => {
+        const atom1 = molecule.atoms[bond[0]];
+        const atom2 = molecule.atoms[bond[1]];
+        
+        if (!atom1 || !atom2) return;
+        
+        const start = new THREE.Vector3(atom1.x || 0, atom1.y || 0, atom1.z || 0);
+        const end = new THREE.Vector3(atom2.x || 0, atom2.y || 0, atom2.z || 0);
+        const distance = start.distanceTo(end);
+        
+        const geometry = new THREE.CylinderGeometry(0.08, 0.08, distance, 12);
+        const material = new THREE.MeshPhongMaterial({ color: 0x999999 });
+        const cylinder = new THREE.Mesh(geometry, material);
+        
+        const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+        cylinder.position.copy(midpoint);
+        cylinder.lookAt(end);
+        cylinder.rotateX(Math.PI / 2);
+        
+        group.add(cylinder);
+      });
+    }
     
     this.scene.add(group);
     this.molecules.push(group);
@@ -690,6 +709,13 @@ class TimelineModal {
     const section = document.getElementById('timeline-related-section');
     
     if (!container) return;
+    
+    // ✅ Check if elementsData exists
+    if (typeof elementsData === 'undefined') {
+      console.warn('⚠️ elementsData not loaded, skipping related elements');
+      section.style.display = 'none';
+      return;
+    }
     
     container.innerHTML = '';
     
