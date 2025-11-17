@@ -1,7 +1,6 @@
 /* ============================================
-   CHEMAI - PROFESSIONAL AI CHAT UI
-   Inspired by modern AI assistants
-   Fully Responsive & Beautiful
+   CHEMAI - COMPLETE CSS (100%)
+   Professional AI Chat UI + Wikipedia + 3D
    ============================================ */
 
 /* Page Container - Full Screen */
@@ -22,7 +21,7 @@
     display: flex !important;
 }
 
-/* Header - Always Visible for Back Button */
+/* Header */
 .chemai-header {
     display: flex;
     align-items: center;
@@ -92,7 +91,7 @@
     height: 100%;
 }
 
-/* Sidebar - Desktop: 280px, Mobile: Full screen overlay */
+/* Sidebar */
 .chemai-sidebar {
     width: 280px;
     background: var(--bg-secondary);
@@ -393,7 +392,8 @@
 
 .message.user-message .message-content {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
 .message-bubble {
@@ -422,6 +422,141 @@
     color: var(--text-secondary);
     margin-top: 0.4rem;
     opacity: 0.7;
+}
+
+/* Professional Message Styles */
+.professional-message .message-bubble {
+    max-width: 100%;
+}
+
+.professional-bubble {
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.05), rgba(188, 140, 255, 0.05));
+    border: 1px solid rgba(88, 166, 255, 0.2);
+}
+
+.ai-paragraph {
+    margin: 0 0 1rem 0;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+}
+
+.ai-paragraph:last-child {
+    margin-bottom: 0;
+}
+
+.ai-highlight {
+    color: var(--accent-blue);
+    font-weight: 700;
+    background: rgba(88, 166, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.ai-code {
+    background: var(--bg-primary);
+    color: var(--accent-green);
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    border: 1px solid var(--border-primary);
+}
+
+/* Wikipedia Section */
+.wiki-section-inline {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-left: 4px solid var(--accent-blue);
+    border-radius: 8px;
+    animation: slideIn 0.4s ease;
+}
+
+.wiki-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--accent-blue);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.wiki-header i {
+    font-size: 1.2rem;
+}
+
+.wiki-text {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.wiki-footer {
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-primary);
+}
+
+.wiki-footer small {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.wiki-footer a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.wiki-footer a:hover {
+    color: var(--accent-purple);
+    text-decoration: underline;
+}
+
+/* 3D Model Section */
+.model-3d-inline {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    animation: slideIn 0.4s ease 0.2s both;
+}
+
+.model-3d-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--accent-purple);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.model-3d-header i {
+    font-size: 1.2rem;
+    animation: rotate 3s linear infinite;
+}
+
+.model-3d-viewer {
+    width: 100%;
+    height: 300px;
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    overflow: hidden;
+    position: relative;
+}
+
+.model-3d-viewer canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
 }
 
 /* Typing Indicator */
@@ -457,7 +592,6 @@
     flex-shrink: 0;
 }
 
-/* Model Selector */
 .model-selector {
     display: flex;
     gap: 0.6rem;
@@ -498,7 +632,6 @@
     font-size: 0.95rem;
 }
 
-/* Input Wrapper */
 .input-wrapper {
     display: flex;
     gap: 0.875rem;
@@ -696,6 +829,15 @@
     box-shadow: 0 6px 16px rgba(88, 166, 255, 0.4);
 }
 
+.error-message {
+    background: rgba(255, 123, 114, 0.1) !important;
+    border: 1px solid var(--accent-red) !important;
+}
+
+.error-message .ai-paragraph {
+    color: var(--accent-red);
+}
+
 /* Animations */
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -739,25 +881,40 @@
     }
 }
 
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Scrollbar */
 .chat-history-section::-webkit-scrollbar,
-.messages-container::-webkit-scrollbar {
+.messages-container::-webkit-scrollbar,
+.wiki-text::-webkit-scrollbar {
     width: 5px;
 }
 
 .chat-history-section::-webkit-scrollbar-track,
-.messages-container::-webkit-scrollbar-track {
+.messages-container::-webkit-scrollbar-track,
+.wiki-text::-webkit-scrollbar-track {
     background: var(--bg-primary);
 }
 
 .chat-history-section::-webkit-scrollbar-thumb,
-.messages-container::-webkit-scrollbar-thumb {
+.messages-container::-webkit-scrollbar-thumb,
+.wiki-text::-webkit-scrollbar-thumb {
     background: var(--border-primary);
     border-radius: 3px;
 }
 
 .chat-history-section::-webkit-scrollbar-thumb:hover,
-.messages-container::-webkit-scrollbar-thumb:hover {
+.messages-container::-webkit-scrollbar-thumb:hover,
+.wiki-text::-webkit-scrollbar-thumb:hover {
     background: var(--text-secondary);
 }
 
@@ -837,6 +994,24 @@
         padding: 0.7rem 0.9rem;
         font-size: 0.88rem;
         border-radius: 12px;
+    }
+
+    .ai-paragraph {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .wiki-section-inline,
+    .model-3d-inline {
+        padding: 0.75rem;
+    }
+
+    .wiki-text {
+        font-size: 0.85rem;
+    }
+
+    .model-3d-viewer {
+        height: 250px;
     }
 
     .chemai-input-area {
@@ -949,9 +1124,32 @@
     #chemaiInput {
         font-size: 0.85rem;
     }
+
+    .ai-paragraph {
+        font-size: 0.85rem;
+    }
+
+    .wiki-section-inline,
+    .model-3d-inline {
+        padding: 0.6rem;
+        margin-top: 0.75rem;
+    }
+
+    .wiki-header,
+    .model-3d-header {
+        font-size: 0.85rem;
+    }
+
+    .wiki-text {
+        font-size: 0.8rem;
+    }
+
+    .model-3d-viewer {
+        height: 220px;
+    }
 }
 
-/* Desktop: Ensure proper sizing */
+/* Desktop */
 @media (min-width: 769px) {
     .chemai-menu-btn {
         display: none;
