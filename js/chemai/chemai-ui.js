@@ -1,10 +1,11 @@
 /**
  * ============================================
- * CHEMAI UI - PROFESSIONAL OUTPUT
- * Wikipedia + 3D Models + Context-based Emojis
+ * CHEMAI UI MODULE - COMPLETE 100%
+ * Professional Output + Wikipedia + 3D Models
  * ============================================
  */
 
+// DOM Elements
 let chemaiInput, sendBtn, messagesContainer, emptyState;
 let chemaiSidebar, chemaiMenuBtn, closeSidebarBtn;
 let chatHistoryList, newChatBtn, settingsBtn;
@@ -16,6 +17,9 @@ let currentMessages = [];
 let userSettings = { defaultModel: null, theme: 'dark' };
 let isSending = false;
 
+/**
+ * Initialize UI
+ */
 function initChemAIUI() {
     console.log('🎨 Initializing ChemAI UI...');
 
@@ -43,6 +47,9 @@ function initChemAIUI() {
     console.log('✅ ChemAI UI initialized');
 }
 
+/**
+ * Setup all event listeners
+ */
 function setupEventListeners() {
     chemaiInput.addEventListener('input', handleInputChange);
     chemaiInput.addEventListener('keydown', handleInputKeydown);
@@ -87,6 +94,9 @@ function setupEventListeners() {
     });
 }
 
+/**
+ * Handle input change
+ */
 function handleInputChange() {
     const value = chemaiInput.value.trim();
     sendBtn.disabled = value.length === 0;
@@ -94,6 +104,9 @@ function handleInputChange() {
     chemaiInput.style.height = Math.min(chemaiInput.scrollHeight, 150) + 'px';
 }
 
+/**
+ * Handle input keydown
+ */
 function handleInputKeydown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -150,7 +163,6 @@ async function handleSendMessage() {
         removeTypingIndicator(typingId);
 
         if (response.success) {
-            // PROFESSIONAL OUTPUT WITH WIKIPEDIA + 3D
             await addProfessionalMessage(response.message, response.model, message);
         } else {
             addMessage(response.message, 'ai', model, true);
@@ -183,7 +195,6 @@ async function addProfessionalMessage(content, model, userQuestion) {
 
     currentMessages.push(messageData);
 
-    // Detect chemistry entities in user question
     const entities = detectChemistryEntities(userQuestion);
     
     const messageDiv = document.createElement('div');
@@ -199,12 +210,10 @@ async function addProfessionalMessage(content, model, userQuestion) {
             </div>
     `;
 
-    // Add Wikipedia section if relevant entity found
     if (entities.element || entities.molecule) {
         messageHTML += await generateWikipediaSection(entities);
     }
 
-    // Add 3D model if relevant
     if (entities.element || entities.molecule) {
         messageHTML += generate3DModelSection(entities);
     }
@@ -220,7 +229,6 @@ async function addProfessionalMessage(content, model, userQuestion) {
     messageDiv.innerHTML = messageHTML;
     messagesContainer.appendChild(messageDiv);
     
-    // Initialize 3D models after DOM insertion
     if (entities.element || entities.molecule) {
         setTimeout(() => initialize3DModels(messageDiv, entities), 100);
     }
@@ -229,7 +237,7 @@ async function addProfessionalMessage(content, model, userQuestion) {
 }
 
 /**
- * Detect chemistry entities (elements/molecules)
+ * Detect chemistry entities
  */
 function detectChemistryEntities(text) {
     const entities = {
@@ -239,7 +247,6 @@ function detectChemistryEntities(text) {
 
     const lowerText = text.toLowerCase();
 
-    // Check for elements
     if (typeof elementsData !== 'undefined') {
         for (const element of elementsData) {
             if (lowerText.includes(element.name.toLowerCase()) || 
@@ -250,7 +257,6 @@ function detectChemistryEntities(text) {
         }
     }
 
-    // Check for molecules
     if (typeof moleculesData !== 'undefined') {
         for (const molecule of moleculesData) {
             if (lowerText.includes(molecule.name.toLowerCase()) ||
@@ -273,7 +279,6 @@ function formatProfessionalContent(content) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 
-    // Add context-based emojis
     formatted = formatted
         .replace(/\b(water|H2O|H₂O)\b/gi, '💧 $1')
         .replace(/\b(carbon|C)\b/gi, '⚫ $1')
@@ -292,20 +297,11 @@ function formatProfessionalContent(content) {
         .replace(/\b(liquid)\b/gi, '💧 $1')
         .replace(/\b(solid)\b/gi, '🧊 $1');
 
-    // Convert line breaks
     formatted = formatted.replace(/\n\n/g, '</p><p class="ai-paragraph">');
     formatted = formatted.replace(/\n/g, '<br>');
-
-    // Bold
     formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong class="ai-highlight">$1</strong>');
-
-    // Italic
     formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
-
-    // Code
     formatted = formatted.replace(/`(.+?)`/g, '<code class="ai-code">$1</code>');
-
-    // Wrap in paragraph
     formatted = `<p class="ai-paragraph">${formatted}</p>`;
 
     return formatted;
@@ -376,24 +372,24 @@ function generate3DModelSection(entities) {
 }
 
 /**
- * Initialize 3D models in chat
+ * Initialize 3D models
  */
 function initialize3DModels(messageDiv, entities) {
     if (entities.element) {
         const container = messageDiv.querySelector(`#inline-atom-${entities.element.number}`);
-        if (container && typeof create3DAtom === 'function') {
+        if (container && typeof THREE !== 'undefined') {
             create3DAtomInline(entities.element, container);
         }
     } else if (entities.molecule) {
         const container = messageDiv.querySelector(`#inline-molecule-${entities.molecule.id}`);
-        if (container && typeof create3DMolecule === 'function') {
+        if (container && typeof THREE !== 'undefined') {
             create3DMoleculeInline(entities.molecule, container);
         }
     }
 }
 
 /**
- * Create inline 3D atom (simplified)
+ * Create inline 3D atom
  */
 function create3DAtomInline(element, container) {
     const scene = new THREE.Scene();
@@ -409,13 +405,11 @@ function create3DAtomInline(element, container) {
     const atomGroup = new THREE.Group();
     scene.add(atomGroup);
 
-    // Nucleus
     const nucleusGeo = new THREE.SphereGeometry(0.8, 24, 24);
     const nucleusMat = new THREE.MeshPhongMaterial({ color: 0xff4444, emissive: 0x330000 });
     const nucleus = new THREE.Mesh(nucleusGeo, nucleusMat);
     atomGroup.add(nucleus);
 
-    // Electrons
     const shells = calculateElectronShells(element.number);
     shells.forEach((count, shellIndex) => {
         const radius = (shellIndex + 1) * 2.5;
@@ -432,7 +426,6 @@ function create3DAtomInline(element, container) {
         }
     });
 
-    // Lights
     scene.add(new THREE.AmbientLight(0x888888, 0.6));
     const dl = new THREE.DirectionalLight(0xffffff, 0.8);
     dl.position.set(5, 5, 5);
@@ -447,7 +440,7 @@ function create3DAtomInline(element, container) {
 }
 
 /**
- * Create inline 3D molecule (simplified)
+ * Create inline 3D molecule
  */
 function create3DMoleculeInline(molecule, container) {
     const scene = new THREE.Scene();
@@ -466,7 +459,6 @@ function create3DMoleculeInline(molecule, container) {
     const colorMap = { C: 0x222222, O: 0xff4444, H: 0xffffff, N: 0x3050f8 };
     const radiusMap = { H: 0.25, C: 0.4, O: 0.38, N: 0.37 };
 
-    // Add atoms
     molecule.atoms.forEach(a => {
         const col = colorMap[a.el] || 0x888888;
         const r = radiusMap[a.el] || 0.35;
@@ -477,7 +469,6 @@ function create3DMoleculeInline(molecule, container) {
         molGroup.add(mesh);
     });
 
-    // Add bonds
     molecule.bonds.forEach(b => {
         const a1 = molecule.atoms[b[0]];
         const a2 = molecule.atoms[b[1]];
@@ -497,7 +488,6 @@ function create3DMoleculeInline(molecule, container) {
         molGroup.add(cyl);
     });
 
-    // Lights
     scene.add(new THREE.AmbientLight(0x888888, 0.6));
     const dl = new THREE.DirectionalLight(0xffffff, 0.8);
     dl.position.set(5, 5, 5);
@@ -512,7 +502,7 @@ function create3DMoleculeInline(molecule, container) {
 }
 
 /**
- * Calculate electron shells (helper function)
+ * Calculate electron shells
  */
 function calculateElectronShells(atomicNumber) {
     const maxElectronsPerShell = [2, 8, 18, 32];
@@ -528,8 +518,9 @@ function calculateElectronShells(atomicNumber) {
     return shells;
 }
 
-// ... (keep all other existing functions: addMessage, addTypingIndicator, etc.)
-
+/**
+ * Add message to UI
+ */
 function addMessage(content, role, model = null, isError = false) {
     const messageData = { content, role, model, timestamp: Date.now() };
     currentMessages.push(messageData);
@@ -556,6 +547,9 @@ function addMessage(content, role, model = null, isError = false) {
     return messageData;
 }
 
+/**
+ * Format message content
+ */
 function formatMessageContent(content) {
     let formatted = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     formatted = formatted.replace(/\n/g, '<br>');
@@ -565,6 +559,9 @@ function formatMessageContent(content) {
     return formatted;
 }
 
+/**
+ * Add typing indicator
+ */
 function addTypingIndicator() {
     const typingDiv = document.createElement('div');
     const typingId = 'typing-' + Date.now();
@@ -585,15 +582,24 @@ function addTypingIndicator() {
     return typingId;
 }
 
+/**
+ * Remove typing indicator
+ */
 function removeTypingIndicator(typingId) {
     const typingDiv = document.getElementById(typingId);
     if (typingDiv) typingDiv.remove();
 }
 
+/**
+ * Scroll to bottom
+ */
 function scrollToBottom() {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
+/**
+ * Toggle sidebar
+ */
 function toggleSidebar() {
     chemaiSidebar.classList.toggle('active');
     let overlay = document.getElementById('chemaiOverlay');
@@ -607,12 +613,18 @@ function toggleSidebar() {
     overlay.style.display = chemaiSidebar.classList.contains('active') ? 'block' : 'none';
 }
 
+/**
+ * Select model
+ */
 function selectModel(modelId) {
     if (!window.ChemAIModels) return;
     window.ChemAIModels.setCurrentModel(modelId);
     modelBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.model === modelId));
 }
 
+/**
+ * Create new chat
+ */
 function createNewChat() {
     currentChatId = null;
     currentMessages = [];
@@ -621,8 +633,52 @@ function createNewChat() {
     emptyState.style.display = 'flex';
     document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
     if (window.innerWidth <= 768) toggleSidebar();
+    console.log('✅ New chat created');
 }
 
+/**
+ * Load specific chat
+ */
+async function loadSpecificChat(chatId) {
+    const chat = await window.ChemAIFirebase.loadChat(chatId);
+    if (!chat) return;
+    currentChatId = chatId;
+    currentMessages = chat.messages || [];
+    messagesContainer.innerHTML = '';
+    messagesContainer.style.display = 'flex';
+    emptyState.style.display = 'none';
+    currentMessages.forEach(msg => addMessageToUI(msg));
+    document.querySelectorAll('.chat-item').forEach(item => item.classList.toggle('active', item.dataset.chatId === chatId));
+    if (window.innerWidth <= 768) toggleSidebar();
+    console.log('✅ Chat loaded:', chatId);
+}
+
+/**
+ * Add message to UI (without saving)
+ */
+function addMessageToUI(messageData) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${messageData.role}-message`;
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas ${messageData.role === 'user' ? 'fa-user' : 'fa-robot'}"></i>
+        </div>
+        <div class="message-content">
+            <div class="message-bubble">
+                ${formatMessageContent(messageData.content)}
+            </div>
+            <div class="message-time">
+                ${formatTime(messageData.timestamp)}
+                ${messageData.model ? `• ${window.ChemAIModels.getModelDisplayName(messageData.model)}` : ''}
+            </div>
+        </div>
+    `;
+    messagesContainer.appendChild(messageDiv);
+}
+
+/**
+ * Save chat to Firebase
+ */
 async function saveChatToFirebase() {
     if (currentMessages.length === 0) return;
     if (!currentChatId) currentChatId = 'chat_' + Date.now();
@@ -642,8 +698,15 @@ async function saveChatToFirebase() {
     await loadChatHistory();
 }
 
+/**
+ * Load chat history
+ */
 async function loadChatHistory() {
-    if (!window.ChemAIFirebase) return;
+    if (!window.ChemAIFirebase) {
+        chatHistoryList.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)"><i class="fas fa-comments" style="font-size:2rem;opacity:0.3"></i><p style="margin-top:0.5rem">Loading chats...</p></div>';
+        return;
+    }
+    
     const chats = await window.ChemAIFirebase.loadUserChats();
     chatHistoryList.innerHTML = '';
     
@@ -657,54 +720,55 @@ async function loadChatHistory() {
         chatItem.className = 'chat-item';
         chatItem.dataset.chatId = chat.id;
         if (chat.id === currentChatId) chatItem.classList.add('active');
-        chatItem.innerHTML = `<i class="fas fa-comment-dots"></i><div class="chat-item-content"><div class="chat-item-title">${chat.title || 'Untitled'}</div><div class="chat-item-preview">${formatTime(chat.updatedAt)}</div></div>`;
+        chatItem.innerHTML = `
+            <i class="fas fa-comment-dots"></i>
+            <div class="chat-item-content">
+                <div class="chat-item-title">${chat.title || 'Untitled'}</div>
+                <div class="chat-item-preview">${formatTime(chat.updatedAt)}</div>
+            </div>
+        `;
         chatItem.addEventListener('click', () => loadSpecificChat(chat.id));
         chatHistoryList.appendChild(chatItem);
     });
 }
 
-async function loadSpecificChat(chatId) {
-    const chat = await window.ChemAIFirebase.loadChat(chatId);
-    if (!chat) return;
-    currentChatId = chatId;
-    currentMessages = chat.messages || [];
-    messagesContainer.innerHTML = '';
-    messagesContainer.style.display = 'flex';
-    emptyState.style.display = 'none';
-    currentMessages.forEach(msg => addMessageToUI(msg));
-    document.querySelectorAll('.chat-item').forEach(item => item.classList.toggle('active', item.dataset.chatId === chatId));
-    if (window.innerWidth <= 768) toggleSidebar();
-}
-
-function addMessageToUI(messageData) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${messageData.role}-message`;
-    messageDiv.innerHTML = `<div class="message-avatar"><i class="fas ${messageData.role === 'user' ? 'fa-user' : 'fa-robot'}"></i></div><div class="message-content"><div class="message-bubble">${formatMessageContent(messageData.content)}</div><div class="message-time">${formatTime(messageData.timestamp)}${messageData.model ? ` • ${window.ChemAIModels.getModelDisplayName(messageData.model)}` : ''}</div></div>`;
-    messagesContainer.appendChild(messageDiv);
-}
-
+/**
+ * Open settings
+ */
 function openSettings() {
     settingsModal.classList.add('active');
     defaultModelSelect.value = userSettings.defaultModel || '';
 }
 
+/**
+ * Close settings
+ */
 function closeSettings() {
     settingsModal.classList.remove('active');
 }
 
+/**
+ * Save user settings
+ */
 async function saveUserSettings() {
     const defaultModel = defaultModelSelect.value;
     userSettings.defaultModel = defaultModel || null;
+    
     if (defaultModel) {
         modelSelector.style.display = 'none';
         if (window.ChemAIModels) window.ChemAIModels.setCurrentModel(defaultModel);
     } else {
         modelSelector.style.display = 'flex';
     }
+    
     if (window.ChemAIFirebase) await window.ChemAIFirebase.saveSettings(userSettings);
     closeSettings();
+    console.log('✅ Settings saved:', userSettings);
 }
 
+/**
+ * Load user settings
+ */
 async function loadUserSettings() {
     if (!window.ChemAIFirebase) {
         userSettings = { defaultModel: null, theme: 'dark' };
@@ -712,8 +776,10 @@ async function loadUserSettings() {
         selectModel('vicuna');
         return;
     }
+    
     const settings = await window.ChemAIFirebase.loadSettings();
     userSettings = settings;
+    
     if (settings.defaultModel) {
         if (modelSelector) modelSelector.style.display = 'none';
         if (window.ChemAIModels) window.ChemAIModels.setCurrentModel(settings.defaultModel);
@@ -722,12 +788,18 @@ async function loadUserSettings() {
         if (modelSelector) modelSelector.style.display = 'flex';
         selectModel('vicuna');
     }
+    
+    console.log('✅ Settings loaded:', settings);
 }
 
+/**
+ * Format time
+ */
 function formatTime(timestamp) {
     const date = new Date(timestamp);
     const now = new Date();
     const diff = now - date;
+    
     if (diff < 60000) return 'Just now';
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
     if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
@@ -735,5 +807,11 @@ function formatTime(timestamp) {
     return date.toLocaleDateString();
 }
 
-window.ChemAIUI = { init: initChemAIUI, createNewChat, loadSpecificChat };
-console.log('✅ ChemAI UI module loaded');
+// Export
+window.ChemAIUI = {
+    init: initChemAIUI,
+    createNewChat,
+    loadSpecificChat
+};
+
+console.log('✅ ChemAI UI module loaded (COMPLETE)');
