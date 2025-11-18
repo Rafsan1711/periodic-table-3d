@@ -2,297 +2,1216 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Periodic Table 3D - Interactive Chemistry Learning Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Interactive Periodic Table - 3D Chemistry</title>
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⚛️</text></svg>">
     
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-   <link rel="stylesheet" href="css/home.css">
-<link rel="stylesheet" href="css/line-counter-animations.css">
+    <link rel="stylesheet" href="css/main.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://unpkg.com/tippy.js@6.3.7/dist/tippy-bundle.umd.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+   
+ 
+    <style>  
+        body { font-family: 'Balsamiq Sans', sans-serif; }
+ @font-face {
+  font-family: 'Balsamiq Sans';
+  src: url('download/assets/fonts/BalsamiqSans-Regular.ttf') format('truetype');
+}</style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-atom"></i>
-                <span>Periodic Table 3D</span>
+    <!-- Global Loader -->
+    <div id="globalLoader" class="loader-overlay">
+        <div class="loader-content">
+            <div class="atom-loader">
+                <div class="nucleus"></div>
+                <div class="electron-orbit orbit-1"><div class="electron"></div></div>
+                <div class="electron-orbit orbit-2"><div class="electron"></div></div>
+                <div class="electron-orbit orbit-3"><div class="electron"></div></div>
             </div>
-            <div class="nav-links">
-                <a href="#features">Features</a>
-                <a href="#stats">Statistics</a>
-                <a href="#about">About</a>
-                <a href="download/" target="_blank">Download</a>
-                <button id="auth-btn" class="auth-button">Get Started</button>
-            </div>
-            <button class="mobile-menu-btn" id="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </button>
+            <p class="loader-text">Loading Chemistry Lab...</p>
         </div>
-    </nav>
-
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobile-menu">
-        <button class="close-menu-btn" id="close-menu-btn">
-            <i class="fas fa-times"></i>
-        </button>
-        <a href="#features">Features</a>
-        <a href="#stats">Statistics</a>
-        <a href="#about">About</a>
-        <a href="download/" target="_blank">Download</a>
-        <button id="mobile-auth-btn" class="auth-button">Get Started</button>
     </div>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-background">
-            <div class="atom-animation"></div>
-            <div class="atom-animation"></div>
-            <div class="atom-animation"></div>
-        </div>
-        <div class="hero-content">
-            <div class="hero-badge">
-                <i class="fas fa-flask"></i>
-                <span>Interactive Chemistry Platform</span>
-            </div>
-            <h1 class="hero-title">
-                Explore the Periodic Table<br>
-                <span class="gradient-text">in 3D</span>
-            </h1>
-            <p class="hero-subtitle">
-                Discover 118 elements, 100+ molecules, and chemical reactions with stunning 3D visualizations. Join thousands of chemistry enthusiasts worldwide.
-            </p>
-            <div class="hero-buttons">
-                <button class="btn-primary" id="hero-get-started">
-                    <i class="fas fa-rocket"></i>
-                    Get Started Free
-                </button>
-                <button class="btn-secondary" id="view-readme">
-                    <i class="fas fa-book"></i>
-                    Documentation
-                </button>
-            </div>
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <i class="fas fa-atom"></i>
-                    <span class="stat-value">118</span>
-                    <span class="stat-label">Elements</span>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-flask"></i>
-                    <span class="stat-value">100+</span>
-                    <span class="stat-label">Molecules</span>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-fire"></i>
-                    <span class="stat-value">50+</span>
-                    <span class="stat-label">Reactions</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="features" id="features">
-        <div class="section-header">
-            <h2 class="section-title">Powerful Features</h2>
-            <p class="section-subtitle">Everything you need to explore chemistry</p>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">
+  <!-- Auth Screen -->
+<div id="auth-screen" style="display: none;">
+    <div class="auth-container">
+        <div class="auth-card" id="authCard">
+            <!-- Logo/Brand -->
+            <div class="auth-brand">
+                <div class="auth-logo">
                     <i class="fas fa-atom"></i>
                 </div>
-                <h3>3D Atomic Models</h3>
-                <p>Interactive 3D visualization of all 118 elements with electron configurations</p>
+                <h1>Chemistry Lab</h1>
+                <p>Explore the Periodic Table</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-flask"></i>
-                </div>
-                <h3>Molecular Structures</h3>
-                <p>Explore 100+ molecules with detailed 3D structures and properties</p>
+            
+            <!-- Tab Navigation -->
+            <div class="auth-tabs">
+                <button id="show-signup" class="auth-tab-btn active">
+                    <i class="fas fa-user-plus"></i>
+                    Sign Up
+                </button>
+                <button id="show-login" class="auth-tab-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Log In
+                </button>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-fire"></i>
+            
+            <!-- Sign Up Form -->
+            <form id="signup-form" class="auth-form">
+                <h2 class="auth-title">Create Your Account</h2>
+                <p class="auth-subtitle">Join thousands of chemistry enthusiasts</p>
+                
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-envelope"></i>
+                        Email Address
+                    </label>
+                    <input id="signup-email" type="email" placeholder="your@email.com" required class="auth-input" autocomplete="email">
                 </div>
-                <h3>Chemical Reactions</h3>
-                <p>Watch chemical reactions with stunning animations and balanced equations</p>
+                
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-lock"></i>
+                        Password
+                    </label>
+                    <input id="signup-password" type="password" placeholder="Min 6 characters" required class="auth-input" autocomplete="new-password" minlength="6">
+                    <div class="password-strength" id="passwordStrength"></div>
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                    </span>
+                </button>
+                
+                <div id="signup-error" class="auth-error"></div>
+                
+                <div class="auth-footer">
+                    Already have an account?
+                    <span id="goto-login" class="auth-link">Log In</span>
+                </div>
+            </form>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form" style="display: none;">
+                <h2 class="auth-title">Welcome Back!</h2>
+                <p class="auth-subtitle">Continue your chemistry journey</p>
+                
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-envelope"></i>
+                        Email Address
+                    </label>
+                    <input id="login-email" type="email" placeholder="your@email.com" required class="auth-input" autocomplete="email">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-lock"></i>
+                        Password
+                    </label>
+                    <input id="login-password" type="password" placeholder="Enter password" required class="auth-input" autocomplete="current-password">
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">
+                    <span class="btn-text">Log In</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                    </span>
+                </button>
+                
+                <div id="login-error" class="auth-error"></div>
+                
+                <div class="auth-footer">
+                    <span>Don't have an account? <span id="goto-signup" class="auth-link">Sign Up</span></span>
+                    <span id="goto-reset" class="auth-link">Forgot password?</span>
+                </div>
+            </form>
+            
+            <!-- Password Reset Form -->
+            <form id="reset-form" class="auth-form" style="display: none;">
+                <h2 class="auth-title">Reset Password</h2>
+                <p class="auth-subtitle">We'll send you a reset link</p>
+                
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-envelope"></i>
+                        Email Address
+                    </label>
+                    <input id="reset-email" type="email" placeholder="your@email.com" required class="auth-input" autocomplete="email">
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">
+                    <span class="btn-text">Send Reset Link</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                    </span>
+                </button>
+                
+                <div id="reset-error" class="auth-error"></div>
+                <div id="reset-success" class="auth-success"></div>
+                
+                <div class="auth-footer">
+                    <span id="goto-login2" class="auth-link">
+                        <i class="fas fa-arrow-left"></i> Back to login
+                    </span>
+                </div>
+            </form>
+            
+            <!-- Email Verification Notice -->
+            <div id="verify-email-notice" class="verify-notice" style="display: none;">
+                <div class="verify-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <h3>Check Your Email!</h3>
+                <p>We've sent a verification link to:</p>
+                <div class="verify-email" id="verifyEmailDisplay"></div>
+                <p class="verify-instruction">
+                    Click the link in the email to verify your account and get started.
+                </p>
+                <div class="verify-actions">
+                    <button id="resend-verification" class="resend-btn">
+                        <i class="fas fa-redo"></i>
+                        Resend Email
+                    </button>
+                    <button id="change-email-btn" class="change-email-btn">
+                        <i class="fas fa-edit"></i>
+                        Change Email
+                    </button>
+                </div>
+                <div class="verify-timer" id="verifyTimer" style="display: none;">
+                    Resend available in <span id="timerCount">60</span>s
+                </div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <h3>Community Forum</h3>
-                <p>Connect with chemistry enthusiasts and share knowledge</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <h3>Reactivity Charts</h3>
-                <p>Understand element reactivity patterns with interactive visualizations</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-mobile-alt"></i>
-                </div>
-                <h3>Cross-Platform</h3>
-                <p>Available on web, mobile, and desktop with offline support</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Line Counter Section -->
-    <section class="line-counter-section" id="stats">
-        <div class="section-header">
-            <h2 class="section-title">Built with Precision</h2>
-            <p class="section-subtitle">Real-time project statistics</p>
-        </div>
-        <div class="line-counter-container">
-            <div class="line-counter-card">
-                <div class="counter-icon">
-                    <i class="fas fa-code"></i>
-                </div>
-                <div class="counter-content">
-                    <div class="counter-label">Total Lines of Code</div>
-                    <div class="counter-value" id="line-count">
-                        <div class="counting-animation">
-                            <span class="digit">0</span>
+            
+            <!-- Email Verification Success -->
+            <div id="verification-success" class="verification-success" style="display: none;">
+                <div class="success-animation">
+                    <div class="success-checkmark">
+                        <div class="check-icon">
+                            <span class="icon-line line-tip"></span>
+                            <span class="icon-line line-long"></span>
+                            <div class="icon-circle"></div>
+                            <div class="icon-fix"></div>
                         </div>
                     </div>
-                    <div class="counter-subtitle">Calculating in real-time...</div>
                 </div>
-                <div class="counter-pulse"></div>
+                <h3>Email Verified!</h3>
+                <p>Your account has been successfully created.</p>
+                <button id="continue-to-app" class="continue-btn">
+                    <i class="fas fa-arrow-right"></i>
+                    Continue to Chemistry Lab
+                </button>
             </div>
-            <div class="code-breakdown">
-                <div class="breakdown-item">
-                    <span class="breakdown-label">
-                        <i class="fab fa-js"></i> JavaScript
-                    </span>
-                    <span class="breakdown-value" id="js-lines">-</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">
-                        <i class="fab fa-css3"></i> CSS
-                    </span>
-                    <span class="breakdown-value" id="css-lines">-</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">
-                        <i class="fab fa-html5"></i> HTML
-                    </span>
-                    <span class="breakdown-value" id="html-lines">-</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">
-                        <i class="fab fa-python"></i> Python
-                    </span>
-                    <span class="breakdown-value" id="python-lines">-</span>
-                </div>
+            
+            <!-- Divider -->
+            <div class="auth-divider">
+                <span>OR</span>
+            </div>
+            
+            <!-- Google Sign In -->
+            <div class="google-signin-wrapper">
+              <button type="button" id="signin-btn" class="google-signin-btn" onclick="signInWithGoogle()">
+            <i class="fab fa-google"></i>
+              <span>Continue with Google</span>
+             </button>
             </div>
         </div>
-    </section>
+        
+        <!-- Decorative Elements -->
+        <div class="auth-decoration">
+            <div class="floating-atom atom-1">
+                <i class="fas fa-atom"></i>
+            </div>
+            <div class="floating-atom atom-2">
+                <i class="fas fa-flask"></i>
+            </div>
+            <div class="floating-atom atom-3">
+                <i class="fas fa-vial"></i>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <!-- Tech Stack Section -->
-    <section class="tech-stack" id="about">
-        <div class="section-header">
-            <h2 class="section-title">Built With Modern Technologies</h2>
-            <p class="section-subtitle">Powered by industry-leading frameworks</p>
-        </div>
-        <div class="tech-grid">
-            <div class="tech-item">
-                <i class="fab fa-js"></i>
-                <span>Three.js</span>
-            </div>
-            <div class="tech-item">
-                <i class="fas fa-fire"></i>
-                <span>Firebase</span>
-            </div>
-            <div class="tech-item">
-                <i class="fab fa-node-js"></i>
-                <span>D3.js</span>
-            </div>
-            <div class="tech-item">
-                <i class="fas fa-bolt"></i>
-                <span>GSAP</span>
-            </div>
-            <div class="tech-item">
-                <i class="fab fa-bootstrap"></i>
-                <span>Bootstrap</span>
-            </div>
-            <div class="tech-item">
-                <i class="fab fa-python"></i>
-                <span>Python</span>
-            </div>
-        </div>
-    </section>
+    <!-- Main App Container -->
+    <div class="container-fluid px-2 px-md-4" id="main-app" style="display: none;">
+        <!-- Header -->
+        <div class="header text-center" data-aos="fade-down">
+            <!-- FIXED: Page Toggle with Download & Notification Buttons -->
+            <div class="page-toggle mb-4">
+                <div class="toggle-options">
+                    <button id="togglePeriodic" class="toggle-btn active" data-tippy-content="Explore 118 Elements">
+                        <i class="fas fa-table me-2"></i>
+                        <span class="d-none d-sm-inline">Periodic Table</span>
+                        <span class="d-inline d-sm-none">Table</span>
+                    </button>
+                    <button id="toggleMolecules" class="toggle-btn" data-tippy-content="Explore Molecules">
+                        <i class="fas fa-flask me-2"></i>
+                        <span class="d-none d-sm-inline">Molecules</span>
+                        <span class="d-inline d-sm-none">Mols</span>
+                    </button>
+                    <button id="toggleReactions" class="toggle-btn" data-tippy-content="Chemical Reactions">
+                        <i class="fas fa-atom me-2"></i>
+                        <span class="d-none d-sm-inline">Reactions</span>
+                        <span class="d-inline d-sm-none">React</span>
+                    </button>
+                        <button id="toggleChemAI" class="toggle-btn" data-tippy-content="AI Chemistry Assistant">
+                      <i class="fas fa-robot me-2"></i>
+                       <span class="d-none d-sm-inline">ChemAI</span>
+                          <span class="d-inline d-sm-none">AI</span>
+                       </button>
+                    <button id="toggleCommunity" class="toggle-btn" data-tippy-content="Community Discussions">
+                        <i class="fas fa-users me-2"></i>
+                        <span class="d-none d-sm-inline">Community</span>
+                        <span class="d-inline d-sm-none">Forum</span>
+                    </button>
+                    
+                    <!-- Download Button -->
+                    <a href="https://download-periodic-table-3d.netlify.app" target="_blank" class="toggle-btn download-btn" data-tippy-content="Download App">
+                        <i class="fas fa-download"></i>
+                    </a>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="cta-content">
-            <h2>Ready to Explore Chemistry?</h2>
-            <p>Join thousands of students, teachers, and chemistry enthusiasts</p>
-            <button class="btn-primary btn-large" id="cta-get-started">
-                <i class="fas fa-rocket"></i>
-                Start Exploring Now
-            </button>
-        </div>
-    </section>
+                    <!-- Settings Button -->
+                       <button id="settings-btn" class="toggle-btn settings-btn" data-tippy-content="Settings">
+                             <i class="fas fa-cog"></i>
+                      </button>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3><i class="fas fa-atom"></i> Periodic Table 3D</h3>
-                <p>Making chemistry accessible and fun for everyone</p>
-            </div>
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <a href="app.html">Web App</a>
-                <a href="download/">Download</a>
-                <a href="download/privacy-policy.html">Privacy Policy</a>
-                <a href="download/terms-of-service.html">Terms of Service</a>
-            </div>
-            <div class="footer-section">
-                <h4>Resources</h4>
-                <a href="#" id="footer-readme">Documentation</a>
-                <a href="https://github.com/Rafsan1711/periodic-table-3d" target="_blank">GitHub</a>
-                <a href="mailto:support@periodictable3d.com">Contact</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 Periodic Table 3D. All rights reserved.</p>
-        </div>
-    </footer>
+                    
+                    <!-- Admin Panel Button (shows only for admin@gmail.com) -->
 
-    <!-- README Modal -->
-    <div class="modal" id="readme-modal">
-        <div class="modal-overlay" id="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-book"></i> Documentation</h2>
-                <button class="modal-close" id="close-readme">
+                    
+                    <!-- Notification Button -->
+                    <button id="notification-bell" class="toggle-btn notification-bell-btn" data-tippy-content="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
+                    </button>
+
+
+               <button id="admin-panel-btn" class="toggle-btn admin-btn" data-tippy-content="Admin Panel" style="display: none;">
+                <i class="fas fa-shield-alt"></i>
+                 <span class="admin-badge" id="admin-badge" style="display: none;">0</span>
+               </button>
+
+                    
+                </div>
+            </div>
+            <h1 class="display-4 display-md-3">
+                <i class="fas fa-atom text-gradient"></i>
+                Interactive Periodic Table
+            </h1>
+            <p class="lead">Explore the building blocks of matter with stunning 3D visualizations</p>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend" data-aos="fade-up">
+            <div class="legend-item" data-tippy-content="Hydrogen, Carbon, Oxygen...">
+                <div class="legend-color nonmetal"></div>
+                <span>Non metals</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Helium, Neon, Argon...">
+                <div class="legend-color noblegas"></div>
+                <span>Noble Gases</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Lithium, Sodium, Potassium...">
+                <div class="legend-color alkalimetal"></div>
+                <span>Alkali Metals</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Beryllium, Magnesium, Calcium...">
+                <div class="legend-color alkearthmetal"></div>
+                <span>Alkaline Earth</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Iron, Copper, Gold...">
+                <div class="legend-color transitionmetal"></div>
+                <span>Transition</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Boron, Silicon, Germanium...">
+                <div class="legend-color metalloid"></div>
+                <span>Metalloids</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Fluorine, Chlorine, Bromine...">
+                <div class="legend-color halogen"></div>
+                <span>Halogens</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Aluminum, Tin, Lead...">
+                <div class="legend-color post-transitionmetal"></div>
+                <span>Post-transition</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Lanthanide series">
+                <div class="legend-color lanthanide"></div>
+                <span>Lanthanoids</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Actinide series">
+                <div class="legend-color actinide"></div>
+                <span>Actinoids</span>
+            </div>
+            <div class="legend-item" data-tippy-content="Unknown properties">
+                <div class="legend-color unknown"></div>
+                <span>Unknown</span>
+            </div>
+        </div>
+        
+        <!-- Periodic Table -->
+        <div class="periodic-table-wrapper" data-aos="zoom-in">
+            <div class="periodic-table" id="periodicTable"></div>
+        </div>
+        
+        <!-- Series -->
+        <div class="row g-3 mt-3">
+            <div class="col-12" data-aos="fade-right">
+                <div class="lanthanide-series">
+                    <div class="series-title">
+                        <i class="fas fa-layer-group me-2"></i>
+                        Lanthanide Series
+                    </div>
+                    <div class="series-elements" id="lanthanideElements"></div>
+                </div>
+            </div>
+            
+            <div class="col-12" data-aos="fade-left">
+                <div class="actinide-series">
+                    <div class="series-title">
+                        <i class="fas fa-radiation me-2"></i>
+                        Actinide Series
+                    </div>
+                    <div class="series-elements" id="actinideElements"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Molecules Page -->
+        <div id="moleculesPage" class="molecules-page" style="display:none;">
+            <div class="molecules-container" data-aos="fade-up">
+                <div class="molecules-controls">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input id="moleculeSearch" type="search" class="form-control" placeholder="Search molecules (e.g. CO₂, water, benzene)..." />
+                    </div>
+                    <div class="sort-controls mt-2">
+                        <button id="sortAZ" class="btn btn-sm active" data-tippy-content="Sort alphabetically">
+                            <i class="fas fa-sort-alpha-down me-1"></i>A → Z
+                        </button>
+                        <button id="sortScore" class="btn btn-sm" data-tippy-content="Sort by relevance">
+                            <i class="fas fa-star me-1"></i>Best match
+                        </button>
+                    </div>
+                </div>
+                <div class="molecules-list-wrapper">
+                    <div id="moleculesList" class="molecules-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reactions Page -->
+        <div id="reactionsPage" class="reactions-page" style="display:none;">
+            <div class="reactions-container" data-aos="fade-up">
+                <div class="theatre-screen" id="theatreScreen">
+                    <div class="theatre-canvas" id="theatreCanvas"></div>
+                </div>
+                
+                <div class="equation-builder">
+                    <div class="equation-section">
+                        <h3><i class="fas fa-flask me-2"></i>Build Chemical Equation</h3>
+                        <div class="equation-display" id="equationDisplay">
+                            <button class="add-reactant-btn" id="addReactant1" data-tippy-content="Add reactant">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <button class="react-btn" id="reactBtn" disabled>
+                            <i class="fas fa-fire me-2"></i>React! →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ChemAI Page (FULL SCREEN) -->
+<div id="chemaiPage" class="chemai-page" style="display: none;">
+    <!-- Header -->
+    <div class="chemai-header">
+        <button id="chemaiBackBtn" class="chemai-back-btn">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Periodic Table</span>
+        </button>
+        <div class="chemai-logo">
+            <i class="fas fa-atom"></i>
+            <span>ChemAI</span>
+        </div>
+        <button id="chemaiMenuBtn" class="chemai-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="chemai-container">
+        <!-- Sidebar -->
+        <aside id="chemaiSidebar" class="chemai-sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-atom"></i> ChemAI</h2>
+                <button id="closeSidebarBtn" class="close-sidebar-btn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body" id="readme-content">
-                <div class="loader">
-                    <div class="spinner"></div>
-                    <p>Loading documentation...</p>
+
+            <button id="newChatBtn" class="new-chat-btn">
+                <i class="fas fa-plus"></i>
+                <span>New Chat</span>
+            </button>
+
+            <div class="chat-history-section">
+                <h3><i class="fas fa-history"></i> Recent Chats</h3>
+                <div id="chatHistoryList" class="chat-history-list">
+                    <!-- Chat items will be inserted here -->
+                </div>
+            </div>
+
+            <button id="settingsBtn" class="settings-btn">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </button>
+        </aside>
+
+        <!-- Chat Area -->
+        <main class="chemai-chat-area">
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-atom"></i>
+                </div>
+                <h2>Welcome to ChemAI</h2>
+                <p>Your AI-powered chemistry assistant</p>
+                <div class="example-questions">
+                    <button class="example-q" data-question="What is the molecular structure of water?">
+                        <i class="fas fa-flask"></i>
+                        What is the molecular structure of water?
+                    </button>
+                    <button class="example-q" data-question="Explain the periodic table">
+                        <i class="fas fa-table"></i>
+                        Explain the periodic table
+                    </button>
+                    <button class="example-q" data-question="What are chemical bonds?">
+                        <i class="fas fa-link"></i>
+                        What are chemical bonds?
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div id="messagesContainer" class="messages-container" style="display: none;">
+                <!-- Messages will be inserted here -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="chemai-input-area">
+                <!-- Model Selector (hidden when default model selected) -->
+                <div id="modelSelector" class="model-selector">
+                    <button class="model-btn" data-model="vicuna">
+                        <i class="fas fa-brain"></i>
+                        Vicuna 13B
+                    </button>
+                    <button class="model-btn" data-model="gpt-20b">
+                        <i class="fas fa-rocket"></i>
+                        GPT-OSS 20B
+                    </button>
+                    <button class="model-btn" data-model="gpt-120b">
+                        <i class="fas fa-star"></i>
+                        GPT-OSS 120B
+                    </button>
+                </div>
+
+                <!-- Input Box -->
+                <div class="input-wrapper">
+                    <textarea 
+                        id="chemaiInput" 
+                        placeholder="Ask about chemistry..." 
+                        rows="1"
+                        maxlength="2000"
+                    ></textarea>
+                    <button id="sendBtn" class="send-btn" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="chemaiSettingsModal" class="chemai-modal">
+    <div class="modal-content settings-modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-cog"></i> Settings</h3>
+            <button class="modal-close-btn" id="closeSettingsBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="setting-group">
+                <label>Default AI Model</label>
+                <select id="defaultModelSelect">
+                    <option value="">None (Show selector)</option>
+                    <option value="vicuna">Vicuna 13B (Fast)</option>
+                    <option value="gpt-20b">GPT-OSS 20B (Balanced)</option>
+                    <option value="gpt-120b">GPT-OSS 120B (Advanced)</option>
+                </select>
+                <small>Select a default model to hide the model selector</small>
+            </div>
+            
+            <div class="setting-group">
+                <label>Theme</label>
+                <select id="themeSelect">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light (Coming Soon)</option>
+                </select>
+            </div>
+
+            <button id="saveSettingsBtn" class="save-settings-btn">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        <!-- Community/Forum Page -->
+        <div id="communityPage" class="community-page" style="display:none;">
+            <div class="forum-container">
+                <div class="forum-header">
+                    <h2><i class="fas fa-users"></i> Community Discussions</h2>
+                    <button id="create-post-btn" class="create-post-btn">
+                        <i class="fas fa-plus"></i> Create Post
+                    </button>
+                </div>
+                
+                <div class="forum-search-wrapper">
+                    <input type="text" id="forum-search" placeholder="🔍 Search discussions..." />
+                </div>
+                
+                <div class="forum-filters">
+                    <button class="topic-filter-btn active" data-topic="all">🌍 All Topics</button>
+                    <button class="topic-filter-btn" data-topic="elements">⚛️ Elements</button>
+                    <button class="topic-filter-btn" data-topic="molecules">🧪 Molecules</button>
+                    <button class="topic-filter-btn" data-topic="reactions">⚗️ Reactions</button>
+                    <button class="topic-filter-btn" data-topic="general">💬 General</button>
+                    <button class="topic-filter-btn" data-topic="help">❓ Help</button>
+                    <button class="topic-filter-btn" data-topic="showcase">🌟 Showcase</button>
+                </div>
+                
+                <div id="forum-feed"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Element Modal -->
+    <div class="modal" id="elementModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">
+                    <i class="fas fa-atom me-2"></i>Element Details
+                </div>
+                <button class="close-btn" onclick="closeModal()" data-tippy-content="Close (ESC)">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="atom-viewer" id="atomViewer">
+                    <div class="viewer-loader">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="atom-info" id="atomInfo"></div>
+                <div class="wiki-section">
+                    <div class="info-section">
+                        <h3><i class="fab fa-wikipedia-w me-2"></i>Wikipedia Summary</h3>
+                        <div class="wiki-content" id="wikiContent">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                            <span>Loading information...</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="js/home/home-init.js"></script>
-    <script src="js/home/line-counter.js"></script>
-    <script src="js/home/readme-viewer.js"></script>
+    <!-- Molecule Modal -->
+    <div class="modal" id="matterModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="matterModalTitle">
+                    <i class="fas fa-flask me-2"></i>Molecule Details
+                </div>
+                <button class="close-btn" id="closeMatterModal" data-tippy-content="Close (ESC)">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="atom-viewer" id="matterViewer">
+                    <div class="viewer-loader">
+                        <div class="spinner-border text-primary" role="status"></div>
+                    </div>
+                </div>
+                <div class="atom-info" id="matterInfo"></div>
+                <div class="wiki-section" style="grid-column:1/-1;margin-top:18px;">
+                    <div class="info-section">
+                        <h3><i class="fab fa-wikipedia-w me-2"></i>Wikipedia Summary</h3>
+                        <div class="wiki-content" id="matterWiki">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                            <span>Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="grid-column:1/-1;margin-top:12px;">
+                    <div class="info-section">
+                        <h3><i class="fas fa-project-diagram me-2"></i>2D Structure</h3>
+                        <div id="matter2D" style="height:200px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reactant Selector Modal -->
+    <div class="modal" id="reactantModal">
+        <div class="modal-content reactant-modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-atom me-2"></i>Select Reactant
+                </div>
+                <button class="close-btn" id="closeReactantModal" data-tippy-content="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="search" id="reactantSearch" class="form-control" placeholder="Search atoms or molecules..." />
+                </div>
+                <div class="reactant-list" id="reactantList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Post Modal -->
+    <div class="modal" id="create-post-modal">
+        <div class="modal-content create-post-modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-plus-circle me-2"></i>Create New Post
+                </div>
+                <button class="close-btn" onclick="closeCreatePostModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="create-post-form" onsubmit="event.preventDefault(); submitForumPost();">
+                    <div class="form-group">
+                        <label for="post-title">Title</label>
+                        <input type="text" id="post-title" placeholder="What's your topic?" required />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="post-description">Short Description</label>
+                        <textarea id="post-description" rows="2" placeholder="Brief summary..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="post-topic">Topic</label>
+                        <select id="post-topic">
+                            <option value="general">💬 General</option>
+                            <option value="elements">⚛️ Elements</option>
+                            <option value="molecules">🧪 Molecules</option>
+                            <option value="reactions">⚗️ Reactions</option>
+                            <option value="help">❓ Help</option>
+                            <option value="showcase">🌟 Showcase</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Content</label>
+                        <div class="editor-toolbar">
+                            <button type="button" class="editor-btn" id="btn-bold" title="Bold">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button type="button" class="editor-btn" id="btn-italic" title="Italic">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button type="button" class="editor-btn" id="btn-underline" title="Underline">
+                                <i class="fas fa-underline"></i>
+                            </button>
+                            <button type="button" class="editor-btn" id="btn-strike" title="Strikethrough">
+                                <i class="fas fa-strikethrough"></i>
+                            </button>
+                            <button type="button" class="editor-btn" id="btn-heading" title="Heading">
+                                <i class="fas fa-heading"></i>
+                            </button>
+                            <button type="button" class="editor-btn" id="btn-ul" title="Bullet List">
+                                <i class="fas fa-list-ul"></i>
+                            </button>
+                            <button type="button" class="editor-btn" id="btn-ol" title="Numbered List">
+                                <i class="fas fa-list-ol"></i>
+                            </button>
+                            <button type="button" class="editor-btn" id="btn-code" title="Code">
+                                <i class="fas fa-code"></i>
+                            </button>
+                            <button type="button" class="editor-btn" id="btn-link" title="Link">
+                                <i class="fas fa-link"></i>
+                            </button>
+                            <button type="button" class="editor-btn" id="btn-chemistry" title="Add Chemistry">
+                                <i class="fas fa-flask"></i> Chemistry
+                            </button>
+                        </div>
+                        <div id="post-content" contenteditable="true"></div>
+                    </div>
+                    
+                    <button type="submit" id="submit-post-btn" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i> Post
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chemistry Tool Modal -->
+    <div class="modal" id="chemistry-tool-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-flask me-2"></i>Chemistry Tools
+                </div>
+                <button class="close-btn" onclick="closeChemistryToolModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="chemistry-options">
+                    <div class="chemistry-option" onclick="selectChemistryTool('reaction')">
+                        <i class="fas fa-atom" style="color: var(--accent-orange);"></i>
+                        <h3>Reaction Builder</h3>
+                        <p>Create chemical equations with animations</p>
+                    </div>
+                    <div class="chemistry-option" onclick="selectChemistryTool('molecule')">
+                        <i class="fas fa-flask" style="color: var(--accent-green);"></i>
+                        <h3>Molecule Viewer</h3>
+                        <p>Add 3D molecular structures</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reaction Builder Modal -->
+    <div class="modal" id="post-reaction-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-atom me-2"></i>Build Chemical Reaction
+                </div>
+                <button class="close-btn" onclick="closeReactionBuilderModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="post-reaction-builder"></div>
+                <button id="post-react-btn" class="react-btn" style="margin-top:15px;" disabled>Add Reactants</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Molecule Picker Modal -->
+    <div class="modal" id="post-molecule-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-flask me-2"></i>Select Molecule
+                </div>
+                <button class="close-btn" onclick="closeMoleculePickerModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="molecule-picker-list" class="molecule-picker-list"></div>
+            </div>
+        </div>
+    </div>
+<!-- PASTE THIS AFTER NOTIFICATION MODAL (Line ~655) -->
+
+<!-- Settings Modal -->
+<div class="modal" id="settings-modal">
+    <div class="modal-content settings-modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-cog me-2"></i>Settings
+            </div>
+            <button class="close-btn" onclick="closeSettingsModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body settings-modal-body">
+            <!-- Settings Tabs -->
+            <div class="settings-tabs">
+                <button class="settings-tab active" data-tab="account">
+                    <i class="fas fa-user"></i>
+                    <span>Account</span>
+                </button>
+                <button class="settings-tab" data-tab="appearance">
+                    <i class="fas fa-palette"></i>
+                    <span>Appearance</span>
+                </button>
+                <button class="settings-tab" data-tab="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                </button>
+                <button class="settings-tab" data-tab="about">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
+                </button>
+            </div>
+            
+            <!-- Settings Content -->
+            <div class="settings-content">
+                <!-- Account Tab -->
+                <div class="settings-tab-content active" id="account-tab">
+                    <h3><i class="fas fa-user-circle me-2"></i>Account Information</h3>
+                    
+                    <div class="settings-section">
+                        <div class="user-profile-card">
+                            <img id="settings-user-photo" src="" alt="Profile" class="user-profile-photo">
+                            <div class="user-profile-info">
+                                <h4 id="settings-user-name">Loading...</h4>
+                                <p id="settings-user-email">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-edit me-2"></i>Edit Profile</h4>
+                        
+                        <!-- Admin Notice -->
+                        <div class="admin-notice">
+                            <i class="fas fa-info-circle"></i>
+                            <div class="admin-notice-content">
+                                <strong>⚠️ Admin Approval Required</strong>
+                                <p>Username changes require approval from an administrator. Once you submit your request, the admin will be notified and you'll receive a notification when approved or declined.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Display Name</label>
+                            <input type="text" id="edit-display-name" class="settings-input" placeholder="Your name">
+                        </div>
+                        <button class="settings-btn primary" onclick="updateDisplayName()">
+                            <i class="fas fa-paper-plane"></i> Request Username Change
+                        </button>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-key me-2"></i>Change Password</h4>
+                        <p class="settings-description">Update your password to keep your account secure</p>
+                        <button class="settings-btn secondary" onclick="sendPasswordReset()">
+                            <i class="fas fa-envelope"></i> Send Reset Email
+                        </button>
+                    </div>
+                    
+                    <div class="settings-section danger-zone">
+                        <h4><i class="fas fa-sign-out-alt me-2"></i>Sign Out</h4>
+                        <p class="settings-description">Sign out from your account</p>
+                        <button class="settings-btn danger" onclick="handleSignOut()">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Appearance Tab -->
+                <div class="settings-tab-content" id="appearance-tab">
+                    <h3><i class="fas fa-palette me-2"></i>Appearance</h3>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-moon me-2"></i>Theme</h4>
+                        <p class="settings-description">Choose your preferred color theme</p>
+                        <div class="theme-options">
+                            <div class="theme-option active" data-theme="dark">
+                                <div class="theme-preview dark-theme">
+                                    <div class="theme-preview-header"></div>
+                                    <div class="theme-preview-body"></div>
+                                </div>
+                                <span>Dark</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="theme-option" data-theme="light">
+                                <div class="theme-preview light-theme">
+                                    <div class="theme-preview-header"></div>
+                                    <div class="theme-preview-body"></div>
+                                </div>
+                                <span>Light</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="theme-option" data-theme="auto">
+                                <div class="theme-preview auto-theme">
+                                    <div class="theme-preview-header"></div>
+                                    <div class="theme-preview-body"></div>
+                                </div>
+                                <span>Auto</span>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-text-height me-2"></i>Font Size</h4>
+                        <p class="settings-description">Adjust text size for better readability</p>
+                        <div class="font-size-slider">
+                            <span>A</span>
+                            <input type="range" id="font-size-slider" min="12" max="20" value="16" step="1">
+                            <span style="font-size: 1.2rem;">A</span>
+                        </div>
+                        <div class="font-size-preview" id="font-size-preview">
+                            Preview: The quick brown fox jumps over the lazy dog
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notifications Tab -->
+                <div class="settings-tab-content" id="notifications-tab">
+                    <h3><i class="fas fa-bell me-2"></i>Notification Preferences</h3>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-comment me-2"></i>Forum Notifications</h4>
+                        <div class="settings-toggle">
+                            <label class="toggle-label">
+                                <span>New comments on my posts</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="notif-comments" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="settings-toggle">
+                            <label class="toggle-label">
+                                <span>Replies to my comments</span>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="notif-replies" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- About Tab -->
+                <div class="settings-tab-content" id="about-tab">
+                    <h3><i class="fas fa-info-circle me-2"></i>About</h3>
+                    
+                    <div class="settings-section">
+                        <div class="about-app">
+                            <div class="about-icon">
+                                <i class="fas fa-atom"></i>
+                            </div>
+                            <h4>Periodic Table 3D</h4>
+                            <p class="version">Version 1.0.0</p>
+                            <p class="about-description">
+                                An interactive chemistry learning platform featuring 3D visualizations, 
+                                molecular structures, and community discussions.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4><i class="fas fa-code me-2"></i>Developer</h4>
+                        <p class="settings-description">Built with ❤️ using Three.js, Firebase, and modern web technologies</p>
+                        <p class="copyright">© 2025 Periodic Table 3D. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Panel Modal -->
+<div class="modal" id="admin-panel-modal">
+    <div class="modal-content admin-panel-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-shield-alt me-2"></i>Admin Panel
+            </div>
+            <button class="close-btn" onclick="closeAdminPanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="username-requests">
+                    <i class="fas fa-user-edit"></i>
+                    <span>Username Requests</span>
+                    <span class="request-count" id="username-request-count">0</span>
+                </button>
+                <button class="admin-tab" data-tab="users">
+                    <i class="fas fa-users"></i>
+                    <span>All Users</span>
+                </button>
+            </div>
+            
+            <div class="admin-content">
+                <!-- Username Requests Tab -->
+                <div class="admin-tab-content active" id="username-requests-tab">
+                    <h3><i class="fas fa-user-edit me-2"></i>Username Change Requests</h3>
+                    <div id="username-requests-list" class="requests-list"></div>
+                </div>
+                
+                <!-- Users Tab -->
+                <div class="admin-tab-content" id="users-tab">
+                    <h3><i class="fas fa-users me-2"></i>All Users</h3>
+                    <div id="users-list" class="users-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Notification Modal -->
+    <div class="modal" id="notification-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-bell me-2"></i>Notifications
+                </div>
+                <button class="close-btn" onclick="closeNotificationModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="notification-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="js/data/elements-data.js"></script>
+    <script src="js/data/molecules-data.js"></script>
+    <script src="js/data/reactions-data.js"></script>
+    <script src="js/data/reactivity-data.js"></script>
+    
+    <script src="js/utils/search-utils.js"></script>
+    <script src="js/utils/wiki-loader.js"></script>
+    
+    <script src="js/periodic-table/table-renderer.js"></script>
+    <script src="js/periodic-table/atom-visualization.js"></script>
+    <script src="js/periodic-table/reactivity-chart.js"></script>
+    <script src="js/periodic-table/element-modal.js"></script>
+    
+    <script src="js/molecules/molecules-search.js"></script>
+    <script src="js/molecules/molecules-list.js"></script>
+    <script src="js/molecules/molecule-3d.js"></script>
+    <script src="js/molecules/molecule-2d.js"></script>
+    <script src="js/molecules/molecule-modal.js"></script>
+    
+    <script src="js/reactions/reactions-builder.js"></script>
+    <script src="js/reactions/reactant-selector.js"></script>
+    <script src="js/reactions/reaction-animator.js"></script>
+    <script src="js/auth/firebase-config.js"></script>
+    <script src="js/settings/settings-modal.js"></script>
+    <script src="js/auth/auth-handler.js"></script>
+    <script src="js/admin/admin-panel.js"></script>
+    <!-- ChemAI Scripts -->
+  <!-- ChemAI Scripts -->
+<script src="js/chemai/chemai-models.js"></script>
+<script src="js/chemai/chemai-firebase.js"></script>
+<script src="js/chemai/chemai-api.js"></script>
+<script src="js/chemai/chemai-ui.js"></script>
+<script src="js/chemai/chemai-main.js"></script>
+    <script src="js/forum/forum-main.js"></script>
+    <script src="js/forum/forum-create-post.js"></script>
+    <script src="js/forum/forum-notifications.js"></script>
+    
+    <script src="js/core/page-toggle.js"></script>
+    <script src="js/core/app-init.js"></script>
+    
+  <script>
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.getElementById('globalLoader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('globalLoader').style.display = 'none';
+                }, 500);
+            }, 1000);
+        });
+        
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            tippy('[data-tippy-content]', {
+                arrow: true,
+                animation: 'scale',
+                theme: 'dark',
+                delay: [200, 0]
+            });
+        });
+    </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

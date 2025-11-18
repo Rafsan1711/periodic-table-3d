@@ -55,6 +55,7 @@
 
 /* 18. Scrollbar & Tippy */
 @import url('scrollbar-tippy.css');
+@import url('chemai.css');
 
 @import url('line-counter-animations.css');
 @import url('settings.css');
