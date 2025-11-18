@@ -25,8 +25,6 @@
 }
 
 /* FIXED: Proper atom loader structure */
-}
-
 .atom-loader {
     position: relative;
     width: 120px;
@@ -38,8 +36,6 @@
 }
 
 /* Nucleus - centered */
-}
-
 .nucleus {
     position: absolute;
     top: 50%;
@@ -55,8 +51,6 @@
 }
 
 /* FIXED: Electron orbits - proper centering */
-}
-
 .electron-orbit {
     position: absolute;
     top: 50%;
@@ -98,10 +92,6 @@
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    box-shadow: 0 0 10px var(--accent-green);
 }
 
 .loader-text {
@@ -113,11 +103,13 @@
 }
 
 /* Animations */
-}
-
 @keyframes rotate {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to { transform: translate(-50%, -50%) rotate(360deg); }
+    from { 
+        transform: translate(-50%, -50%) rotate(0deg); 
+    }
+    to { 
+        transform: translate(-50%, -50%) rotate(360deg); 
+    }
 }
 
 @keyframes pulse {
@@ -207,11 +199,3 @@
         font-size: 0.9rem;
     }
    }
-    0%, 100% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-50%, -50%) scale(1.2); }
-}
-
-@keyframes fadeInOut {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-}
