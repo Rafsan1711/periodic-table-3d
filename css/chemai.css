@@ -1,15 +1,15 @@
 /* ============================================
-   CHEMAI - COMPLETE CSS (100%)
-   Professional AI Chat UI + Wikipedia + 3D
+   CHEMAI CSS - MOBILE FIXED + CHATGPT STYLE
    ============================================ */
 
-/* Page Container - Full Screen */
+/* Page Container */
 .chemai-page {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100vh;
+    height: 100dvh; /* Mobile fix */
     background: var(--bg-primary);
     z-index: 9999;
     display: none;
@@ -26,10 +26,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem;
+    padding: 0.75rem 1rem;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-primary);
-    height: 60px;
+    height: 56px;
     flex-shrink: 0;
 }
 
@@ -51,14 +51,13 @@
 .chemai-back-btn:hover {
     background: var(--accent-blue);
     border-color: var(--accent-blue);
-    transform: translateX(-4px);
 }
 
 .chemai-logo {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     -webkit-background-clip: text;
@@ -66,8 +65,7 @@
 }
 
 .chemai-logo i {
-    font-size: 1.5rem;
-    animation: rotate 3s linear infinite;
+    font-size: 1.4rem;
 }
 
 .chemai-menu-btn {
@@ -79,16 +77,14 @@
     color: var(--text-primary);
     font-size: 1.2rem;
     cursor: pointer;
-    align-items: center;
-    justify-content: center;
 }
 
-/* Main Container */
+/* Container */
 .chemai-container {
     display: flex;
     flex: 1;
     overflow: hidden;
-    height: 100%;
+    min-height: 0; /* Critical for flex scroll */
 }
 
 /* Sidebar */
@@ -104,22 +100,20 @@
 }
 
 .sidebar-header {
-    padding: 1.25rem;
+    padding: 1rem;
     border-bottom: 1px solid var(--border-primary);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-shrink: 0;
 }
 
 .sidebar-header h2 {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
 }
 
 .close-sidebar-btn {
@@ -132,53 +126,39 @@
     cursor: pointer;
     width: 32px;
     height: 32px;
-    align-items: center;
-    justify-content: center;
-}
-
-.close-sidebar-btn:hover {
-    background: var(--accent-red);
-    color: white;
 }
 
 .new-chat-btn {
     margin: 1rem;
-    padding: 0.75rem 1rem;
+    padding: 0.7rem 1rem;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     border: none;
     border-radius: 10px;
     color: white;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
-}
-
-.new-chat-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(88, 166, 255, 0.4);
+    flex-shrink: 0;
 }
 
 .chat-history-section {
     flex: 1;
     overflow-y: auto;
     padding: 0 0.75rem;
+    min-height: 0;
 }
 
 .chat-history-section h3 {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
     margin: 0.75rem 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
 }
 
 .chat-history-list {
@@ -189,7 +169,7 @@
 }
 
 .chat-item {
-    padding: 0.65rem 0.85rem;
+    padding: 0.6rem 0.8rem;
     background: var(--bg-tertiary);
     border: 1px solid transparent;
     border-radius: 8px;
@@ -203,7 +183,6 @@
 .chat-item:hover {
     background: var(--bg-primary);
     border-color: var(--accent-blue);
-    transform: translateX(4px);
 }
 
 .chat-item.active {
@@ -212,7 +191,7 @@
 }
 
 .chat-item i {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--accent-blue);
 }
 
@@ -233,14 +212,11 @@
 .chat-item-preview {
     font-size: 0.75rem;
     color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .settings-btn {
     margin: 0.75rem;
-    padding: 0.75rem 1rem;
+    padding: 0.7rem 1rem;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-primary);
     border-radius: 10px;
@@ -252,13 +228,7 @@
     justify-content: center;
     gap: 0.5rem;
     cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.settings-btn:hover {
-    background: var(--bg-primary);
-    border-color: var(--accent-blue);
-    color: var(--accent-blue);
+    flex-shrink: 0;
 }
 
 /* Chat Area */
@@ -269,6 +239,7 @@
     overflow: hidden;
     background: var(--bg-primary);
     min-width: 0;
+    min-height: 0; /* Critical */
 }
 
 /* Empty State */
@@ -280,19 +251,19 @@
     justify-content: center;
     padding: 2rem 1rem;
     text-align: center;
+    overflow-y: auto;
 }
 
 .empty-state-icon {
-    font-size: 4rem;
+    font-size: 3.5rem;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 1.5rem;
-    animation: float 3s ease-in-out infinite;
 }
 
 .empty-state h2 {
-    font-size: 1.75rem;
+    font-size: 1.6rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     -webkit-background-clip: text;
@@ -309,13 +280,13 @@
 .example-questions {
     display: flex;
     flex-direction: column;
-    gap: 0.65rem;
+    gap: 0.6rem;
     max-width: 550px;
     width: 100%;
 }
 
 .example-q {
-    padding: 0.875rem 1.25rem;
+    padding: 0.8rem 1.1rem;
     background: var(--bg-secondary);
     border: 1px solid var(--border-primary);
     border-radius: 10px;
@@ -325,7 +296,7 @@
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 0.875rem;
+    gap: 0.8rem;
     font-size: 0.9rem;
 }
 
@@ -333,29 +304,32 @@
     background: var(--bg-tertiary);
     border-color: var(--accent-blue);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
 }
 
 .example-q i {
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     color: var(--accent-blue);
 }
 
-/* Messages Container */
+/* Messages Container - FIXED FOR MOBILE */
 .messages-container {
     flex: 1;
     overflow-y: auto;
-    padding: 1.5rem 1rem;
+    overflow-x: hidden;
+    padding: 1rem;
     display: none;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
+    min-height: 0; /* Critical */
+    -webkit-overflow-scrolling: touch; /* Smooth iOS scroll */
 }
 
 .message {
     display: flex;
-    gap: 0.875rem;
+    gap: 0.75rem;
     animation: messageSlideIn 0.3s ease;
     align-items: flex-start;
+    max-width: 100%;
 }
 
 .message.user-message {
@@ -363,13 +337,13 @@
 }
 
 .message-avatar {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
     flex-shrink: 0;
     font-weight: 700;
 }
@@ -386,7 +360,7 @@
 
 .message-content {
     flex: 1;
-    max-width: 75%;
+    max-width: calc(100% - 50px);
     min-width: 0;
 }
 
@@ -397,11 +371,12 @@
 }
 
 .message-bubble {
-    padding: 0.875rem 1.125rem;
-    border-radius: 14px;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
     line-height: 1.5;
     word-wrap: break-word;
     font-size: 0.95rem;
+    max-width: 100%;
 }
 
 .message.user-message .message-bubble {
@@ -417,6 +392,12 @@
     border-bottom-left-radius: 4px;
 }
 
+.professional-bubble {
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.05), rgba(188, 140, 255, 0.05));
+    border: 1px solid rgba(88, 166, 255, 0.2);
+    padding: 1rem;
+}
+
 .message-time {
     font-size: 0.7rem;
     color: var(--text-secondary);
@@ -424,14 +405,9 @@
     opacity: 0.7;
 }
 
-/* Professional Message Styles */
-.professional-message .message-bubble {
-    max-width: 100%;
-}
-
-.professional-bubble {
-    background: linear-gradient(135deg, rgba(88, 166, 255, 0.05), rgba(188, 140, 255, 0.05));
-    border: 1px solid rgba(88, 166, 255, 0.2);
+/* ChatGPT-Style Typography */
+.ai-content {
+    line-height: 1.7;
 }
 
 .ai-paragraph {
@@ -445,12 +421,34 @@
     margin-bottom: 0;
 }
 
-.ai-highlight {
+.ai-heading-2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 1.5rem 0 0.75rem 0;
+    line-height: 1.3;
+}
+
+.ai-heading-2:first-child {
+    margin-top: 0;
+}
+
+.ai-heading-3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 1.2rem 0 0.6rem 0;
+    line-height: 1.4;
+}
+
+.ai-bold {
     color: var(--accent-blue);
     font-weight: 700;
-    background: rgba(88, 166, 255, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
+}
+
+.ai-italic {
+    font-style: italic;
+    color: var(--text-secondary);
 }
 
 .ai-code {
@@ -463,89 +461,53 @@
     border: 1px solid var(--border-primary);
 }
 
-/* Wikipedia Section */
-.wiki-section-inline {
-    margin-top: 1rem;
-    padding: 1rem;
-    background: var(--bg-tertiary);
-    border-left: 4px solid var(--accent-blue);
-    border-radius: 8px;
-    animation: slideIn 0.4s ease;
+.ai-list {
+    margin: 0.5rem 0 1rem 0;
+    padding-left: 1.5rem;
+    list-style: disc;
 }
 
-.wiki-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    color: var(--accent-blue);
-    font-weight: 700;
-    font-size: 0.95rem;
+.ai-list-ordered {
+    margin: 0.5rem 0 1rem 0;
+    padding-left: 1.5rem;
+    list-style: decimal;
 }
 
-.wiki-header i {
-    font-size: 1.2rem;
+.ai-list-item,
+.ai-list-item-numbered {
+    margin-bottom: 0.4rem;
+    line-height: 1.6;
+    color: var(--text-primary);
 }
 
-.wiki-text {
-    color: var(--text-secondary);
-    line-height: 1.7;
-    font-size: 0.9rem;
-    margin-bottom: 0.75rem;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.wiki-footer {
-    padding-top: 0.5rem;
+.ai-divider {
+    border: none;
     border-top: 1px solid var(--border-primary);
-}
-
-.wiki-footer small {
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-}
-
-.wiki-footer a {
-    color: var(--accent-blue);
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.2s ease;
-}
-
-.wiki-footer a:hover {
-    color: var(--accent-purple);
-    text-decoration: underline;
+    margin: 1.5rem 0;
 }
 
 /* 3D Model Section */
 .model-3d-inline {
     margin-top: 1rem;
-    padding: 1rem;
+    padding: 0.75rem;
     background: var(--bg-primary);
     border: 1px solid var(--border-primary);
-    border-radius: 10px;
-    animation: slideIn 0.4s ease 0.2s both;
+    border-radius: 8px;
 }
 
 .model-3d-header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.6rem;
     color: var(--accent-purple);
     font-weight: 700;
-    font-size: 0.95rem;
-}
-
-.model-3d-header i {
-    font-size: 1.2rem;
-    animation: rotate 3s linear infinite;
+    font-size: 0.9rem;
 }
 
 .model-3d-viewer {
     width: 100%;
-    height: 300px;
+    height: 250px;
     border-radius: 8px;
     background: var(--bg-secondary);
     border: 1px solid var(--border-primary);
@@ -564,12 +526,11 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.875rem 1.125rem;
+    padding: 0.8rem 1rem;
     background: var(--bg-secondary);
     border: 1px solid var(--border-primary);
-    border-radius: 14px;
+    border-radius: 12px;
     width: fit-content;
-    border-bottom-left-radius: 4px;
 }
 
 .typing-dot {
@@ -584,30 +545,33 @@
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-/* Input Area */
+/* Input Area - FIXED FOR MOBILE */
 .chemai-input-area {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-primary);
-    padding: 1.25rem 1rem;
+    padding: 0.75rem;
     flex-shrink: 0;
+    /* CRITICAL: Prevent keyboard overlap */
+    position: relative;
+    z-index: 100;
 }
 
 .model-selector {
     display: flex;
-    gap: 0.6rem;
-    margin-bottom: 0.875rem;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
     justify-content: center;
     flex-wrap: wrap;
 }
 
 .model-btn {
-    padding: 0.55rem 1.1rem;
+    padding: 0.5rem 1rem;
     background: var(--bg-tertiary);
     border: 2px solid var(--border-primary);
-    border-radius: 18px;
+    border-radius: 16px;
     color: var(--text-primary);
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -618,28 +582,22 @@
 .model-btn:hover {
     background: var(--bg-primary);
     border-color: var(--accent-blue);
-    transform: translateY(-2px);
 }
 
 .model-btn.active {
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     border-color: transparent;
     color: white;
-    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
-}
-
-.model-btn i {
-    font-size: 0.95rem;
 }
 
 .input-wrapper {
     display: flex;
-    gap: 0.875rem;
+    gap: 0.75rem;
     align-items: flex-end;
     background: var(--bg-tertiary);
     border: 2px solid var(--border-primary);
-    border-radius: 14px;
-    padding: 0.65rem 0.875rem;
+    border-radius: 12px;
+    padding: 0.6rem 0.75rem;
     transition: all 0.3s ease;
 }
 
@@ -656,9 +614,10 @@
     font-size: 0.95rem;
     line-height: 1.5;
     resize: none;
-    max-height: 140px;
+    max-height: 120px;
     font-family: inherit;
     outline: none;
+    min-height: 22px;
 }
 
 #chemaiInput::placeholder {
@@ -666,13 +625,13 @@
 }
 
 .send-btn {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     border: none;
     border-radius: 50%;
     color: white;
-    font-size: 1.1rem;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -682,8 +641,7 @@
 }
 
 .send-btn:hover:not(:disabled) {
-    transform: scale(1.1) rotate(15deg);
-    box-shadow: 0 6px 16px rgba(88, 166, 255, 0.4);
+    transform: scale(1.1);
 }
 
 .send-btn:disabled {
@@ -714,15 +672,15 @@
 .settings-modal-content {
     background: var(--bg-secondary);
     border: 1px solid var(--border-primary);
-    border-radius: 14px;
+    border-radius: 12px;
     width: 100%;
-    max-width: 480px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    animation: modalSlideUp 0.3s ease;
+    max-width: 450px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .modal-header {
-    padding: 1.25rem;
+    padding: 1rem;
     border-bottom: 1px solid var(--border-primary);
     display: flex;
     align-items: center;
@@ -730,47 +688,32 @@
 }
 
 .modal-header h3 {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
 }
 
 .modal-close-btn {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     background: var(--bg-tertiary);
     border: none;
     border-radius: 8px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
-}
-
-.modal-close-btn:hover {
-    background: var(--accent-red);
-    color: white;
-    transform: rotate(90deg);
 }
 
 .modal-body {
-    padding: 1.25rem;
+    padding: 1rem;
 }
 
 .setting-group {
-    margin-bottom: 1.25rem;
-}
-
-.setting-group:last-child {
-    margin-bottom: 0;
+    margin-bottom: 1rem;
 }
 
 .setting-group label {
@@ -783,50 +726,25 @@
 
 .setting-group select {
     width: 100%;
-    padding: 0.65rem 0.875rem;
+    padding: 0.6rem 0.8rem;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-primary);
     border-radius: 8px;
     color: var(--text-primary);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.setting-group select:focus {
-    outline: none;
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
-}
-
-.setting-group small {
-    display: block;
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    margin-top: 0.4rem;
 }
 
 .save-settings-btn {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.7rem 1rem;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
     border: none;
     border-radius: 10px;
     color: white;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    font-size: 0.95rem;
-}
-
-.save-settings-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(88, 166, 255, 0.4);
+    font-size: 0.9rem;
 }
 
 .error-message {
@@ -834,30 +752,11 @@
     border: 1px solid var(--accent-red) !important;
 }
 
-.error-message .ai-paragraph {
-    color: var(--accent-red);
-}
-
 /* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-15px); }
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
 @keyframes messageSlideIn {
     from {
         opacity: 0;
-        transform: translateY(15px);
+        transform: translateY(10px);
     }
     to {
         opacity: 1;
@@ -867,58 +766,27 @@
 
 @keyframes typingBounce {
     0%, 60%, 100% { transform: translateY(0); }
-    30% { transform: translateY(-8px); }
-}
-
-@keyframes modalSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(25px) scale(0.96);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    30% { transform: translateY(-6px); }
 }
 
 /* Scrollbar */
 .chat-history-section::-webkit-scrollbar,
-.messages-container::-webkit-scrollbar,
-.wiki-text::-webkit-scrollbar {
-    width: 5px;
+.messages-container::-webkit-scrollbar {
+    width: 4px;
 }
 
 .chat-history-section::-webkit-scrollbar-track,
-.messages-container::-webkit-scrollbar-track,
-.wiki-text::-webkit-scrollbar-track {
-    background: var(--bg-primary);
+.messages-container::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .chat-history-section::-webkit-scrollbar-thumb,
-.messages-container::-webkit-scrollbar-thumb,
-.wiki-text::-webkit-scrollbar-thumb {
+.messages-container::-webkit-scrollbar-thumb {
     background: var(--border-primary);
-    border-radius: 3px;
+    border-radius: 2px;
 }
 
-.chat-history-section::-webkit-scrollbar-thumb:hover,
-.messages-container::-webkit-scrollbar-thumb:hover,
-.wiki-text::-webkit-scrollbar-thumb:hover {
-    background: var(--text-secondary);
-}
-
-/* Mobile Responsive (768px and below) */
+/* MOBILE RESPONSIVE - CRITICAL FIXES */
 @media (max-width: 768px) {
     .chemai-menu-btn {
         display: flex;
@@ -929,9 +797,9 @@
         top: 0;
         left: 0;
         height: 100vh;
+        height: 100dvh;
         z-index: 1000;
         transform: translateX(-100%);
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
     }
 
     .chemai-sidebar.active {
@@ -942,13 +810,18 @@
         display: flex;
     }
 
+    /* CRITICAL: Adjust chat area for mobile */
+    .chemai-chat-area {
+        height: calc(100vh - 56px);
+        height: calc(100dvh - 56px);
+    }
+
     .empty-state {
-        padding: 1rem 0.75rem;
+        padding: 1rem;
     }
 
     .empty-state-icon {
         font-size: 2.5rem;
-        margin-bottom: 1rem;
     }
 
     .empty-state h2 {
@@ -956,118 +829,80 @@
     }
 
     .empty-state p {
-        font-size: 0.85rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .example-questions {
-        max-width: 100%;
-        padding: 0 0.5rem;
+        font-size: 0.9rem;
     }
 
     .example-q {
         padding: 0.7rem 0.9rem;
-        font-size: 0.82rem;
-        gap: 0.7rem;
-    }
-
-    .example-q i {
-        font-size: 1.15rem;
+        font-size: 0.85rem;
     }
 
     .messages-container {
-        padding: 0.875rem 0.75rem;
-        gap: 0.875rem;
-    }
-
-    .message-content {
-        max-width: 80%;
+        padding: 0.75rem;
+        gap: 0.75rem;
     }
 
     .message-avatar {
-        width: 30px;
-        height: 30px;
-        font-size: 0.95rem;
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
     }
 
     .message-bubble {
         padding: 0.7rem 0.9rem;
-        font-size: 0.88rem;
-        border-radius: 12px;
+        font-size: 0.9rem;
     }
 
     .ai-paragraph {
         font-size: 0.9rem;
-        line-height: 1.6;
     }
 
-    .wiki-section-inline,
-    .model-3d-inline {
-        padding: 0.75rem;
+    .ai-heading-2 {
+        font-size: 1.15rem;
     }
 
-    .wiki-text {
-        font-size: 0.85rem;
-    }
-
-    .model-3d-viewer {
-        height: 250px;
-    }
-
-    .chemai-input-area {
-        padding: 0.875rem 0.75rem;
-    }
-
-    .model-selector {
-        gap: 0.45rem;
-        margin-bottom: 0.7rem;
-    }
-
-    .model-btn {
-        padding: 0.48rem 0.9rem;
-        font-size: 0.78rem;
-        border-radius: 16px;
-    }
-
-    .model-btn i {
-        font-size: 0.88rem;
-    }
-
-    .input-wrapper {
-        padding: 0.55rem 0.7rem;
-        border-radius: 12px;
-        gap: 0.7rem;
-    }
-
-    #chemaiInput {
-        font-size: 0.88rem;
-        max-height: 120px;
-    }
-
-    .send-btn {
-        width: 36px;
-        height: 36px;
+    .ai-heading-3 {
         font-size: 1rem;
     }
 
-    .settings-modal-content {
-        max-width: 95%;
-        margin: 0.5rem;
+    .model-3d-viewer {
+        height: 220px;
     }
 
-    .modal-body {
-        padding: 1rem;
+    /* CRITICAL: Input area mobile fix */
+    .chemai-input-area {
+        padding: 0.65rem;
     }
 
-    .setting-group {
-        margin-bottom: 1rem;
+    .model-selector {
+        gap: 0.4rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .model-btn {
+        padding: 0.45rem 0.85rem;
+        font-size: 0.75rem;
+    }
+
+    .input-wrapper {
+        padding: 0.5rem 0.65rem;
+    }
+
+    #chemaiInput {
+        font-size: 0.9rem;
+        max-height: 100px;
+    }
+
+    .send-btn {
+        width: 34px;
+        height: 34px;
     }
 }
 
 @media (max-width: 480px) {
     .chemai-header {
-        padding: 0.75rem;
-        height: 55px;
+        padding: 0.6rem 0.75rem;
+        height: 52px;
     }
 
     .chemai-back-btn span {
@@ -1076,96 +911,49 @@
 
     .chemai-back-btn {
         padding: 0.45rem;
-        width: 34px;
-        height: 34px;
+        width: 32px;
+        height: 32px;
         justify-content: center;
     }
 
     .chemai-logo {
-        font-size: 1.1rem;
-    }
-
-    .chemai-logo i {
-        font-size: 1.3rem;
+        font-size: 1rem;
     }
 
     .model-selector {
         flex-direction: column;
-        gap: 0.5rem;
     }
 
     .model-btn {
         width: 100%;
         justify-content: center;
-        padding: 0.55rem 1rem;
-    }
-
-    .message-content {
-        max-width: 85%;
-    }
-
-    .empty-state-icon {
-        font-size: 2.2rem;
-    }
-
-    .empty-state h2 {
-        font-size: 1.15rem;
-    }
-
-    .example-q {
-        padding: 0.65rem 0.85rem;
-        font-size: 0.8rem;
-    }
-
-    .example-q i {
-        font-size: 1.1rem;
-    }
-
-    #chemaiInput {
-        font-size: 0.85rem;
     }
 
     .ai-paragraph {
         font-size: 0.85rem;
     }
 
-    .wiki-section-inline,
-    .model-3d-inline {
-        padding: 0.6rem;
-        margin-top: 0.75rem;
-    }
-
-    .wiki-header,
-    .model-3d-header {
-        font-size: 0.85rem;
-    }
-
-    .wiki-text {
-        font-size: 0.8rem;
+    .ai-heading-2 {
+        font-size: 1.1rem;
     }
 
     .model-3d-viewer {
-        height: 220px;
+        height: 200px;
     }
 }
 
 /* Desktop */
 @media (min-width: 769px) {
-    .chemai-menu-btn {
-        display: none;
-    }
-
     .chemai-sidebar {
         width: 280px !important;
         transform: translateX(0) !important;
     }
+}
 
-    .close-sidebar-btn {
-        display: none;
-    }
-
-    .chemai-chat-area {
-        width: calc(100% - 280px);
+/* Prevent iOS zoom on input focus */
+@media (max-width: 768px) {
+    #chemaiInput {
+        font-size: 16px !important; /* Prevents iOS zoom */
     }
 }
 
