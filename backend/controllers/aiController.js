@@ -1,13 +1,12 @@
 /**
  * ============================================
- * AI CONTROLLER - VICUNA FIX + AUTO-FALLBACK
- * Vicuna না চললে automatically GPT-OSS 20B use হবে
+ * AI CONTROLLER - ENHANCED WITH WIKIPEDIA
+ * Professional formatting like ChatGPT/Claude
  * ============================================
  */
 
 const fetch = require('node-fetch');
 
-// Model configurations - FIXED VICUNA ENDPOINT
 const MODELS = {
     vicuna: {
         endpoint: 'https://api-inference.huggingface.co/models/lmsys/vicuna-13b-v1.5',
@@ -26,7 +25,7 @@ const MODELS = {
 };
 
 /**
- * Get AI response with auto-fallback
+ * Get AI response with Wikipedia integration
  */
 async function getAIResponse(userMessage, modelId = 'vicuna', history = []) {
     const modelConfig = MODELS[modelId] || MODELS.vicuna;
@@ -42,10 +41,13 @@ async function getAIResponse(userMessage, modelId = 'vicuna', history = []) {
             response = await callTextGenerationAPI(userMessage, modelConfig, history);
         }
 
-        console.log('✅ AI response received');
+        // Enhance response with Wikipedia if chemistry topic
+        const enhancedResponse = await enhanceWithWikipedia(response, userMessage);
+
+        console.log('✅ AI response received and enhanced');
 
         return {
-            response: response,
+            response: enhancedResponse,
             model: modelId,
             timestamp: Date.now()
         };
@@ -53,19 +55,20 @@ async function getAIResponse(userMessage, modelId = 'vicuna', history = []) {
     } catch (error) {
         console.error(`❌ ${modelId} Error:`, error.message);
         
-        // AUTO-FALLBACK: Vicuna fail → GPT-OSS 20B
         if (modelId === 'vicuna') {
             console.log('🔄 Falling back to GPT-OSS 20B...');
             try {
                 const fallbackResponse = await callChatAPI(userMessage, MODELS['gpt-20b'], history);
+                const enhancedFallback = await enhanceWithWikipedia(fallbackResponse, userMessage);
+                
                 return {
-                    response: `⚠️ **Vicuna model is currently unavailable. Switched to GPT-OSS 20B.**\n\n${fallbackResponse}`,
+                    response: `⚠️ **Vicuna model unavailable. Using GPT-OSS 20B.**\n\n${enhancedFallback}`,
                     model: 'gpt-20b',
                     fallback: true,
                     timestamp: Date.now()
                 };
             } catch (fallbackError) {
-                console.error('❌ Fallback also failed:', fallbackError.message);
+                console.error('❌ Fallback failed:', fallbackError.message);
             }
         }
         
@@ -74,13 +77,33 @@ async function getAIResponse(userMessage, modelId = 'vicuna', history = []) {
 }
 
 /**
- * Call Chat Completions API (GPT-OSS models)
+ * Call Chat API with professional formatting prompt
  */
 async function callChatAPI(userMessage, modelConfig, history) {
     const messages = [
         {
             role: 'system',
-            content: 'You are ChemAI, a helpful chemistry assistant. Provide accurate, detailed information about chemistry topics. Be friendly and educational. Format your responses professionally with proper structure.'
+            content: `You are ChemAI, a professional chemistry assistant. 
+
+FORMAT YOUR RESPONSES LIKE THIS:
+- Use **bold** for important terms and concepts
+- Use proper headings with ## for main topics
+- Use bullet points with - for lists
+- Use numbered lists with 1. 2. 3. for steps
+- Use \`code\` for chemical formulas
+- Add relevant emojis naturally in context (💧 for water, ⚛️ for atom, etc.)
+- Structure your response with clear sections
+
+Example format:
+## Water Structure
+
+**Water (H₂O)** is a chemical compound consisting of:
+- Two hydrogen atoms 🎈
+- One oxygen atom 🫁
+
+The molecule has a bent shape with an angle of 104.5°.
+
+Always be accurate, educational, and well-formatted.`
         }
     ];
 
@@ -105,7 +128,7 @@ async function callChatAPI(userMessage, modelConfig, history) {
         body: JSON.stringify({
             model: modelConfig.model,
             messages: messages,
-            max_tokens: 1024,
+            max_tokens: 1500,
             temperature: 0.7
         })
     });
@@ -121,14 +144,14 @@ async function callChatAPI(userMessage, modelConfig, history) {
         return data.choices[0].message.content.trim();
     }
 
-    throw new Error('Invalid response format from API');
+    throw new Error('Invalid response format');
 }
 
 /**
- * Call Text Generation API (Vicuna) - FIXED ENDPOINT
+ * Call Text Generation API (Vicuna)
  */
 async function callTextGenerationAPI(userMessage, modelConfig, history) {
-    let prompt = 'You are ChemAI, a chemistry expert. Answer chemistry questions accurately and professionally.\n\n';
+    let prompt = `You are ChemAI, a professional chemistry assistant. Format responses with **bold**, headings, lists, and emojis.\n\n`;
     
     if (history && history.length > 0) {
         const recentHistory = history.slice(-6);
@@ -143,8 +166,6 @@ async function callTextGenerationAPI(userMessage, modelConfig, history) {
     
     prompt += `Human: ${userMessage}\nAssistant:`;
 
-    console.log('📝 Sending to Vicuna, prompt length:', prompt.length);
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
@@ -158,7 +179,7 @@ async function callTextGenerationAPI(userMessage, modelConfig, history) {
             body: JSON.stringify({
                 inputs: prompt,
                 parameters: {
-                    max_new_tokens: 400,
+                    max_new_tokens: 500,
                     temperature: 0.7,
                     top_p: 0.9,
                     repetition_penalty: 1.1,
@@ -176,71 +197,123 @@ async function callTextGenerationAPI(userMessage, modelConfig, history) {
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Vicuna API error: ${response.status} - ${errorText}`);
+            throw new Error(`Vicuna error: ${response.status}`);
         }
 
         const data = await response.json();
-
         let generatedText = null;
 
-        if (Array.isArray(data)) {
-            if (data[0] && data[0].generated_text) {
-                generatedText = data[0].generated_text;
-            }
+        if (Array.isArray(data) && data[0]?.generated_text) {
+            generatedText = data[0].generated_text;
         } else if (data.generated_text) {
             generatedText = data.generated_text;
-        } else if (typeof data === 'string') {
-            generatedText = data;
         }
 
         if (generatedText) {
-            let cleaned = generatedText.trim();
-            cleaned = cleaned.replace(/^(Human:|Assistant:)/i, '').trim();
-            
-            if (!cleaned) {
-                cleaned = "I apologize, but I couldn't generate a proper response. Could you please rephrase your question?";
-            }
-            
-            return cleaned;
+            return generatedText.replace(/^(Human:|Assistant:)/i, '').trim();
         }
 
-        throw new Error('Invalid response format from Vicuna API');
+        throw new Error('Invalid Vicuna response');
 
     } catch (error) {
         clearTimeout(timeoutId);
-        if (error.name === 'AbortError') {
-            throw new Error('Vicuna request timeout (30s)');
-        }
         throw error;
     }
 }
 
 /**
- * Check if message is chemistry-related
+ * Enhance response with Wikipedia (merged into response)
+ */
+async function enhanceWithWikipedia(aiResponse, userMessage) {
+    try {
+        const entity = detectChemistryEntity(userMessage);
+        if (!entity) return aiResponse;
+
+        console.log('📚 Fetching Wikipedia for:', entity);
+
+        const wikiResponse = await fetch(
+            `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(entity)}`,
+            { timeout: 5000 }
+        );
+
+        if (wikiResponse.ok) {
+            const wikiData = await wikiResponse.json();
+            if (wikiData.extract) {
+                // Merge Wikipedia into AI response
+                const wikiSection = `\n\n---\n\n📚 **Additional Information** *(from Wikipedia)*\n\n${wikiData.extract}\n\n*Source: [Wikipedia](https://en.wikipedia.org/wiki/${encodeURIComponent(entity)})*`;
+                return aiResponse + wikiSection;
+            }
+        }
+    } catch (error) {
+        console.warn('Wikipedia fetch failed:', error.message);
+    }
+
+    return aiResponse;
+}
+
+/**
+ * Detect chemistry entity from user message
+ */
+function detectChemistryEntity(message) {
+    const lowerMsg = message.toLowerCase();
+    
+    // Common elements
+    const elements = {
+        'hydrogen': 'Hydrogen',
+        'oxygen': 'Oxygen',
+        'carbon': 'Carbon',
+        'nitrogen': 'Nitrogen',
+        'water': 'Water',
+        'h2o': 'Water',
+        'co2': 'Carbon_dioxide',
+        'carbon dioxide': 'Carbon_dioxide',
+        'methane': 'Methane',
+        'ch4': 'Methane',
+        'ammonia': 'Ammonia',
+        'nh3': 'Ammonia',
+        'sodium': 'Sodium',
+        'chlorine': 'Chlorine',
+        'gold': 'Gold',
+        'silver': 'Silver',
+        'iron': 'Iron',
+        'copper': 'Copper',
+        'helium': 'Helium',
+        'neon': 'Neon',
+        'benzene': 'Benzene',
+        'ethanol': 'Ethanol',
+        'glucose': 'Glucose',
+        'dna': 'DNA',
+        'protein': 'Protein',
+        'enzyme': 'Enzyme',
+        'atom': 'Atom',
+        'molecule': 'Molecule',
+        'periodic table': 'Periodic_table'
+    };
+
+    for (const [key, value] of Object.entries(elements)) {
+        if (lowerMsg.includes(key)) {
+            return value;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Check if chemistry-related
  */
 function isChemistryRelated(message) {
-    const chemistryKeywords = [
+    const keywords = [
         'element', 'atom', 'molecule', 'compound', 'reaction', 'periodic',
         'chemical', 'chemistry', 'bond', 'ion', 'electron', 'proton', 'neutron',
         'formula', 'equation', 'balance', 'stoichiometry', 'mole', 'molarity',
         'concentration', 'mass', 'weight', 'molecular', 'organic', 'inorganic',
-        'physical', 'analytical', 'biochemistry', 'acid', 'base', 'ph',
-        'oxidation', 'reduction', 'catalyst', 'synthesis', 'combustion',
-        'precipitation', 'neutralization', 'solution', 'solvent', 'solute',
-        'dissolve', 'saturated', 'dilute', 'valence', 'orbital', 'shell',
-        'subshell', 'quantum', 'nucleus', 'h2o', 'co2', 'nacl', 'h2', 'o2',
-        'n2', 'water', 'oxygen', 'hydrogen', 'carbon', 'nitrogen', 'sodium',
-        'chlorine', 'lab', 'experiment', 'titration', 'beaker', 'flask',
-        'bunsen', 'density', 'pressure', 'volume', 'gas', 'liquid', 'solid'
+        'acid', 'base', 'ph', 'oxidation', 'reduction', 'catalyst',
+        'h2o', 'co2', 'nacl', 'h2', 'o2', 'water', 'oxygen', 'hydrogen'
     ];
 
     const lowerMessage = message.toLowerCase();
-    const hasKeyword = chemistryKeywords.some(keyword => lowerMessage.includes(keyword));
-    const formulaPattern = /\b[A-Z][a-z]?\d*(?:[A-Z][a-z]?\d*)*\b/;
-    const hasFormula = formulaPattern.test(message);
-
-    return hasKeyword || hasFormula;
+    return keywords.some(keyword => lowerMessage.includes(keyword));
 }
 
 module.exports = {
