@@ -1,9 +1,9 @@
 """
-Line Counter Backend - CRASH-FREE VERSION
+Line Counter Backend - WITH NODE.JS SUPPORT
 ✅ Worker stability fixed
 ✅ Memory optimized
+✅ Node.js backend counting
 ✅ Proper error handling
-✅ Request timeout handling
 """
 
 from flask import Flask, jsonify, request
@@ -66,6 +66,17 @@ EXTENSIONS = {
     '.md': 'markdown'
 }
 
+# ✅ NEW: Node.js backend folders
+NODEJS_FOLDERS = [
+    'backend/',
+    'server/',
+    'api/',
+    'routes/',
+    'controllers/',
+    'models/',
+    'middleware/'
+]
+
 # Exclude patterns
 EXCLUDE_PATTERNS = [
     '.github/',
@@ -80,6 +91,23 @@ EXCLUDE_PATTERNS = [
 def should_exclude(path):
     """Check if path should be excluded"""
     return any(pattern in path for pattern in EXCLUDE_PATTERNS)
+
+def is_nodejs_file(path):
+    """Check if file is Node.js backend code"""
+    # Check if in backend folders
+    for folder in NODEJS_FOLDERS:
+        if path.startswith(folder):
+            return True
+    
+    # Check if file is server.js or similar
+    filename = path.split('/')[-1].lower()
+    nodejs_files = ['server.js', 'app.js', 'index.js', 'main.js']
+    
+    for nf in nodejs_files:
+        if filename == nf and 'backend' in path.lower():
+            return True
+    
+    return False
 
 # ============================================
 # MIDDLEWARE
@@ -105,14 +133,15 @@ def index():
     
     return jsonify({
         'service': 'Line Counter',
-        'version': '3.0',
+        'version': '3.1',
         'status': 'running',
-        'branch': BRANCH
+        'branch': BRANCH,
+        'features': ['Node.js backend counting']
     })
 
 @app.route('/api/line-count', methods=['GET', 'OPTIONS'])
 def get_line_count():
-    """Count lines - optimized for 512MB RAM"""
+    """Count lines - WITH NODE.JS SUPPORT"""
     
     if request.method == 'OPTIONS':
         return '', 204
@@ -127,7 +156,8 @@ def get_line_count():
                 'javascript': 0,
                 'css': 0,
                 'html': 0,
-                'python': 0
+                'python': 0,
+                'nodejs': 0
             }), 500
         
         # Headers
@@ -149,7 +179,8 @@ def get_line_count():
                 'javascript': 0,
                 'css': 0,
                 'html': 0,
-                'python': 0
+                'python': 0,
+                'nodejs': 0
             }), 504
         
         if response.status_code != 200:
@@ -160,7 +191,8 @@ def get_line_count():
                 'javascript': 0,
                 'css': 0,
                 'html': 0,
-                'python': 0
+                'python': 0,
+                'nodejs': 0
             }), response.status_code
         
         tree_data = response.json()
@@ -175,6 +207,7 @@ def get_line_count():
             'css': 0,
             'html': 0,
             'python': 0,
+            'nodejs': 0,  # ✅ NEW
             'json': 0,
             'markdown': 0,
             'total': 0
@@ -209,18 +242,29 @@ def get_line_count():
                         lines = content.count('\n') + 1
                         file_type = EXTENSIONS[ext]
                         
-                        counts[file_type] += lines
+                        # ✅ Check if Node.js backend file
+                        if is_nodejs_file(path) and file_type == 'javascript':
+                            counts['nodejs'] += lines
+                            print(f"✅ Node.js: {path} ({lines} lines)")
+                        else:
+                            counts[file_type] += lines
+                        
                         counts['total'] += lines
                         processed += 1
                         
                         if processed % 10 == 0:
-                            print(f"✓ Processed {processed} files...")
+                            print(f"✔ Processed {processed} files...")
             
             except Exception as e:
                 print(f"✗ Error: {path[:30]} - {str(e)[:30]}")
                 continue
         
-        print(f"✅ Complete: {counts['total']:,} lines from {processed} files\n")
+        print(f"✅ Complete: {counts['total']:,} lines from {processed} files")
+        print(f"   JavaScript: {counts['javascript']:,}")
+        print(f"   Node.js: {counts['nodejs']:,}")
+        print(f"   CSS: {counts['css']:,}")
+        print(f"   HTML: {counts['html']:,}")
+        print(f"   Python: {counts['python']:,}\n")
         
         return jsonify({
             **counts,
@@ -242,7 +286,8 @@ def get_line_count():
             'javascript': 0,
             'css': 0,
             'html': 0,
-            'python': 0
+            'python': 0,
+            'nodejs': 0
         }), 500
 
 @app.route('/api/readme', methods=['GET', 'OPTIONS'])
@@ -285,7 +330,8 @@ def health():
     return jsonify({
         'status': 'healthy',
         'branch': BRANCH,
-        'token': bool(GITHUB_TOKEN)
+        'token': bool(GITHUB_TOKEN),
+        'features': ['Node.js counting']
     })
 
 # ============================================
@@ -313,10 +359,10 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     
     print(f"\n{'='*50}")
-    print(f"🚀 Starting Line Counter")
+    print(f"🚀 Starting Line Counter with Node.js Support")
     print(f"📦 Repo: {REPO_OWNER}/{REPO_NAME}")
     print(f"🌿 Branch: {BRANCH}")
-    print(f"🔒 Token: {'✓' if GITHUB_TOKEN else '✗'}")
+    print(f"🔑 Token: {'✔' if GITHUB_TOKEN else '✗'}")
     print(f"{'='*50}\n")
     
     # Run with minimal workers for 512MB RAM
