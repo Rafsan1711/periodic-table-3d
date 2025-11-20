@@ -1,8 +1,9 @@
 /**
- * Line Counter - COMPLETE FIX
+ * Line Counter - COMPLETE FIX with Node.js
  * ✅ Null safety
  * ✅ Default values
  * ✅ Error recovery
+ * ✅ Node.js backend counting
  */
 
 const BACKEND_URL = 'https://periodic-table-3d.onrender.com';
@@ -51,13 +52,14 @@ async function fetchLineCount() {
         const data = await response.json();
         console.log('✅ Data received:', data);
         
-        // Validate and set defaults
+        // Validate and set defaults (with Node.js)
         const validData = {
             total: data.total || 0,
             javascript: data.javascript || 0,
             css: data.css || 0,
             html: data.html || 0,
             python: data.python || 0,
+            nodejs: data.nodejs || 0,  // ✅ NEW: Node.js
             json: data.json || 0,
             markdown: data.markdown || 0,
             timestamp: data.timestamp || Date.now()
@@ -144,6 +146,7 @@ async function showZipAnimation(container, subtitleEl) {
                 <div class="flying-file" style="--delay: 0.4s"><i class="fab fa-css3"></i></div>
                 <div class="flying-file" style="--delay: 0.6s"><i class="fab fa-html5"></i></div>
                 <div class="flying-file" style="--delay: 0.8s"><i class="fab fa-python"></i></div>
+                <div class="flying-file" style="--delay: 1.0s"><i class="fab fa-node-js"></i></div>
             </div>
             <div class="unzip-progress-bar">
                 <div class="unzip-progress-fill"></div>
@@ -283,7 +286,8 @@ function updateBreakdown(data) {
         { id: 'js-lines', value: data.javascript || 0 },
         { id: 'css-lines', value: data.css || 0 },
         { id: 'html-lines', value: data.html || 0 },
-        { id: 'python-lines', value: data.python || 0 }
+        { id: 'python-lines', value: data.python || 0 },
+        { id: 'nodejs-lines', value: data.nodejs || 0 }  // ✅ NEW
     ];
     
     langs.forEach((lang, i) => {
