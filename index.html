@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/home.css">
     <link rel="stylesheet" href="css/line-counter-animations.css">
-    
-    <!-- ✅ Timeline CSS -->
     <link rel="stylesheet" href="css/timeline.css">
     <link rel="stylesheet" href="css/timeline-modal.css">
     
@@ -62,14 +60,14 @@
         <div class="hero-content">
             <div class="hero-badge">
                 <i class="fas fa-flask"></i>
-                <span>Interactive Chemistry Platform</span>
+                <span>Interactive Chemistry Platform with AI</span>
             </div>
             <h1 class="hero-title">
                 Explore the Periodic Table<br>
                 <span class="gradient-text">in 3D</span>
             </h1>
             <p class="hero-subtitle">
-                Discover 118 elements, 100+ molecules, and chemical reactions with stunning 3D visualizations. Join thousands of chemistry enthusiasts worldwide.
+                Discover 118 elements, 100+ molecules, chemical reactions, and get AI-powered chemistry assistance with ChemAI. Join thousands of chemistry enthusiasts worldwide.
             </p>
             <div class="hero-buttons">
                 <button class="btn-primary" id="hero-get-started">
@@ -96,6 +94,11 @@
                     <i class="fas fa-fire"></i>
                     <span class="stat-value">50+</span>
                     <span class="stat-label">Reactions</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-robot"></i>
+                    <span class="stat-value">AI</span>
+                    <span class="stat-label">Assistant</span>
                 </div>
             </div>
         </div>
@@ -131,6 +134,20 @@
             </div>
             <div class="feature-card">
                 <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>ChemAI Assistant</h3>
+                <p>Get instant answers to chemistry questions with our AI-powered assistant using advanced models</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <h3>Chemistry Timeline</h3>
+                <p>Discover "On This Day" in chemistry history with 3D models and interactive graphs</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
                     <i class="fas fa-users"></i>
                 </div>
                 <h3>Community Forum</h3>
@@ -153,10 +170,7 @@
         </div>
     </section>
 
-    <!-- ============================================
-         🎯 TIMELINE SECTION APPEARS HERE
-         (Automatically created by timeline-preview.js)
-         ============================================ -->
+    <!-- Timeline Section (Auto-inserted by timeline-preview.js) -->
 
     <!-- Line Counter Section -->
     <section class="line-counter-section" id="stats">
@@ -205,6 +219,12 @@
                     </span>
                     <span class="breakdown-value" id="python-lines">-</span>
                 </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-label">
+                        <i class="fab fa-node-js"></i> Node.js
+                    </span>
+                    <span class="breakdown-value" id="nodejs-lines">-</span>
+                </div>
             </div>
         </div>
     </section>
@@ -223,6 +243,14 @@
             <div class="tech-item">
                 <i class="fas fa-fire"></i>
                 <span>Firebase</span>
+            </div>
+            <div class="tech-item">
+                <i class="fab fa-node-js"></i>
+                <span>Node.js</span>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-brain"></i>
+                <span>HuggingFace AI</span>
             </div>
             <div class="tech-item">
                 <i class="fab fa-node-js"></i>
@@ -260,7 +288,7 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h3><i class="fas fa-atom"></i> Periodic Table 3D</h3>
-                <p>Making chemistry accessible and fun for everyone</p>
+                <p>Making chemistry accessible and fun for everyone with AI-powered assistance</p>
             </div>
             <div class="footer-section">
                 <h4>Quick Links</h4>
@@ -305,19 +333,12 @@
     <script src="js/home/line-counter.js"></script>
     <script src="js/home/readme-viewer.js"></script>
     
-    <!-- ✅ Data Files (Required for Timeline) -->
     <script src="js/data/elements-data.js"></script>
     <script src="js/data/molecules-data.js"></script>
     
-    <!-- ✅ Timeline Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="js/home/timeline-events.js"></script>
     <script src="js/home/timeline-preview.js"></script>
     <script src="js/home/timeline-modal.js"></script>
 </body>
-    </html>
-
- 
-                
-    
-    
+</html>
