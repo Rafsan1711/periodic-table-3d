@@ -1,9 +1,8 @@
 """
-Line Counter Backend - WITH NODE.JS SUPPORT
-✅ Worker stability fixed
-✅ Memory optimized
-✅ Node.js backend counting
-✅ Proper error handling
+Line Counter Backend - COMPLETE FIXED VERSION
+✅ Backend folder JS files counted as Node.js
+✅ Frontend JS files counted as JavaScript
+✅ Proper categorization with 100% code
 """
 
 from flask import Flask, jsonify, request
@@ -66,15 +65,19 @@ EXTENSIONS = {
     '.md': 'markdown'
 }
 
-# ✅ NEW: Node.js backend folders
-NODEJS_FOLDERS = [
+# ✅ FIXED: Node.js backend detection patterns
+NODEJS_PATTERNS = [
     'backend/',
     'server/',
     'api/',
     'routes/',
     'controllers/',
     'models/',
-    'middleware/'
+    'middleware/',
+    'config/',
+    'utils/server',
+    'src/server',
+    'app/server'
 ]
 
 # Exclude patterns
@@ -92,19 +95,33 @@ def should_exclude(path):
     """Check if path should be excluded"""
     return any(pattern in path for pattern in EXCLUDE_PATTERNS)
 
-def is_nodejs_file(path):
-    """Check if file is Node.js backend code"""
-    # Check if in backend folders
-    for folder in NODEJS_FOLDERS:
-        if path.startswith(folder):
+def is_nodejs_backend_file(path):
+    """
+    ✅ FIXED: Detect if a .js/.jsx file is Node.js backend code
+    Returns True if file is in backend folders
+    """
+    path_lower = path.lower()
+    
+    # Check if path contains any Node.js backend patterns
+    for pattern in NODEJS_PATTERNS:
+        if pattern in path_lower:
             return True
     
-    # Check if file is server.js or similar
-    filename = path.split('/')[-1].lower()
-    nodejs_files = ['server.js', 'app.js', 'index.js', 'main.js']
+    # Check for server-specific filenames
+    filename = os.path.basename(path_lower)
+    server_files = [
+        'server.js',
+        'app.js',
+        'index.js',
+        'main.js',
+        'server.ts',
+        'app.ts'
+    ]
     
-    for nf in nodejs_files:
-        if filename == nf and 'backend' in path.lower():
+    # Only count as Node.js if it's in a backend-related directory
+    if filename in server_files:
+        # Check if it's clearly in a backend/server context
+        if any(keyword in path_lower for keyword in ['backend', 'server', 'api']):
             return True
     
     return False
@@ -133,15 +150,15 @@ def index():
     
     return jsonify({
         'service': 'Line Counter',
-        'version': '3.1',
+        'version': '3.2-FIXED',
         'status': 'running',
         'branch': BRANCH,
-        'features': ['Node.js backend counting']
+        'features': ['Node.js backend detection', 'Separated JS/Node.js counting']
     })
 
 @app.route('/api/line-count', methods=['GET', 'OPTIONS'])
 def get_line_count():
-    """Count lines - WITH NODE.JS SUPPORT"""
+    """Count lines - WITH FIXED NODE.JS DETECTION"""
     
     if request.method == 'OPTIONS':
         return '', 204
@@ -202,12 +219,12 @@ def get_line_count():
         
         # Initialize counters
         counts = {
-            'javascript': 0,
+            'javascript': 0,  # Frontend JS only
             'typescript': 0,
             'css': 0,
             'html': 0,
             'python': 0,
-            'nodejs': 0,  # ✅ NEW
+            'nodejs': 0,      # Backend JS only
             'json': 0,
             'markdown': 0,
             'total': 0
@@ -242,26 +259,28 @@ def get_line_count():
                         lines = content.count('\n') + 1
                         file_type = EXTENSIONS[ext]
                         
-                        # ✅ Check if Node.js backend file
-                        if is_nodejs_file(path) and file_type == 'javascript':
+                        # ✅ FIXED: Check if JS file is Node.js backend
+                        if ext in ['.js', '.jsx'] and is_nodejs_backend_file(path):
                             counts['nodejs'] += lines
                             print(f"✅ Node.js: {path} ({lines} lines)")
                         else:
                             counts[file_type] += lines
+                            if ext in ['.js', '.jsx']:
+                                print(f"✅ JavaScript: {path} ({lines} lines)")
                         
                         counts['total'] += lines
                         processed += 1
                         
                         if processed % 10 == 0:
-                            print(f"✔ Processed {processed} files...")
+                            print(f"⏳ Processed {processed} files...")
             
             except Exception as e:
-                print(f"✗ Error: {path[:30]} - {str(e)[:30]}")
+                print(f"❌ Error: {path[:30]} - {str(e)[:30]}")
                 continue
         
         print(f"✅ Complete: {counts['total']:,} lines from {processed} files")
-        print(f"   JavaScript: {counts['javascript']:,}")
-        print(f"   Node.js: {counts['nodejs']:,}")
+        print(f"   JavaScript (Frontend): {counts['javascript']:,}")
+        print(f"   Node.js (Backend): {counts['nodejs']:,}")
         print(f"   CSS: {counts['css']:,}")
         print(f"   HTML: {counts['html']:,}")
         print(f"   Python: {counts['python']:,}\n")
@@ -331,7 +350,7 @@ def health():
         'status': 'healthy',
         'branch': BRANCH,
         'token': bool(GITHUB_TOKEN),
-        'features': ['Node.js counting']
+        'features': ['Node.js backend detection', 'Separated JS/Node.js']
     })
 
 # ============================================
@@ -359,10 +378,10 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     
     print(f"\n{'='*50}")
-    print(f"🚀 Starting Line Counter with Node.js Support")
+    print(f"🚀 Starting Line Counter with Node.js Detection")
     print(f"📦 Repo: {REPO_OWNER}/{REPO_NAME}")
     print(f"🌿 Branch: {BRANCH}")
-    print(f"🔑 Token: {'✔' if GITHUB_TOKEN else '✗'}")
+    print(f"🔑 Token: {'✓' if GITHUB_TOKEN else '✗'}")
     print(f"{'='*50}\n")
     
     # Run with minimal workers for 512MB RAM
