@@ -500,7 +500,15 @@ section {
     gap: 1rem;
     border: 1px solid var(--border-primary);
 }
+/* ✅ Make sure Node.js stands out */
+.breakdown-item:has(.fa-node-js) {
+    border: 1px solid rgba(51, 153, 51, 0.3);
+}
 
+.breakdown-item:has(.fa-node-js):hover {
+    background: rgba(51, 153, 51, 0.05);
+    border-color: #339933;
+}
 .breakdown-label {
     display: flex;
     align-items: center;
@@ -669,10 +677,24 @@ section {
     justify-content: space-between;
     align-items: center;
 }
-.breakdown-label .fa-js { color: #f7df1e; }
-.breakdown-label .fa-css3 { color: #264de4; }
-.breakdown-label .fa-html5 { color: #e34c26; }
-.breakdown-label .fa-python { color: #3776ab; }
+.breakdown-label .fa-js { 
+    color: #f7df1e; /* JavaScript yellow */
+}
+.breakdown-label .fa-css3 { 
+    color: #264de4; /* CSS blue */
+}
+
+.breakdown-label .fa-html5 { 
+    color: #e34c26; /* HTML orange-red */
+}
+
+.breakdown-label .fa-python { 
+    color: #3776ab; /* Python blue */
+}
+
+.breakdown-label .fa-node-js { 
+    color: #339933; /* Node.js green */
+}
 .modal-header h2 {
     display: flex;
     align-items: center;
