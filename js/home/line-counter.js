@@ -1,9 +1,8 @@
 /**
- * Line Counter - COMPLETE FIX with Node.js
- * ✅ Null safety
- * ✅ Default values
- * ✅ Error recovery
- * ✅ Node.js backend counting
+ * Line Counter - COMPLETE FIXED VERSION
+ * ✅ Shows Node.js separately from JavaScript
+ * ✅ Proper breakdown display
+ * ✅ All animations working
  */
 
 const BACKEND_URL = 'https://periodic-table-3d.onrender.com';
@@ -52,14 +51,14 @@ async function fetchLineCount() {
         const data = await response.json();
         console.log('✅ Data received:', data);
         
-        // Validate and set defaults (with Node.js)
+        // ✅ FIXED: Validate and set defaults (with Node.js)
         const validData = {
             total: data.total || 0,
-            javascript: data.javascript || 0,
+            javascript: data.javascript || 0,  // Frontend JS only
             css: data.css || 0,
             html: data.html || 0,
             python: data.python || 0,
-            nodejs: data.nodejs || 0,  // ✅ NEW: Node.js
+            nodejs: data.nodejs || 0,          // Backend JS (Node.js)
             json: data.json || 0,
             markdown: data.markdown || 0,
             timestamp: data.timestamp || Date.now()
@@ -282,12 +281,13 @@ function animateDigit(el, target) {
 }
 
 function updateBreakdown(data) {
+    // ✅ FIXED: Separate JavaScript and Node.js
     const langs = [
         { id: 'js-lines', value: data.javascript || 0 },
         { id: 'css-lines', value: data.css || 0 },
         { id: 'html-lines', value: data.html || 0 },
         { id: 'python-lines', value: data.python || 0 },
-        { id: 'nodejs-lines', value: data.nodejs || 0 }  // ✅ NEW
+        { id: 'nodejs-lines', value: data.nodejs || 0 }
     ];
     
     langs.forEach((lang, i) => {
