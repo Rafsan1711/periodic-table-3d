@@ -173,61 +173,73 @@
     <!-- Timeline Section (Auto-inserted by timeline-preview.js) -->
 
     <!-- Line Counter Section -->
-    <section class="line-counter-section" id="stats">
-        <div class="section-header">
-            <h2 class="section-title">Built with Precision</h2>
-            <p class="section-subtitle">Real-time project statistics</p>
-        </div>
-        <div class="line-counter-container">
-            <div class="line-counter-card">
-                <div class="counter-icon">
-                    <i class="fas fa-code"></i>
-                </div>
-                <div class="counter-content">
-                    <div class="counter-label">Total Lines of Code</div>
-                    <div class="counter-value" id="line-count">
-                        <div class="counting-animation">
-                            <span class="digit">0</span>
-                        </div>
+
+
+<!-- Line Counter Section -->
+<section class="line-counter-section" id="stats">
+    <div class="section-header">
+        <h2 class="section-title">Built with Precision</h2>
+        <p class="section-subtitle">Real-time project statistics</p>
+    </div>
+    <div class="line-counter-container">
+        <div class="line-counter-card">
+            <div class="counter-icon">
+                <i class="fas fa-code"></i>
+            </div>
+            <div class="counter-content">
+                <div class="counter-label">Total Lines of Code</div>
+                <div class="counter-value" id="line-count">
+                    <div class="counting-animation">
+                        <span class="digit">0</span>
                     </div>
-                    <div class="counter-subtitle">Calculating in real-time...</div>
                 </div>
-                <div class="counter-pulse"></div>
+                <div class="counter-subtitle">Calculating in real-time...</div>
             </div>
-            <div class="code-breakdown">
-                <div class="breakdown-item">
-                    <span class="breakdown-label">
-                        <i class="fab fa-js"></i> JavaScript
-                    </span>
-                    <span class="breakdown-value" id="js-lines">-</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">
-                        <i class="fab fa-css3"></i> CSS
-                    </span>
-                    <span class="breakdown-value" id="css-lines">-</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">
-                        <i class="fab fa-html5"></i> HTML
-                    </span>
-                    <span class="breakdown-value" id="html-lines">-</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">
-                        <i class="fab fa-python"></i> Python
-                    </span>
-                    <span class="breakdown-value" id="python-lines">-</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">
-                        <i class="fab fa-node-js"></i> Node.js
-                    </span>
-                    <span class="breakdown-value" id="nodejs-lines">-</span>
-                </div>
+            <div class="counter-pulse"></div>
+        </div>
+        <div class="code-breakdown">
+            <!-- JavaScript (Frontend Only) -->
+            <div class="breakdown-item">
+                <span class="breakdown-label">
+                    <i class="fab fa-js"></i> JavaScript
+                </span>
+                <span class="breakdown-value" id="js-lines">-</span>
+            </div>
+            
+            <!-- Node.js (Backend Only) ✅ NEW -->
+            <div class="breakdown-item">
+                <span class="breakdown-label">
+                    <i class="fab fa-node-js"></i> Node.js
+                </span>
+                <span class="breakdown-value" id="nodejs-lines">-</span>
+            </div>
+            
+            <!-- CSS -->
+            <div class="breakdown-item">
+                <span class="breakdown-label">
+                    <i class="fab fa-css3"></i> CSS
+                </span>
+                <span class="breakdown-value" id="css-lines">-</span>
+            </div>
+            
+            <!-- HTML -->
+            <div class="breakdown-item">
+                <span class="breakdown-label">
+                    <i class="fab fa-html5"></i> HTML
+                </span>
+                <span class="breakdown-value" id="html-lines">-</span>
+            </div>
+            
+            <!-- Python -->
+            <div class="breakdown-item">
+                <span class="breakdown-label">
+                    <i class="fab fa-python"></i> Python
+                </span>
+                <span class="breakdown-value" id="python-lines">-</span>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- Tech Stack Section -->
     <section class="tech-stack" id="about">
